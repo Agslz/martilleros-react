@@ -1,8 +1,13 @@
 import { MapPin, Phone, Mail, Clock, ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import type { ContenidoResponse } from "@/lib/api"
 
-// Mock data for demonstration
+interface DireccionesListProps {
+  contenido?: ContenidoResponse | null
+}
+
+// Mock data cuando no hay contenido desde la API
 const sedes = [
   {
     id: 1,
@@ -55,7 +60,23 @@ const sedes = [
   },
 ]
 
-export function DireccionesList() {
+export function DireccionesList({ contenido }: DireccionesListProps) {
+  if (contenido?.titulo || contenido?.cuerpo) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-card rounded-xl border border-border p-6 sm:p-8">
+          <h2 className="text-xl font-semibold text-foreground mb-6">
+            {contenido.titulo || "Direcciones y Sedes"}
+          </h2>
+          <div
+            className="prose prose-sm max-w-none text-muted-foreground prose-p:leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: contenido.cuerpo || "" }}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {sedes.map((sede) => (

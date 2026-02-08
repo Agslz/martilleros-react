@@ -1,3 +1,5 @@
+"use client"
+
 import { Badge } from "@/components/ui/badge"
 import {
   Table,
@@ -7,22 +9,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import type { MatriculadoPublicResponse } from "@/lib/api"
 
-// Mock data for demonstration
-const matriculados = [
-  { id: 1, matricula: "M-0001", nombre: "Juan Carlos", apellido: "González", estado: "habilitado" },
-  { id: 2, matricula: "M-0002", nombre: "María Elena", apellido: "Rodríguez", estado: "habilitado" },
-  { id: 3, matricula: "M-0003", nombre: "Carlos Alberto", apellido: "Fernández", estado: "habilitado" },
-  { id: 4, matricula: "M-0004", nombre: "Ana María", apellido: "López", estado: "suspendido" },
-  { id: 5, matricula: "M-0005", nombre: "Roberto", apellido: "Martínez", estado: "habilitado" },
-  { id: 6, matricula: "M-0006", nombre: "Laura", apellido: "García", estado: "habilitado" },
-  { id: 7, matricula: "M-0007", nombre: "Diego", apellido: "Pérez", estado: "habilitado" },
-  { id: 8, matricula: "M-0008", nombre: "Silvia", apellido: "Sánchez", estado: "habilitado" },
-  { id: 9, matricula: "M-0009", nombre: "Martín", apellido: "Díaz", estado: "suspendido" },
-  { id: 10, matricula: "M-0010", nombre: "Patricia", apellido: "Torres", estado: "habilitado" },
-]
+interface MatriculadosListProps {
+  matriculados: MatriculadoPublicResponse[]
+  loading: boolean
+  totalCount: number
+}
 
-export function MatriculadosList() {
+export function MatriculadosList({
+  matriculados,
+  loading,
+  totalCount,
+}: MatriculadosListProps) {
+  const habilitadoParaEjercer = (m: MatriculadoPublicResponse) =>
+    m.habilitado && m.estadoFianza === "ACTIVA"
+
+  if (loading && matriculados.length === 0) {
+    return (
+      <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
+        Cargando listado de matriculados...
+      </div>
+    )
+  }
+
+  if (matriculados.length === 0) {
+    return (
+      <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
+        No hay matriculados que coincidan con el criterio de búsqueda.
+      </div>
+    )
+  }
+
   return (
     <div className="bg-card rounded-xl border border-border overflow-hidden">
       <Table>
@@ -40,29 +58,37 @@ export function MatriculadosList() {
               <TableCell className="font-medium text-primary">
                 {matriculado.matricula}
               </TableCell>
-              <TableCell className="font-medium">{matriculado.apellido}</TableCell>
+              <TableCell className="font-medium">
+                {matriculado.apellido}
+              </TableCell>
               <TableCell>{matriculado.nombre}</TableCell>
               <TableCell className="text-center">
                 <Badge
-                  variant={matriculado.estado === "habilitado" ? "default" : "destructive"}
+                  variant={
+                    habilitadoParaEjercer(matriculado) ? "default" : "secondary"
+                  }
                   className={
-                    matriculado.estado === "habilitado"
+                    habilitadoParaEjercer(matriculado)
                       ? "bg-green-100 text-green-800 hover:bg-green-100"
-                      : "bg-red-100 text-red-800 hover:bg-red-100"
+                      : "bg-amber-100 text-amber-800 hover:bg-amber-100"
                   }
                 >
-                  {matriculado.estado === "habilitado" ? "Habilitado" : "Suspendido"}
+                  {habilitadoParaEjercer(matriculado)
+                    ? "Habilitado"
+                    : matriculado.estadoFianza}
                 </Badge>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      
-      {/* Pagination info */}
+
       <div className="px-6 py-4 border-t border-border bg-muted/30">
         <p className="text-sm text-muted-foreground">
-          Mostrando 10 de 500+ matriculados
+          Mostrando {matriculados.length}
+          {totalCount > matriculados.length
+            ? ` de ${totalCount} matriculados`
+            : " matriculados"}
         </p>
       </div>
     </div>

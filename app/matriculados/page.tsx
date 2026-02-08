@@ -1,25 +1,59 @@
+"use client"
+
+import { useEffect, useState, useMemo } from "react"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { MatriculadosHeader } from "@/components/matriculados/matriculados-header"
 import { MatriculadosSearch } from "@/components/matriculados/matriculados-search"
 import { MatriculadosList } from "@/components/matriculados/matriculados-list"
-import { Suspense } from "react"
-import Loading from "./loading"
-
-export const metadata = {
-  title: "Listado de Matriculados | Colegio de Martilleros de Mendoza",
-  description: "Consulte el listado completo de martilleros y corredores públicos matriculados en el Colegio de Martilleros de Mendoza.",
-}
+import { getMatriculadosPublicos } from "@/lib/api"
+import type { MatriculadoPublicResponse } from "@/lib/api"
 
 export default function MatriculadosPage() {
+  const [list, setList] = useState<MatriculadoPublicResponse[]>([])
+  const [loading, setLoading] = useState(true)
+  const [apellidoFilter, setApellidoFilter] = useState("")
+  const [estadoFilter, setEstadoFilter] = useState<string>("todos")
+
+  const load = (apellido?: string) => {
+    setLoading(true)
+    getMatriculadosPublicos(apellido?.trim() || undefined)
+      .then(setList)
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  const handleSearch = (apellido: string) => {
+    setApellidoFilter(apellido)
+    load(apellido || undefined)
+  }
+
+  const filtered = useMemo(() => {
+    if (estadoFilter === "todos") return list
+    if (estadoFilter === "habilitado") {
+      return list.filter((m) => m.habilitado && m.estadoFianza === "ACTIVA")
+    }
+    return list.filter((m) => !m.habilitado || m.estadoFianza !== "ACTIVA")
+  }, [list, estadoFilter])
+
   return (
     <PublicLayout>
       <MatriculadosHeader />
       <section className="py-12 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Suspense fallback={<Loading />}>
-            <MatriculadosSearch />
-            <MatriculadosList />
-          </Suspense>
+          <MatriculadosSearch
+            onSearch={handleSearch}
+            loading={loading}
+            estadoFilter={estadoFilter}
+            onEstadoFilterChange={setEstadoFilter}
+          />
+          <MatriculadosList
+            matriculados={filtered}
+            loading={loading}
+            totalCount={list.length}
+          />
         </div>
       </section>
     </PublicLayout>

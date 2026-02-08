@@ -1,3 +1,5 @@
+'use client'
+
 import { PublicLayout } from "@/components/layout/public-layout"
 import { LoginForm } from "@/components/auth/login-form"
 

@@ -4,23 +4,54 @@ import React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { Gavel, Eye, EyeOff, LogIn } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Gavel, Eye, EyeOff, LogIn, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { login, saveToken, API_BASE_URL } from "@/lib/api"
 
 export function LoginForm() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     matricula: "",
     password: "",
     remember: false,
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle login - this is a mockup
+    setError(null)
+    setLoading(true)
+    try {
+      const res = await login(formData.matricula, formData.password)
+      if (res.success && res.data) {
+        saveToken(res.data.token)
+        if (res.data.primeraVezLogin) {
+          router.push("/?completarPerfil=1")
+        } else {
+          router.push("/")
+        }
+        return
+      }
+      setError(res.message ?? "Error al iniciar sesión")
+    } catch (err: unknown) {
+      const errObj = err as Error & { data?: { message?: string }; status?: number }
+      const apiMessage = errObj?.data?.message
+      const networkMessage = errObj?.message
+      const isCorsOrNetwork =
+        networkMessage?.includes("Failed to fetch") ||
+        networkMessage?.includes("NetworkError") ||
+        networkMessage?.includes("CORS")
+      const message = apiMessage ?? (isCorsOrNetwork ? networkMessage : "Error al conectar con el servidor.")
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -40,6 +71,11 @@ export function LoginForm() {
 
       {/* Form */}
       <div className="p-6 sm:p-8">
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="matricula">Número de Matrícula</Label>
@@ -100,19 +136,30 @@ export function LoginForm() {
             </Link>
           </div>
 
-          <Button type="submit" className="w-full" size="lg">
-            <LogIn className="mr-2 h-5 w-5" />
-            Ingresar
+          <Button type="submit" className="w-full" size="lg" disabled={loading}>
+            {loading ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <LogIn className="mr-2 h-5 w-5" />
+            )}
+            {loading ? "Ingresando..." : "Ingresar"}
           </Button>
         </form>
 
         {/* Help text */}
-        <div className="mt-6 pt-6 border-t border-border text-center">
+        <div className="mt-6 pt-6 border-t border-border text-center space-y-2">
           <p className="text-sm text-muted-foreground">
             ¿Problemas para ingresar?{" "}
             <Link href="/contacto" className="text-primary hover:underline">
               Contáctenos
             </Link>
+          </p>
+          <p className="text-xs text-muted-foreground/80 font-mono break-all">
+            API: {API_BASE_URL.replace("/api", "")}
+          </p>
+          <p className="text-xs text-muted-foreground/80">
+            Si falla la conexión, en el backend configurá CORS para permitir{" "}
+            <code className="bg-muted px-1 rounded">http://localhost:3000</code>
           </p>
         </div>
       </div>

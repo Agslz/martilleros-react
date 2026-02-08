@@ -1,7 +1,6 @@
 import { PublicLayout } from "@/components/layout/public-layout"
 import { SubastasHeader } from "@/components/subastas/subastas-header"
-import { SubastasFilter } from "@/components/subastas/subastas-filter"
-import { SubastasList } from "@/components/subastas/subastas-list"
+import { SubastasContent } from "@/components/subastas/subastas-content"
 
 export const metadata = {
   title: "Subastas | Colegio de Martilleros de Mendoza",
@@ -14,8 +13,7 @@ export default function SubastasPage() {
       <SubastasHeader />
       <section className="py-12 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SubastasFilter />
-          <SubastasList />
+          <SubastasContent />
         </div>
       </section>
     </PublicLayout>

@@ -2,13 +2,16 @@ import { PublicLayout } from "@/components/layout/public-layout"
 import { ContactoHeader } from "@/components/contacto/contacto-header"
 import { ContactoForm } from "@/components/contacto/contacto-form"
 import { ContactoInfo } from "@/components/contacto/contacto-info"
+import { getContenido } from "@/lib/api"
 
 export const metadata = {
   title: "Contacto | Colegio de Martilleros de Mendoza",
   description: "Póngase en contacto con el Colegio de Martilleros de Mendoza. Estamos aquí para ayudarle.",
 }
 
-export default function ContactoPage() {
+export default async function ContactoPage() {
+  const contenidoContacto = await getContenido("CONTACTO")
+
   return (
     <PublicLayout>
       <ContactoHeader />
@@ -19,7 +22,7 @@ export default function ContactoPage() {
               <ContactoForm />
             </div>
             <div>
-              <ContactoInfo />
+              <ContactoInfo contenido={contenidoContacto} />
             </div>
           </div>
         </div>

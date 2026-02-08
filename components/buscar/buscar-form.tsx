@@ -1,20 +1,23 @@
 "use client"
 
-import React from "react"
-
-import { useState } from "react"
-import { Search } from "lucide-react"
+import React, { useState } from "react"
+import { Search, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 
-export function BuscarForm() {
+interface BuscarFormProps {
+  onSearch: (apellido: string, matricula: string) => void
+  loading?: boolean
+}
+
+export function BuscarForm({ onSearch, loading }: BuscarFormProps) {
   const [apellido, setApellido] = useState("")
   const [matricula, setMatricula] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle search - this is a mockup
+    onSearch(apellido, matricula)
   }
 
   return (
@@ -44,9 +47,18 @@ export function BuscarForm() {
         </div>
         
         <div className="flex justify-center">
-          <Button type="submit" size="lg" className="w-full sm:w-auto">
-            <Search className="mr-2 h-5 w-5" />
-            Buscar Martillero
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <Search className="mr-2 h-5 w-5" />
+            )}
+            {loading ? "Buscando..." : "Buscar Martillero"}
           </Button>
         </div>
       </div>
