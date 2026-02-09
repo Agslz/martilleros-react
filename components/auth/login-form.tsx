@@ -33,8 +33,10 @@ export function LoginForm() {
         saveToken(res.data.token)
         if (res.data.primeraVezLogin) {
           router.push("/?completarPerfil=1")
+        } else if (res.data.role === "ADMIN") {
+          router.push("/admin")
         } else {
-          router.push("/")
+          router.push("/panel")
         }
         return
       }

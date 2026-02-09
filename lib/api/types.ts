@@ -74,3 +74,122 @@ export interface MatriculadoPublicResponse {
   habilitado: boolean
   estadoFianza: "ACTIVA" | "VENCIDA" | "PENDIENTE"
 }
+
+// --- Subastas (admin) ---
+export interface SubastaRequest {
+  titulo: string
+  descripcion: string
+  precioInicial: number
+  martilleroACargo: string
+  nombreMartillero: string
+  cuitMartillero: string
+  domicilio: string
+  fechaInicio: string // YYYY-MM-DD
+  fechaFin: string // YYYY-MM-DD
+}
+
+export interface FileUploadResponse {
+  fileName: string
+  fileUrl: string
+  fileSize?: number
+  contentType?: string
+}
+
+// --- Biblioteca ---
+export interface DocumentoBibliotecaRequest {
+  titulo: string
+  descripcion?: string
+  fileName: string
+  fileUrl: string
+  visibleParaMatriculados?: boolean
+}
+
+export interface DocumentoBibliotecaResponse {
+  id: number
+  titulo: string
+  descripcion?: string
+  fileName: string
+  fileUrl: string
+  visibleParaMatriculados: boolean
+  createdAt: string
+}
+
+// --- Matriculados (privado / admin) ---
+export interface EstadoMatriculadoResponse {
+  habilitado: boolean
+  estadoFianza: "ACTIVA" | "VENCIDA" | "PENDIENTE"
+  fechaVencimientoFianza?: string
+  puedeEjercer: boolean
+}
+
+export interface CrearMatriculadoRequest {
+  nombre: string
+  apellido: string
+  dni: string
+  matricula: string
+  email?: string
+  cuit?: string
+}
+
+// --- Fianzas ---
+export interface FianzaResponse {
+  id: number
+  matriculadoId: number
+  constanciaUrl: string
+  fechaInicio: string
+  fechaVencimiento: string
+  createdAt: string
+}
+
+// --- Pagos ---
+export type TipoPago = "MATRICULA" | "CUOTA" | "OTRO"
+export type EstadoPago = "PENDIENTE" | "PAGADO" | "CANCELADO"
+
+export interface PagoRequest {
+  tipoPago: TipoPago
+  monto: number
+  descripcion?: string
+}
+
+export interface PagoResponse {
+  id: number
+  matriculadoId: number
+  tipoPago: TipoPago
+  monto: number
+  descripcion?: string
+  estado: EstadoPago
+  createdAt: string
+  updatedAt: string
+}
+
+// --- Contenidos (admin) ---
+export interface ContenidoRequest {
+  titulo: string
+  cuerpo: string
+}
+
+// --- Cuotas ---
+export type EstadoCuota = "PENDIENTE" | "PAGADO" | "VENCIDO"
+
+export interface CuotaItemResponse {
+  periodo: string // YYYY-MM
+  monto: number
+  fechaVencimiento: string
+  estado: EstadoCuota
+  metodoPago?: string
+  paidAt?: string
+}
+
+export interface CuotaPeriodoRequest {
+  periodo: string // YYYY-MM
+  monto: number
+  fechaVencimiento: string // YYYY-MM-DD
+}
+
+export interface CuotaEstadoItemResponse {
+  matricula: string
+  nombre?: string
+  apellido?: string
+  estado: EstadoCuota
+  paidAt?: string
+}
