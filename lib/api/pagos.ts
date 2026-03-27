@@ -7,8 +7,19 @@ export async function getPagos(): Promise<PagoResponse[]> {
     if (res.success && Array.isArray(res.data)) return res.data
     return []
   } catch (e) {
-    console.error("Error al obtener pagos:", e)
-    return []
+    const err = e as Error & { data?: { message?: string } }
+    const msg = err?.data?.message ?? err.message ?? ""
+    const isMatriculadoNoEncontrado =
+      typeof msg === "string" && msg.toLowerCase().includes("matriculado no encontrado")
+
+    // Solo logueamos en consola si es un error inesperado;
+    // para "Matriculado no encontrado" dejamos que lo maneje la UI sin ruido.
+    if (!isMatriculadoNoEncontrado) {
+      // eslint-disable-next-line no-console
+      console.error("Error al obtener pagos:", e)
+    }
+
+    throw err
   }
 }
 

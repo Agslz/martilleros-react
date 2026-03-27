@@ -9,6 +9,8 @@ import {
   Car,
   Package,
   CheckCircle,
+  XCircle,
+  AlertTriangle,
   FileText,
   ExternalLink,
 } from "lucide-react"
@@ -18,7 +20,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { getSubastaById } from "@/lib/api"
+import { getSubastaById, getMatriculadosPublicos } from "@/lib/api"
+import type { MatriculadoPublicResponse } from "@/lib/api"
 
 interface SubastaDetailPageProps {
   params: Promise<{ id: string }>
@@ -57,6 +60,11 @@ export async function generateMetadata({ params }: SubastaDetailPageProps) {
   }
 }
 
+function habilitadoParaEjercer(m: MatriculadoPublicResponse | null) {
+  if (!m) return null
+  return m.habilitado && m.estadoFianza === "ACTIVA"
+}
+
 export default async function SubastaDetailPage({ params }: SubastaDetailPageProps) {
   const { id } = await params
   const subasta = await getSubastaById(Number(id))
@@ -66,11 +74,32 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
   const today = new Date().toISOString().slice(0, 10)
   const esProxima = subasta.fechaFin >= today
 
+  const tieneEdictoTexto =
+    typeof subasta.edictoTexto === "string" &&
+    subasta.edictoTexto.trim().length > 0
+  const tieneEdictoPdf = typeof subasta.edictoUrl === "string" && subasta.edictoUrl.trim().length > 0
+
   const imagenesParaGaleria = subasta.imagenes?.map((img) => ({
     id: img.id,
     url: img.fileUrl,
     alt: img.fileName || subasta.titulo,
   })) ?? []
+
+  // Intentar obtener información del martillero desde el padrón público
+  let martillero: MatriculadoPublicResponse | null = null
+  try {
+    const todos = await getMatriculadosPublicos()
+    martillero =
+      todos.find(
+        (m) =>
+          m.matricula.toUpperCase() ===
+          subasta.martilleroACargo.toUpperCase()
+      ) ?? null
+  } catch {
+    martillero = null
+  }
+
+  const habilitado = habilitadoParaEjercer(martillero)
 
   return (
     <PublicLayout>
@@ -90,6 +119,80 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader>
+                  <CardTitle className="flex flex-col gap-1">
+                    <span className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      Edicto de subasta
+                    </span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      Texto publicado en el Boletín Oficial de Mendoza
+                      {subasta.fechaPublicacionBoletin &&
+                        ` (${formatFecha(subasta.fechaPublicacionBoletin)})`}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {tieneEdictoTexto ? (
+                    <>
+                      {subasta.numeroEdicto && (
+                        <p className="text-xs font-medium text-muted-foreground">
+                          {subasta.numeroEdicto}
+                        </p>
+                      )}
+                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                        {subasta.edictoTexto}
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        {subasta.urlBoletinOficial && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a
+                              href={subasta.urlBoletinOficial}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Ver publicación en Boletín Oficial
+                            </a>
+                          </Button>
+                        )}
+                        {tieneEdictoPdf && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a
+                              href={subasta.edictoUrl!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Ver edicto (PDF)
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        El edicto de esta subasta aún no ha sido cargado. Cuando el martillero lo publique en el Boletín Oficial, aparecerá aquí el texto completo.
+                      </p>
+                      {tieneEdictoPdf && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a
+                            href={subasta.edictoUrl!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Ver edicto (PDF)
+                          </a>
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   {esProxima ? (
@@ -127,28 +230,6 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                 </CardContent>
               </Card>
 
-              {subasta.edictoUrl && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-primary" />
-                      Edicto
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Button variant="outline" asChild>
-                      <a
-                        href={subasta.edictoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Ver edicto (PDF)
-                      </a>
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
             </div>
 
             <div className="space-y-6">
@@ -208,15 +289,48 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                 </CardContent>
               </Card>
 
-              <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600 shrink-0" />
-                <div>
-                  <p className="font-medium text-green-800 text-sm">Martillero verificado</p>
-                  <p className="text-xs text-green-600">
-                    Matriculado y habilitado por el Colegio
-                  </p>
+              {habilitado === true && (
+                <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <CheckCircle className="h-6 w-6 text-green-600 shrink-0" />
+                  <div>
+                    <p className="font-medium text-green-800 text-sm">
+                      Martillero habilitado para ejercer
+                    </p>
+                    <p className="text-xs text-green-600">
+                      Matriculado con fianza activa según el padrón público.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
+              {habilitado === false && (
+                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <XCircle className="h-6 w-6 text-red-600 shrink-0" />
+                  <div>
+                    <p className="font-medium text-red-800 text-sm">
+                      Martillero no habilitado para ejercer
+                    </p>
+                    <p className="text-xs text-red-600">
+                      Estado según el padrón público. Verifique en la sección
+                      &quot;Buscar martillero&quot; para más detalle.
+                    </p>
+                  </div>
+                </div>
+              )}
+              {habilitado === null && (
+                <div className="flex items-center gap-3 p-4 bg-muted/40 border border-border rounded-lg">
+                  <AlertTriangle className="h-6 w-6 text-muted-foreground shrink-0" />
+                  <div>
+                    <p className="font-medium text-foreground text-sm">
+                      Martillero matriculado
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      No se pudo verificar automáticamente el estado en el
+                      padrón público. Consulte la sección &quot;Buscar
+                      martillero&quot; para confirmar si está habilitado.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

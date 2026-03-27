@@ -1,23 +1,30 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { User, Shield, Wallet, CreditCard, Loader2 } from "lucide-react"
-import Link from "next/link"
+import { User, Shield, Wallet, Loader2 } from "lucide-react"
 import { getEstadoMatriculado } from "@/lib/api"
 import type { EstadoMatriculadoResponse } from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 
 export default function PanelPage() {
+  const { toast } = useToast()
   const [estado, setEstado] = useState<EstadoMatriculadoResponse | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getEstadoMatriculado()
       .then(setEstado)
+      .catch(() => {
+        toast({
+          title: "Error",
+          description: "No se pudo cargar su estado. Intente más tarde.",
+          variant: "destructive",
+        })
+      })
       .finally(() => setLoading(false))
-  }, [])
+  }, [toast])
 
   if (loading) {
     return (
@@ -36,7 +43,8 @@ export default function PanelPage() {
     )
   }
 
-  const puedeEjercer = estado.puedeEjercer
+  // Regla de negocio: puede ejercer solo si está habilitado y tiene fianza ACTIVA
+  const puedeEjercer = estado.habilitado && estado.estadoFianza === "ACTIVA"
   const fianzaActiva = estado.estadoFianza === "ACTIVA"
 
   return (
@@ -103,27 +111,6 @@ export default function PanelPage() {
             </Badge>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="flex flex-wrap gap-4">
-        <Button asChild>
-          <Link href="/panel/fianzas">
-            <Shield className="h-4 w-4 mr-2" />
-            Fianzas
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/panel/pagos">
-            <Wallet className="h-4 w-4 mr-2" />
-            Pagos
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/panel/cuotas">
-            <CreditCard className="h-4 w-4 mr-2" />
-            Cuotas
-          </Link>
-        </Button>
       </div>
     </div>
   )

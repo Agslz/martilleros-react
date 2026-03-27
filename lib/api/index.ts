@@ -4,6 +4,10 @@ export type {
   LoginRequest,
   LoginResponse,
   UserInfoResponse,
+  OlvideContrasenaRequest,
+  CompletarPerfilRequest,
+  CambiarContrasenaRequest,
+  ActualizarPerfilRequest,
   SubastaResponse,
   SubastaRequest,
   ImagenSubastaResponse,
@@ -17,6 +21,7 @@ export type {
   EstadoMatriculadoResponse,
   CrearMatriculadoRequest,
   FianzaResponse,
+  FianzaPendienteAdminResponse,
   PagoRequest,
   PagoResponse,
   TipoPago,
@@ -28,11 +33,23 @@ export type {
 } from "./types"
 export { apiRequest, apiRequestFormData } from "./client"
 export type { ApiClientOptions } from "./client"
-export { login, saveToken, removeToken, getToken, getCurrentUser } from "./auth"
+export {
+  login,
+  saveToken,
+  removeToken,
+  getToken,
+  getCurrentUser,
+  olvideContrasena,
+  completarPerfil,
+  cambiarContrasena,
+  actualizarPerfil,
+} from "./auth"
 export {
   getSubastasPublicas,
   getSubastasPrivadas,
   getSubastaById,
+  crearSubastaMatriculado,
+  subirImagenSubastaMatriculado,
 } from "./subastas"
 export {
   crearSubasta,
@@ -45,7 +62,7 @@ export {
 export { getContenido } from "./contenidos"
 export { actualizarContenido } from "./admin-contenidos"
 export { getMatriculadosPublicos } from "./matriculados"
-export { crearMatriculado } from "./admin-matriculados"
+export { crearMatriculado, getMatriculadosAdmin, updateMatriculadoHabilitado } from "./admin-matriculados"
 export type { CrearMatriculadoResponse } from "./admin-matriculados"
 export { getEstadoMatriculado } from "./private-matriculados"
 export {
@@ -56,6 +73,12 @@ export {
   subirPdfBiblioteca,
 } from "./biblioteca"
 export { getFianzas, getFianzaVigente, subirFianza } from "./fianzas"
+export {
+  getFianzasPendientesAdmin,
+  aprobarFianzaAdmin,
+  notificarRechazoFianzaAdmin,
+} from "./admin-fianzas"
+export type { NotificarRechazoFianzaRequest } from "./admin-fianzas"
 export { getPagos, getPagoById, crearPago } from "./pagos"
 export {
   getCuotas,

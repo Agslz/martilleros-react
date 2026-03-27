@@ -55,9 +55,16 @@ export async function apiRequest<T>(
   }
 
   if (response.status === 401 && typeof window !== "undefined") {
+    // Limpiamos el token, pero solo forzamos redirect completo a /login
+    // si no estamos ya en la pantalla de login. Así, en /login podemos
+    // mostrar toasts de error sin que la página se recargue inmediatamente.
     localStorage.removeItem("token")
-    window.location.href = "/login"
-    throw new Error("Unauthorized")
+    if (!window.location.pathname.startsWith("/login")) {
+      window.location.href = "/login"
+    }
+    const err = new Error("Unauthorized") as Error & { status?: number }
+    err.status = 401
+    throw err
   }
 
   const data = (await response.json().catch(() => ({}))) as ApiResponse<T>
@@ -99,8 +106,12 @@ export async function apiRequestFormData<T>(
 
   if (response.status === 401 && typeof window !== "undefined") {
     localStorage.removeItem("token")
-    window.location.href = "/login"
-    throw new Error("Unauthorized")
+    if (!window.location.pathname.startsWith("/login")) {
+      window.location.href = "/login"
+    }
+    const err = new Error("Unauthorized") as Error & { status?: number }
+    err.status = 401
+    throw err
   }
 
   const data = (await response.json().catch(() => ({}))) as ApiResponse<T>

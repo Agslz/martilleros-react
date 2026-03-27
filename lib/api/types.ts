@@ -25,7 +25,34 @@ export interface LoginResponse {
   primeraVezLogin: boolean
 }
 
-export type UserInfoResponse = Omit<LoginResponse, "token">
+export type UserInfoResponse = Omit<LoginResponse, "token"> & { cuit?: string }
+
+/** PUT /auth/me (Bearer) - Actualizar datos del perfil del usuario logueado */
+export interface ActualizarPerfilRequest {
+  nombre: string
+  apellido: string
+  email?: string
+  cuit?: string
+}
+
+/** POST /auth/olvide-contrasena */
+export interface OlvideContrasenaRequest {
+  matricula: string
+}
+
+/** POST /auth/completar-perfil (Bearer) */
+export interface CompletarPerfilRequest {
+  email: string
+  password: string
+  cuit?: string
+}
+
+/** POST /auth/cambiar-contrasena (Bearer) */
+export interface CambiarContrasenaRequest {
+  passwordActual: string
+  passwordNueva: string
+  passwordNuevaConfirmacion: string
+}
 
 // --- Subastas ---
 export interface ImagenSubastaResponse {
@@ -51,6 +78,10 @@ export interface SubastaResponse {
   visiblePublico: boolean
   createdAt: string
   imagenes: ImagenSubastaResponse[]
+  edictoTexto?: string | null
+  numeroEdicto?: string | null
+  fechaPublicacionBoletin?: string | null
+  urlBoletinOficial?: string | null
 }
 
 // --- Contenidos ---
@@ -86,6 +117,10 @@ export interface SubastaRequest {
   domicilio: string
   fechaInicio: string // YYYY-MM-DD
   fechaFin: string // YYYY-MM-DD
+  edictoTexto?: string
+  numeroEdicto?: string
+  fechaPublicacionBoletin?: string // YYYY-MM-DD
+  urlBoletinOficial?: string
 }
 
 export interface FileUploadResponse {
@@ -139,6 +174,20 @@ export interface FianzaResponse {
   fechaInicio: string
   fechaVencimiento: string
   createdAt: string
+}
+
+/** Fianza pendiente de verificación para el panel admin (incluye datos del matriculado). */
+export interface FianzaPendienteAdminResponse {
+  id: number
+  matriculadoId: number
+  constanciaUrl: string
+  fechaInicio: string
+  fechaVencimiento: string
+  createdAt: string
+  matricula: string
+  nombre: string
+  apellido: string
+  email?: string
 }
 
 // --- Pagos ---

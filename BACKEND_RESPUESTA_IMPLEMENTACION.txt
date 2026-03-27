@@ -1,0 +1,95 @@
+================================================================================
+BACKEND – CAMBIOS IMPLEMENTADOS (RESPUESTA AL TODO FRONTEND)
+================================================================================
+Documento recibido del backend (cm-backend). Para que el frontend ajuste rutas/DTOs
+si hace falta.
+================================================================================
+
+VERIFICACIÓN FRONTEND (martilleros-react):
+  Todas las rutas y DTOs del frontend coinciden con lo implementado. No se
+  requirieron cambios de código. Las vistas /admin/matriculados,
+  /admin/verificacion-fianzas, /panel/subastas/nueva y el listado público de
+  matriculados/subastas quedan listas para usar con este backend.
+================================================================================
+
+1. CONSISTENCIA PÚBLICO/PRIVADO
+   • Corregido. GET /api/public/matriculados ahora devuelve para cada
+     matriculado los mismos campos habilitado y estadoFianza que usa
+     GET /api/private/matriculados/estado (misma entidad Matriculado).
+   • MatriculadoPublicResponse: se agregaron campos habilitado y estadoFianza.
+
+2. GET /api/admin/matriculados
+   • Implementado. GET /api/admin/matriculados. Auth: solo ADMIN (Bearer).
+   • Query opcionales: ?apellido=... y ?habilitado=true|false.
+   • Respuesta: array de MatriculadoPublicResponse (id, nombre, apellido,
+     matricula, habilitado, estadoFianza).
+
+3. PUT /api/admin/matriculados/{id}
+   • Implementado. PUT /api/admin/matriculados/{id}. Auth: solo ADMIN.
+   • Body: { "habilitado": true | false } (ActualizarHabilitadoRequest).
+   • Respuesta: 200 OK con ApiResponse<MatriculadoPublicResponse>.
+
+4. POST /api/private/subastas
+   • Implementado. POST /api/private/subastas. Auth: Bearer (MATRICULADO o ADMIN).
+   • Body: mismo SubastaRequest (titulo, descripcion, precioInicial, domicilio,
+     fechaInicio, fechaFin; martilleroACargo, nombreMartillero, cuitMartillero
+     pueden enviarse pero el backend usa la matrícula del JWT y nombre/CUIT del
+     matriculado en BD).
+   • La subasta se crea con martilleroACargo = matrícula del usuario logueado.
+   • edictoUrl se deja vacío al crear; puede subirse después por admin o por
+     flujo que expongan.
+
+5. POST /api/private/subastas/{id}/imagenes
+   • Implementado. POST /api/private/subastas/{subastaId}/imagenes.
+     Multipart: file (obligatorio), orden (opcional). Auth: Bearer.
+   • Se verifica que la subasta sea del usuario (martilleroACargo = matrícula
+     del JWT). Si no, 403 Access Denied.
+   • Respuesta: ApiResponse<FileUploadResponse> con fileName, fileUrl, fileSize,
+     contentType.
+
+6. puedeEjercer EN ESTADO PRIVADO
+   • Ajustado. EstadoMatriculadoResponse incluye puedeEjercer calculado como:
+     puedeEjercer = habilitado && estadoFianza == "ACTIVA".
+
+7. VERIFICACIÓN DE FIANZAS POR ADMIN
+   • GET /api/admin/fianzas/pendientes
+     Auth: solo ADMIN. Devuelve lista de fianzas no verificadas (verificada=false).
+     Cada ítem: FianzaPendienteResponse con id, matriculadoId, constanciaUrl,
+     fechaInicio, fechaVencimiento, createdAt, matricula, nombre, apellido, email.
+
+   • POST /api/admin/fianzas/{id}/aprobar
+     Auth: solo ADMIN. Marca la fianza como verificada y al matriculado como
+     habilitado=true, estadoFianza=ACTIVA. Respuesta: 200 OK.
+
+   • POST /api/admin/fianzas/{id}/notificar-rechazo
+     Auth: solo ADMIN. Body opcional: { "mensaje": string, "camposIncorrectos": string }.
+     Envía correo al email del matriculado con ese contenido. No modifica
+     habilitado ni estadoFianza. Respuesta: 200 OK.
+
+   • Flujo de negocio: cuando el matriculado sube una constancia (POST
+     /api/private/fianzas), se guarda con verificada=false y el matriculado
+     queda con estadoFianza=PENDIENTE hasta que un admin apruebe. Al aprobar,
+     verificada=true, habilitado=true, estadoFianza=ACTIVA.
+
+   • Migración: V9__add_verificada_to_fianzas.sql añade columna verificada
+     (BOOLEAN NOT NULL DEFAULT FALSE) en tabla fianzas.
+
+================================================================================
+RESUMEN PARA CONFIRMACIÓN FRONTEND
+================================================================================
+
+ 1. Consistencia público/privado: corregido.
+ 2. GET /api/admin/matriculados: implementado. Query opcionales: apellido, habilitado.
+ 3. PUT /api/admin/matriculados/{id}: implementado. Body: { "habilitado": boolean }.
+ 4. POST /api/private/subastas: implementado. Body: SubastaRequest; martillero = usuario JWT.
+ 5. POST /api/private/subastas/{id}/imagenes: implementado. Multipart: file, orden opcional.
+ 6. puedeEjercer: calculado como habilitado && estadoFianza === "ACTIVA".
+ 7. Verificación de fianzas:
+    - Listado: GET /api/admin/fianzas/pendientes → FianzaPendienteResponse[].
+    - Aprobar: POST /api/admin/fianzas/{id}/aprobar.
+    - Notificar rechazo: POST /api/admin/fianzas/{id}/notificar-rechazo,
+      body opcional: { "mensaje", "camposIncorrectos" }.
+
+================================================================================
+FIN
+================================================================================

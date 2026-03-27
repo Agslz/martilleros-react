@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { getFianzas, subirFianza, type FianzaResponse } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 function formatFecha(s: string) {
   try {
@@ -21,6 +22,7 @@ function formatFecha(s: string) {
 }
 
 export default function PanelFianzasPage() {
+  const { toast } = useToast()
   const [list, setList] = useState<FianzaResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -34,6 +36,13 @@ export default function PanelFianzasPage() {
     setLoading(true)
     getFianzas()
       .then(setList)
+      .catch(() => {
+        toast({
+          title: "Error",
+          description: "No se pudo cargar el historial de fianzas.",
+          variant: "destructive",
+        })
+      })
       .finally(() => setLoading(false))
   }
 
@@ -58,8 +67,17 @@ export default function PanelFianzasPage() {
         setFechaInicio("")
         setFechaVencimiento("")
         load()
+        toast({
+          title: "Listo",
+          description: "Constancia de fianza subida correctamente.",
+        })
       } else {
         setError("No se pudo subir la fianza.")
+        toast({
+          title: "Error",
+          description: "Error al subir el archivo. Verifique que sea un PDF válido.",
+          variant: "destructive",
+        })
       }
     } catch (err: unknown) {
       const msg =
@@ -67,6 +85,11 @@ export default function PanelFianzasPage() {
           ? String((err as { message?: string }).message)
           : null
       setError(msg ?? "Error al subir la fianza.")
+      toast({
+        title: "Error",
+        description: "Error al subir el archivo. Verifique que sea un PDF válido.",
+        variant: "destructive",
+      })
     } finally {
       setUploading(false)
     }
@@ -74,7 +97,10 @@ export default function PanelFianzasPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Mis fianzas</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-2">Mis fianzas</h1>
+      <p className="text-muted-foreground mb-6">
+        La fianza se abona fuera del sistema. Aquí solo se sube la <strong>constancia de pago</strong> (comprobante) para que el Colegio registre que está al día.
+      </p>
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
@@ -90,8 +116,11 @@ export default function PanelFianzasPage() {
       <div className="max-w-xl rounded-xl border border-border p-6 mb-8">
         <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
           <Upload className="h-5 w-5 text-primary" />
-          Subir constancia de fianza
+          Subir constancia de pago de fianza
         </h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Adjuntá el PDF del comprobante de pago de la fianza (no se realiza el pago en este sitio).
+        </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="file">Archivo PDF</Label>

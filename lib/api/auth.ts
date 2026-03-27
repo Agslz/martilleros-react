@@ -4,6 +4,10 @@ import type {
   LoginRequest,
   LoginResponse,
   UserInfoResponse,
+  OlvideContrasenaRequest,
+  CompletarPerfilRequest,
+  CambiarContrasenaRequest,
+  ActualizarPerfilRequest,
 } from "./types"
 
 export async function login(
@@ -14,6 +18,47 @@ export async function login(
     method: "POST",
     body: JSON.stringify({ matricula, password } as LoginRequest),
     auth: false,
+  })
+}
+
+export async function olvideContrasena(
+  matricula: string
+): Promise<ApiResponse<unknown>> {
+  return apiRequest<unknown>("/auth/olvide-contrasena", {
+    method: "POST",
+    body: JSON.stringify({ matricula } as OlvideContrasenaRequest),
+    auth: false,
+  })
+}
+
+export async function completarPerfil(
+  body: CompletarPerfilRequest
+): Promise<ApiResponse<unknown>> {
+  return apiRequest<unknown>("/auth/completar-perfil", {
+    method: "POST",
+    body: JSON.stringify(body),
+    auth: true,
+  })
+}
+
+export async function cambiarContrasena(
+  body: CambiarContrasenaRequest
+): Promise<ApiResponse<unknown>> {
+  return apiRequest<unknown>("/auth/cambiar-contrasena", {
+    method: "POST",
+    body: JSON.stringify(body),
+    auth: true,
+  })
+}
+
+/** PUT /auth/me - Actualizar nombre, apellido, email, cuit del usuario logueado. */
+export async function actualizarPerfil(
+  body: ActualizarPerfilRequest
+): Promise<ApiResponse<UserInfoResponse>> {
+  return apiRequest<UserInfoResponse>("/auth/me", {
+    method: "PUT",
+    body: JSON.stringify(body),
+    auth: true,
   })
 }
 

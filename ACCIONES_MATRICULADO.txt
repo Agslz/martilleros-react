@@ -1,0 +1,70 @@
+================================================================================
+ACCIONES DEL MATRICULADO (según BACKEND_CM_DOCUMENTACION.txt)
+================================================================================
+
+El matriculado tiene acceso a /api/private/** (hasAnyRole ADMIN, MATRICULADO).
+No tiene acceso a /api/admin/**.
+
+--------------------------------------------------------------------------------
+LISTADO SEGÚN DOCUMENTACIÓN
+--------------------------------------------------------------------------------
+
+  Autenticación
+  • GET  /api/auth/me              → Ver sus datos (matrícula, nombre, email, etc.)
+  • POST /api/auth/completar-perfil → Completar email/contraseña (primer login)
+  • POST /api/auth/cambiar-contrasena → Cambiar contraseña
+
+  Subastas
+  • GET  /api/private/subastas    → Listar todas (públicas + privadas)
+  • En el front: "Mis subastas" filtra por martilleroACargo === matrícula del usuario.
+  • POST /api/private/subastas    → NO está en la doc; el front lo llama para "Nueva subasta".
+    Si el backend lo agrega, el matriculado podrá crear subastas a su nombre.
+
+  Biblioteca
+  • GET  /api/private/biblioteca   → Listar documentos para matriculados
+
+  Estado
+  • GET  /api/private/matriculados/estado → Ver estado (habilitado, fianza, puede ejercer)
+
+  Fianzas
+  • POST /api/private/fianzas     → Subir constancia de pago de fianza (PDF + fechas)
+  • GET  /api/private/fianzas     → Historial de fianzas
+  • GET  /api/private/fianzas/vigente → Fianza vigente
+
+  Pagos
+  • GET  /api/private/pagos       → Listar sus solicitudes de pago
+  • POST /api/private/pagos       → Crear solicitud de pago (tipo CUOTA/OTRO, monto, descripción)
+  • GET  /api/private/pagos/{id}  → Ver un pago
+
+  Cuotas (Mercado Pago)
+  • GET  /api/private/cuotas      → Ver períodos y estado (PENDIENTE/PAGADO/VENCIDO)
+  • POST /api/private/cuotas/{periodo}/pagar-cupon → Generar cupón de pago
+  • POST /api/private/cuotas/suscripcion → Adherirse al débito automático
+
+--------------------------------------------------------------------------------
+PESTAÑAS DEL PANEL (FRONTEND)
+--------------------------------------------------------------------------------
+
+  Mi estado       → GET /api/private/matriculados/estado
+  Subastas        → GET /api/private/subastas (filtro "mis subastas") + Nueva subasta (POST /api/private/subastas si existe)
+  Fianzas         → GET/POST /api/private/fianzas
+  Pagos           → GET/POST /api/private/pagos
+  Cuotas          → GET /api/private/cuotas + pagar-cupon + suscripcion
+  Biblioteca      → GET /api/private/biblioteca
+  Mi perfil       → GET /api/auth/me + POST /api/auth/cambiar-contrasena
+
+--------------------------------------------------------------------------------
+NOTA BACKEND: CREAR SUBASTA COMO MATRICULADO
+--------------------------------------------------------------------------------
+
+Para que "Nueva subasta" funcione, el backend debe exponer:
+
+  POST /api/private/subastas  [Bearer]
+  Body: SubastaRequest (titulo, descripcion, precioInicial, domicilio, fechaInicio, fechaFin;
+        martilleroACargo, nombreMartillero, cuitMartillero pueden venir en el body
+        o el backend los toma del usuario del JWT).
+
+Hasta entonces, el botón "Crear subasta" devolverá 403 y el front mostrará un
+mensaje indicando contactar al Colegio.
+
+================================================================================

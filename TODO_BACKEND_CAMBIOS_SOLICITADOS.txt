@@ -1,0 +1,398 @@
+================================================================================
+TODO BACKEND – CAMBIOS SOLICITADOS DESDE EL FRONTEND
+================================================================================
+Documento para pasar al equipo backend. Cuando implementen, indicar qué se hizo
+para que el frontend pueda ajustar rutas/DTOs si hace falta.
+================================================================================
+
+
+================================================================================
+CONTEXTO DE NEGOCIO (LEER PRIMERO – NO ROMPER LO EXISTENTE)
+================================================================================
+
+  Regla central:
+    Un matriculado está "habilitado para ejercer" si y solo si tiene la fianza
+    en regla. La fianza se renueva cada 5 años.
+
+  Flujo actual que ya existe y no debe romperse:
+    1. El matriculado sube la constancia de pago de la fianza (PDF) desde su
+       panel: POST /api/private/fianzas (multipart: file, fechaInicio, fechaVencimiento).
+    2. El backend guarda el archivo y la registra (tabla fianzas, constanciaUrl, etc.).
+    3. GET /api/private/matriculados/estado devuelve habilitado, estadoFianza, puedeEjercer.
+    4. GET /api/public/matriculados devuelve el listado con habilitado y estadoFianza
+       por matriculado (debe ser consistente con el punto anterior).
+
+  Flujo nuevo que se pide (verificación por admin):
+    5. El administrador entra a una vista "Verificación de fianzas" en su panel.
+    6. Ve la lista de constancias de fianza subidas que están pendientes de
+       verificación (o todas las fianzas recientes, según cómo lo modelen).
+    7. Para cada ítem puede:
+       a) Ver el archivo (constancia) que subió el matriculado.
+       b) Si está todo bien: "Habilitar" → el sistema marca al matriculado como
+          habilitado y la fianza como ACTIVA (el matriculado pasa a "habilitado para ejercer").
+       c) Si algo está mal: "Informar por correo" → desde el mismo panel el admin
+          redacta un mensaje (o indica qué campos están mal) y se envía un correo
+          al matriculado con esa información. No se habilita; el matriculado puede
+          corregir y volver a subir si aplica.
+
+  Resumen:
+    - No cambiar el flujo actual de subida de fianza por el matriculado.
+    - Unificar en el backend la fuente de habilitado/estadoFianza entre el
+      listado público y el estado privado.
+    - Agregar endpoints para que el admin liste fianzas pendientes de verificación,
+      apruebe (habilite al matriculado) o envíe correo al matriculado desde el panel.
+
+
+================================================================================
+PROMPT PARA COPIAR Y PEGAR AL BACKEND (TEXTO COMPLETO)
+================================================================================
+
+Implementá los cambios que se describen en este documento (TODO_BACKEND_CAMBIOS_SOLICITADOS.txt). Es importante que leas antes la sección "CONTEXTO DE NEGOCIO" para no romper lo que ya funciona.
+
+Regla de negocio a respetar: un matriculado está habilitado para ejercer si tiene la fianza subida y verificada. La fianza se renueva cada 5 años; el matriculado sube la constancia (PDF) por el panel; el administrador verifica ese archivo desde su panel y o bien habilita al matriculado o bien le envía un correo indicando qué está mal.
+
+Tareas solicitadas:
+
+  1. CONSISTENCIA PÚBLICO/PRIVADO
+     Asegurar que GET /api/public/matriculados devuelva para cada matriculado el mismo habilitado y estadoFianza que devolvería GET /api/private/matriculados/estado para ese usuario. Misma fuente de datos (misma entidad/columnas).
+
+  2. GET /api/admin/matriculados
+     Listar todos los matriculados para el panel admin (id, matricula, nombre, apellido, habilitado, estadoFianza). Auth: solo ADMIN.
+
+  3. PUT /api/admin/matriculados/{id}
+     Body: { "habilitado": true | false }. Permitir al admin habilitar/deshabilitar desde la app. Auth: solo ADMIN.
+
+  4. POST /api/private/subastas
+     Que un matriculado pueda crear subastas a su nombre (martillero = usuario del JWT). Body: SubastaRequest. Auth: Bearer (MATRICULADO o ADMIN).
+
+  5. POST /api/private/subastas/{id}/imagenes
+     Que el matriculado suba imágenes a una subasta que él creó. Multipart: file, orden opcional. Verificar que la subasta sea del usuario. Auth: Bearer.
+
+  6. (Opcional) puedeEjercer en EstadoMatriculadoResponse = habilitado && estadoFianza === "ACTIVA".
+
+  7. VERIFICACIÓN DE FIANZAS POR ADMIN (NUEVO)
+     - GET /api/admin/fianzas/pendientes (o equivalente) para listar fianzas pendientes de verificación, con datos del matriculado (id, matricula, nombre, apellido, email) y de la fianza (id, constanciaUrl, fechaInicio, fechaVencimiento, createdAt). Auth: solo ADMIN.
+     - POST /api/admin/fianzas/{id}/aprobar (o equivalente): al aprobar, marcar la fianza como verificada y al matriculado como habilitado con estadoFianza ACTIVA. Auth: solo ADMIN.
+     - POST /api/admin/fianzas/{id}/notificar-rechazo (o equivalente): body { "mensaje": string } (opcionalmente "camposIncorrectos": string). Enviar correo al matriculado con ese contenido. Auth: solo ADMIN. No cambiar habilitado; el matriculado podrá corregir y volver a subir.
+
+El frontend ya tiene (o tendrá) la vista Admin → Verificación de fianzas que lista pendientes, con botón "Ver archivo", "Habilitar" e "Informar por correo" (modal con mensaje y envío).
+
+Cuando termines, indicá qué implementaste y si alguna ruta, método o DTO es distinto a lo indicado, para que el frontend se ajuste.
+
+================================================================================
+FIN DEL PROMPT
+================================================================================
+
+
+================================================================================
+DETALLE DE CADA CAMBIO
+================================================================================
+
+
+--- 1. CONSISTENCIA ESTADO MATRICULADO (PÚBLICO vs PRIVADO) ---
+    Prioridad: ALTA
+
+  Problema:
+    El mismo matriculado (ej. MAT-001) aparece con estado distinto según el endpoint:
+    - GET /api/private/matriculados/estado [logueado como MAT-001] → habilitado: true, estadoFianza: ACTIVA
+    - GET /api/public/matriculados → en el ítem de MAT-001 viene habilitado: false
+
+  Pedido:
+    Unificar la fuente de verdad. El listado público debe devolver para cada
+    matriculado el mismo habilitado y estadoFianza que devolvería el endpoint
+    privado de estado para ese usuario.
+
+  Acción en backend:
+    - Revisar cómo se construye la respuesta de GET /api/public/matriculados
+      (MatriculadoPublicResponse o equivalente).
+    - Asegurar que habilitado y estadoFianza se lean del mismo registro/columnas
+      que usa GET /api/private/matriculados/estado (misma entidad Matriculado,
+      mismas columnas habilitado / estado_fianza).
+    - Corregir cualquier lógica, DTO o query que esté devolviendo habilitado: false
+      para matriculados que en el estado privado aparecen como habilitado: true.
+
+
+--- 2. GET /api/admin/matriculados (LISTADO PARA ADMIN) ---
+    Prioridad: MEDIA
+
+  Pedido:
+    Endpoint para que el admin vea todos los matriculados y su estado, sin
+    depender del listado público (que puede filtrar por “habilitados” u otro criterio).
+
+  Especificación:
+    - Método: GET
+    - Ruta: /api/admin/matriculados
+    - Auth: solo ADMIN (Bearer)
+    - Query opcionales (si quieren): ?apellido=... , ?habilitado=true|false
+    - Respuesta: array de objetos con al menos:
+        id, matricula, nombre, apellido, habilitado, estadoFianza
+      (puede ser el mismo DTO que el listado público, pero incluyendo a todos
+       los matriculados, no solo los que cumplan algún filtro de “público”.)
+
+  Frontend:
+    Ya llama a GET /api/admin/matriculados y muestra la tabla en /admin/matriculados.
+    Si el endpoint no existe (404), se muestra un aviso y se sugiere usar BD.
+
+
+--- 3. PUT /api/admin/matriculados/{id} (ACTUALIZAR HABILITADO) ---
+    Prioridad: MEDIA
+
+  Pedido:
+    Permitir al admin habilitar/deshabilitar un matriculado desde la app.
+
+  Especificación:
+    - Método: PUT
+    - Ruta: /api/admin/matriculados/{id}
+    - Auth: solo ADMIN (Bearer)
+    - Body JSON: { "habilitado": true | false }
+    - Respuesta: 200 OK con cuerpo opcional (ej. ApiResponse<MatriculadoResponse>)
+      o 204 No Content.
+
+  Alternativa aceptable:
+    PATCH /api/admin/matriculados/{id}/estado
+    Body: { "habilitado": true | false }
+    (Si usan esta variante, avisar para ajustar la ruta en el frontend.)
+
+  Frontend:
+    Ya llama a PUT /api/admin/matriculados/{id} con body { habilitado } desde
+    el botón Habilitar/Deshabilitar en /admin/matriculados.
+
+
+--- 4. POST /api/private/subastas (CREAR SUBASTA POR MATRICULADO) ---
+    Prioridad: MEDIA
+
+  Pedido:
+    Que un matriculado logueado pueda crear una subasta a su nombre (desde
+    /panel/subastas/nueva).
+
+  Especificación:
+    - Método: POST
+    - Ruta: /api/private/subastas
+    - Auth: Bearer (MATRICULADO o ADMIN)
+    - Body JSON: mismo SubastaRequest que usa el admin
+      (titulo, descripcion, precioInicial, martilleroACargo, nombreMartillero,
+       cuitMartillero, domicilio, fechaInicio, fechaFin)
+    - Lógica:
+      - Obtener matrícula del usuario desde el JWT.
+      - Crear la subasta asociada a ese matriculado (martilleroACargo = matrícula
+        del usuario; nombre y CUIT pueden venir del body o del usuario en BD).
+      - Validar que el matriculado solo cree subastas para sí mismo (o ignorar
+        martillero del body y usar siempre el del token).
+    - Respuesta: ApiResponse<SubastaResponse> con el id de la subasta creada.
+
+  Frontend:
+    Ya envía POST /api/private/subastas con SubastaRequest desde el formulario
+    de nueva subasta. Si el backend devuelve 403 o no existe el endpoint, se
+    muestra mensaje al usuario.
+
+
+--- 5. POST /api/private/subastas/{id}/imagenes (SUBIR IMÁGENES A SUBASTA DEL MATRICULADO) ---
+    Prioridad: MEDIA
+
+  Pedido:
+    Que el matriculado pueda subir imágenes a una subasta que él creó.
+
+  Especificación:
+    - Método: POST
+    - Ruta: /api/private/subastas/{id}/imagenes
+    - Auth: Bearer (MATRICULADO o ADMIN)
+    - Body: multipart/form-data
+      - file (obligatorio): archivo imagen (image/jpeg, image/png, image/webp, etc.)
+      - orden (opcional): número para orden (1, 2, 3...)
+    - Lógica:
+      - Cargar la subasta por id.
+      - Verificar que la subasta pertenezca al usuario logueado (ej. que
+        martilleroACargo coincida con la matrícula del JWT). Si no, devolver 403.
+      - Guardar archivo (StorageService), crear ImagenSubasta vinculada a la subasta.
+    - Respuesta: ApiResponse<FileUploadResponse> con { fileName, fileUrl }.
+
+  Frontend:
+    Después de crear la subasta, envía POST /api/private/subastas/{id}/imagenes
+    por cada imagen seleccionada. Si el backend devuelve 403 o no existe el
+    endpoint, se muestra mensaje al usuario.
+
+
+--- 6. (OPCIONAL) CÁLCULO DE puedeEjercer EN ESTADO PRIVADO ---
+    Prioridad: BAJA
+
+  Contexto:
+    En el frontend ya no usamos el campo puedeEjercer del backend para la
+    pantalla “Mi estado”; lo calculamos como: habilitado && estadoFianza === "ACTIVA".
+
+  Pedido:
+    Si el backend envía EstadoMatriculadoResponse con puedeEjercer, conviene
+    que se calcule igual: puedeEjercer = habilitado && estadoFianza === "ACTIVA".
+    Así cualquier otro cliente que use ese campo verá consistencia.
+
+
+--- 7. VERIFICACIÓN DE FIANZAS POR ADMIN (NUEVO) ---
+    Prioridad: ALTA
+
+  Contexto de negocio:
+    El matriculado sube la constancia de fianza (cada 5 años) por POST /api/private/fianzas.
+    El administrador debe poder ver las constancias pendientes de verificación,
+    revisar el archivo y:
+    - Si está todo bien: habilitar al matriculado (habilitado = true, estadoFianza = ACTIVA).
+    - Si no: enviar un correo al matriculado desde el mismo panel indicando qué
+      campos están mal o qué debe corregir, sin habilitarlo.
+
+  Pedido al backend:
+
+    A) GET /api/admin/fianzas/pendientes (o GET /api/admin/fianzas?estado=PENDIENTE)
+       - Auth: solo ADMIN (Bearer).
+       - Respuesta: array de objetos que incluyan al menos:
+           - Datos de la fianza: id, matriculadoId, constanciaUrl, fechaInicio,
+             fechaVencimiento, createdAt (y si existe estado de verificación, incluirlo).
+           - Datos del matriculado (para mostrar en la tabla y para enviar el correo):
+             matricula, nombre, apellido, email.
+       - Si no tienen “pendientes” como concepto, pueden devolver las últimas fianzas
+         subidas que aún no fueron aprobadas (o todas y el frontend filtra; indicar
+         el criterio en la respuesta).
+
+    B) POST /api/admin/fianzas/{id}/aprobar (o PUT /api/admin/fianzas/{id}/estado con body { aprobado: true })
+       - Auth: solo ADMIN.
+       - Lógica: marcar la fianza como aprobada/verificada y actualizar al
+         matriculado: habilitado = true, estadoFianza = ACTIVA (o el equivalente
+         en su modelo). Así el matriculado pasa a “habilitado para ejercer”.
+       - Respuesta: 200 OK (cuerpo opcional).
+
+    C) POST /api/admin/fianzas/{id}/notificar-rechazo (o nombre similar)
+       - Auth: solo ADMIN.
+       - Body JSON: { "mensaje": string } y opcionalmente { "camposIncorrectos": string }.
+       - Lógica: enviar un correo al email del matriculado asociado a esa fianza
+         con el contenido del mensaje (y campos incorrectos si se envían). No
+         modificar habilitado ni estadoFianza; el matriculado podrá corregir y
+         volver a subir la constancia si corresponde.
+       - Respuesta: 200 OK (cuerpo opcional).
+
+  Frontend:
+    Vista /admin/verificacion-fianzas que:
+    - Llama a GET /api/admin/fianzas/pendientes (o la ruta que indiquen).
+    - Muestra tabla: Matrícula, Nombre, Apellido, Fecha subida, Ver archivo,
+      Habilitar, Informar por correo.
+    - "Ver archivo": abre constanciaUrl en nueva pestaña (o usa la URL de
+      descarga que exponga el backend, ej. /api/dev/files/fianzas/... en local).
+    - "Habilitar": llama a POST .../aprobar.
+    - "Informar por correo": abre modal con textarea (mensaje) y opcionalmente
+      campo "Campos incorrectos"; al enviar llama a POST .../notificar-rechazo.
+    Si los endpoints no existen (404), se muestra un aviso indicando que el
+    backend debe exponer los endpoints de la sección 7.
+
+
+--- 8. EDICTO DE SUBASTA EN LA PÁGINA PÚBLICA ---
+    Prioridad: MEDIA
+
+  Contexto:
+    El edicto de subasta se publica obligatoriamente en el Boletín Oficial de
+    Mendoza. El Colegio quiere que en la página pública de cada subasta se vea
+    primero el TEXTO del edicto (igual o muy parecido al del Boletín), y recién
+    debajo las fotos y el resto del diseño de nuestra web.
+
+  Pedido al backend:
+
+    A) Campos nuevos en la entidad/DTO de Subasta (SubastaResponse)
+       - edictoTexto: string (largo). Contenido completo del edicto tal como se
+         publica en Boletín Oficial (o versión muy fiel).
+       - numeroEdicto (opcional): string. Referencia del edicto / Boletín
+         (ej. "Edicto N.º 12345 BO-2026-03-15").
+       - fechaPublicacionBoletin (opcional): string ISO (YYYY-MM-DD) con la
+         fecha de publicación en Boletín Oficial.
+       - urlBoletinOficial (opcional): string. URL pública al PDF/visor del
+         Boletín Oficial, si el Colegio la tiene.
+
+       Estos campos deben ir en:
+       - SubastaResponse que devuelve GET /api/public/subastas
+       - SubastaResponse que devuelve GET /api/private/subastas
+       - SubastaResponse que devuelve GET /api/admin/subastas/{id} (si existe)
+
+    B) Endpoints de creación/edición de subasta (admin)
+       - Al crear/editar una subasta por admin (POST/PUT /api/admin/subastas),
+         permitir enviar en el body (además de lo que ya existe):
+           edictoTexto?: string
+           numeroEdicto?: string
+           fechaPublicacionBoletin?: string
+           urlBoletinOficial?: string
+       - Todos son opcionales. El Colegio puede cargar el edicto después de que
+         Boletín Oficial lo apruebe/publica.
+
+  Frontend:
+    Página pública /subastas/[id]:
+    - Si edictoTexto existe, se mostrará ARRIBA DE TODO un bloque:
+        "Edicto de subasta publicado en el Boletín Oficial de Mendoza"
+        [texto completo de edictoTexto, en párrafo]
+        (opcional) Número y fecha de publicación
+        (opcional) Botón "Ver publicación en Boletín Oficial" usando urlBoletinOficial
+        (opcional) Botón "Descargar edicto (PDF)" usando edictoUrl si el backend ya lo expone.
+      Debajo de ese bloque, se mantendrán las fotos, descripción y diseño actual.
+    - Si edictoTexto viene vacío o null, la página funciona como ahora (solo ficha
+      de subasta), sin romper nada.
+
+    Panel admin /admin/subastas/{id}/editar (cuando se implemente en front):
+    - Tendrá un apartado "Edicto" con textarea para edictoTexto y campos para
+      número, fecha y URL del Boletín. El backend debe aceptar y guardar esos
+      campos según lo indicado arriba.
+
+
+--- 9. ACTUALIZAR PERFIL DEL MATRICULADO (PUT /api/auth/me) ---
+    Prioridad: MEDIA
+
+  Contexto:
+    En el panel del matriculado hay una sección "Mi perfil" donde puede ver y
+    editar sus datos (nombre, apellido, email, CUIT). La matrícula no se edita.
+    El frontend ya tiene el formulario y llama a PUT /api/auth/me con el body
+    indicado abajo. Hoy el backend solo tiene GET /api/auth/me, por eso devuelve
+    "Request method 'PUT' is not supported" (405).
+
+  Pedido al backend:
+
+    Implementar PUT /api/auth/me [Bearer] con:
+    - Auth: usuario logueado (matriculado o admin).
+    - Body JSON: { "nombre": string, "apellido": string, "email"?: string, "cuit"?: string }
+      nombre y apellido obligatorios; email y cuit opcionales.
+    - Lógica: actualizar en BD los datos del usuario (Matriculado) identificado
+      por el JWT. No permitir cambiar matrícula ni rol.
+    - Respuesta: 200 OK con ApiResponse<UserInfoResponse> (los datos actualizados,
+      como en GET /api/auth/me).
+
+  Frontend:
+    Ya implementado. Llama a PUT /auth/me con actualizarPerfil(body). Si el
+    backend devuelve 404 o 405, se muestra un aviso indicando que deben exponer
+    este endpoint.
+
+
+================================================================================
+RESUMEN PARA CONFIRMACIÓN
+================================================================================
+
+Cuando el backend implemente los cambios, indicar:
+
+  1. Consistencia público/privado: ¿corregido?
+
+  2. GET /api/admin/matriculados: ¿implementado? ¿Query opcionales?
+
+  3. PUT /api/admin/matriculados/{id}: ¿implementado? ¿Ruta/body exactos si difieren?
+
+  4. POST /api/private/subastas: ¿implementado? ¿Cambios en body o martillero?
+
+  5. POST /api/private/subastas/{id}/imagenes: ¿implementado? ¿Cambios en part o respuesta?
+
+  6. puedeEjercer: ¿ajustado a habilitado && estadoFianza === "ACTIVA"?
+
+  7. Verificación de fianzas:
+     - Ruta exacta del listado de pendientes y estructura de la respuesta.
+     - Ruta exacta para aprobar (habilitar) y método.
+     - Ruta exacta para notificar rechazo por correo y body (mensaje, camposIncorrectos).
+
+  8. Edicto de subasta:
+     - ¿Se agregaron edictoTexto, numeroEdicto, fechaPublicacionBoletin,
+       urlBoletinOficial a SubastaResponse?
+     - ¿Se aceptan esos campos en POST/PUT /api/admin/subastas?
+
+  9. PUT /api/auth/me (actualizar perfil):
+     - ¿Implementado? Body: { nombre, apellido, email?, cuit? }. Respuesta: UserInfoResponse.
+
+Con eso el frontend puede revisar rutas, DTOs y mensajes si hace falta.
+
+================================================================================
+FIN
+================================================================================

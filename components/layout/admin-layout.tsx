@@ -11,6 +11,7 @@ import {
   CreditCard,
   LogOut,
   ArrowLeft,
+  ShieldCheck,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,8 @@ const adminNav = [
   { name: "Panel", href: "/admin", icon: LayoutDashboard },
   { name: "Subastas", href: "/admin/subastas", icon: Gavel },
   { name: "Biblioteca", href: "/admin/biblioteca", icon: BookOpen },
+  { name: "Verificación de fianzas", href: "/admin/verificacion-fianzas", icon: ShieldCheck },
+  { name: "Matriculados", href: "/admin/matriculados", icon: Users },
   { name: "Nuevo matriculado", href: "/admin/matriculados/nuevo", icon: Users },
   { name: "Contenidos", href: "/admin/contenidos", icon: FileText },
   { name: "Cuotas", href: "/admin/cuotas", icon: CreditCard },
@@ -48,7 +51,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 p-4 space-y-1">
           {adminNav.map((item) => {
             const Icon = item.icon
-            const active = pathname === item.href || pathname.startsWith(item.href + "/")
+            const active =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname === item.href || pathname.startsWith(item.href + "/")
             return (
               <Link
                 key={item.href}

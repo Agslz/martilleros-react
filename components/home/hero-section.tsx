@@ -22,7 +22,7 @@ export function HeroSection() {
 
           {/* Title */}
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight text-balance">
-            Colegio de Martilleros y Corredores Públicos
+            Colegio de Martilleros Públicos y Corredores de Comercio de Mendoza
           </h1>
 
           {/* Subtitle */}

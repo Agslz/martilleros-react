@@ -1,6 +1,7 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
+import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -63,20 +64,22 @@ export function MatriculadosList({
               </TableCell>
               <TableCell>{matriculado.nombre}</TableCell>
               <TableCell className="text-center">
-                <Badge
-                  variant={
-                    habilitadoParaEjercer(matriculado) ? "default" : "secondary"
-                  }
-                  className={
-                    habilitadoParaEjercer(matriculado)
-                      ? "bg-green-100 text-green-800 hover:bg-green-100"
-                      : "bg-amber-100 text-amber-800 hover:bg-amber-100"
-                  }
-                >
-                  {habilitadoParaEjercer(matriculado)
-                    ? "Habilitado"
-                    : matriculado.estadoFianza}
-                </Badge>
+                {habilitadoParaEjercer(matriculado) ? (
+                  <div className="inline-flex items-center gap-1 rounded-full bg-green-50 text-green-800 px-3 py-1 text-xs font-medium">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>Habilitado</span>
+                  </div>
+                ) : !matriculado.habilitado ? (
+                  <div className="inline-flex items-center gap-1 rounded-full bg-red-50 text-red-700 px-3 py-1 text-xs font-medium">
+                    <XCircle className="h-3 w-3" />
+                    <span>No habilitado</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 px-3 py-1 text-xs font-medium">
+                    <AlertTriangle className="h-3 w-3" />
+                    <span>Fianza: {matriculado.estadoFianza}</span>
+                  </div>
+                )}
               </TableCell>
             </TableRow>
           ))}

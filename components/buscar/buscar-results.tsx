@@ -3,6 +3,7 @@
 import {
   CheckCircle2,
   XCircle,
+  AlertTriangle,
   User,
   Mail,
   Loader2,
@@ -41,7 +42,7 @@ export function BuscarResults({
       <div className="mt-8">
         <div className="bg-card rounded-xl border border-border p-8 text-center">
           <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-muted mb-4">
-            <XCircle className="h-8 w-8 text-muted-foreground" />
+            <AlertTriangle className="h-8 w-8 text-muted-foreground" />
           </div>
           <h3 className="text-lg font-semibold text-foreground">
             No se encontraron resultados
@@ -67,7 +68,7 @@ export function BuscarResults({
               className={`px-6 py-4 flex items-center gap-3 ${
                 habilitado
                   ? "bg-green-50 border-b border-green-100"
-                  : "bg-amber-50 border-b border-amber-100"
+                  : "bg-red-50 border-b border-red-100"
               }`}
             >
               {habilitado ? (
@@ -84,12 +85,12 @@ export function BuscarResults({
                 </>
               ) : (
                 <>
-                  <XCircle className="h-6 w-6 text-amber-600" />
+                  <XCircle className="h-6 w-6 text-red-600" />
                   <div>
-                    <p className="font-semibold text-amber-800">
+                    <p className="font-semibold text-red-800">
                       No habilitado para ejercer
                     </p>
-                    <p className="text-sm text-amber-600">
+                    <p className="text-sm text-red-600">
                       {!matriculado.habilitado
                         ? "Matriculado no habilitado"
                         : `Fianza: ${matriculado.estadoFianza}`}

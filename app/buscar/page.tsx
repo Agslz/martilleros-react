@@ -8,6 +8,12 @@ import { BuscarResults } from "@/components/buscar/buscar-results"
 import { getMatriculadosPublicos } from "@/lib/api"
 import type { MatriculadoPublicResponse } from "@/lib/api"
 
+function excluirAdmin(matriculados: MatriculadoPublicResponse[]) {
+  return matriculados.filter(
+    (m) => !m.matricula.toUpperCase().startsWith("ADMIN")
+  )
+}
+
 export default function BuscarPage() {
   const [results, setResults] = useState<MatriculadoPublicResponse[] | null>(null)
   const [loading, setLoading] = useState(false)
@@ -19,6 +25,7 @@ export default function BuscarPage() {
     setResults(null)
     try {
       let list = await getMatriculadosPublicos(apellido || undefined)
+      list = excluirAdmin(list)
       if (matricula.trim()) {
         const mat = matricula.trim().toUpperCase()
         list = list.filter(

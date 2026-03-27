@@ -13,8 +13,8 @@ import {
 
 const navigation = [
   { name: "Inicio", href: "/" },
-  { name: "Matriculados", href: "/matriculados" },
-  { name: "Buscar Martillero", href: "/buscar" },
+  { name: "Asociados", href: "/matriculados" },
+  { name: "Padrón de asociados", href: "/buscar" },
   { name: "Subastas", href: "/subastas" },
   { name: "Contacto", href: "/contacto" },
   { name: "Direcciones", href: "/direcciones" },

@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import type { SubastaResponse } from "@/lib/api"
-import { getSubastasPublicas } from "@/lib/api"
+import type { SubastaResponse, MatriculadoPublicResponse } from "@/lib/api"
+import { getSubastasPublicas, getMatriculadosPublicos } from "@/lib/api"
 import { SubastasFilter } from "./subastas-filter"
 import { SubastasList } from "./subastas-list"
 
@@ -13,12 +13,39 @@ export function SubastasContent() {
 
   useEffect(() => {
     let cancelled = false
-    getSubastasPublicas().then((data) => {
-      if (!cancelled) {
-        setSubastas(data)
-        setLoading(false)
+
+    async function load() {
+      try {
+        const [subastasApi, padron] = await Promise.all([
+          getSubastasPublicas(),
+          getMatriculadosPublicos(),
+        ])
+
+        if (cancelled) return
+
+        const estadoMap = new Map<string, MatriculadoPublicResponse>()
+        padron.forEach((m) =>
+          estadoMap.set(m.matricula.toUpperCase(), m)
+        )
+
+        const filtradas = subastasApi.filter((s) => {
+          const m = estadoMap.get(s.martilleroACargo.toUpperCase())
+          if (!m) return true // si no lo encontramos, no filtramos
+          const habilitado = m.habilitado && m.estadoFianza === "ACTIVA"
+          // Solo mostramos subastas de martilleros habilitados
+          return habilitado
+        })
+
+        setSubastas(filtradas)
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
-    })
+    }
+
+    load()
+
     return () => {
       cancelled = true
     }

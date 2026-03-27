@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { login, saveToken, API_BASE_URL } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export function LoginForm() {
+  const { toast } = useToast()
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -32,7 +34,7 @@ export function LoginForm() {
       if (res.success && res.data) {
         saveToken(res.data.token)
         if (res.data.primeraVezLogin) {
-          router.push("/?completarPerfil=1")
+          router.push("/completar-perfil")
         } else if (res.data.role === "ADMIN") {
           router.push("/admin")
         } else {
@@ -40,7 +42,13 @@ export function LoginForm() {
         }
         return
       }
-      setError(res.message ?? "Error al iniciar sesión")
+      const msg = res.message ?? "Credenciales incorrectas"
+      setError(msg)
+      toast({
+        title: "Error",
+        description: msg,
+        variant: "destructive",
+      })
     } catch (err: unknown) {
       const errObj = err as Error & { data?: { message?: string }; status?: number }
       const apiMessage = errObj?.data?.message
@@ -49,8 +57,13 @@ export function LoginForm() {
         networkMessage?.includes("Failed to fetch") ||
         networkMessage?.includes("NetworkError") ||
         networkMessage?.includes("CORS")
-      const message = apiMessage ?? (isCorsOrNetwork ? networkMessage : "Error al conectar con el servidor.")
+      const message = apiMessage ?? (isCorsOrNetwork ? "Error al conectar. Verifique que el backend esté en marcha." : "Error al conectar con el servidor.")
       setError(message)
+      toast({
+        title: "Error",
+        description: isCorsOrNetwork ? "Error al conectar. Verifique que el backend esté en marcha." : message,
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -131,7 +144,7 @@ export function LoginForm() {
               </Label>
             </div>
             <Link
-              href="#"
+              href="/olvide-contrasena"
               className="text-sm text-primary hover:underline"
             >
               Olvidé mi contraseña

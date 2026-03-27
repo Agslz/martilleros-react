@@ -8,6 +8,13 @@ import { MatriculadosList } from "@/components/matriculados/matriculados-list"
 import { getMatriculadosPublicos } from "@/lib/api"
 import type { MatriculadoPublicResponse } from "@/lib/api"
 
+/** Excluir del listado público al usuario administrador (ej. matrícula ADMIN001). */
+function excluirAdmin(matriculados: MatriculadoPublicResponse[]) {
+  return matriculados.filter(
+    (m) => !m.matricula.toUpperCase().startsWith("ADMIN")
+  )
+}
+
 export default function MatriculadosPage() {
   const [list, setList] = useState<MatriculadoPublicResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -17,7 +24,7 @@ export default function MatriculadosPage() {
   const load = (apellido?: string) => {
     setLoading(true)
     getMatriculadosPublicos(apellido?.trim() || undefined)
-      .then(setList)
+      .then((data) => setList(excluirAdmin(data)))
       .finally(() => setLoading(false))
   }
 

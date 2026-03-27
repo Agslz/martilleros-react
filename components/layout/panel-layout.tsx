@@ -2,16 +2,26 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { User, Shield, CreditCard, Wallet, LogOut, ArrowLeft } from "lucide-react"
+import {
+  User,
+  Shield,
+  CreditCard,
+  LogOut,
+  ArrowLeft,
+  BookOpen,
+  Gavel,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { removeToken } from "@/lib/api"
 
 const panelNav = [
   { name: "Mi estado", href: "/panel", icon: User },
+  { name: "Subastas", href: "/panel/subastas", icon: Gavel },
   { name: "Fianzas", href: "/panel/fianzas", icon: Shield },
-  { name: "Pagos", href: "/panel/pagos", icon: Wallet },
   { name: "Cuotas", href: "/panel/cuotas", icon: CreditCard },
+  { name: "Biblioteca", href: "/panel/biblioteca", icon: BookOpen },
+  { name: "Mi perfil", href: "/panel/perfil", icon: User },
 ]
 
 export function PanelLayout({ children }: { children: React.ReactNode }) {
@@ -23,8 +33,8 @@ export function PanelLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
+    <div className="h-screen flex overflow-hidden">
+      <aside className="fixed inset-y-0 left-0 z-10 w-64 border-r border-border bg-card flex flex-col shrink-0">
         <div className="p-4 border-b border-border">
           <Link
             href="/"
@@ -37,7 +47,9 @@ export function PanelLayout({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 p-4 space-y-1">
           {panelNav.map((item) => {
             const Icon = item.icon
-            const active = pathname === item.href
+            const active =
+              pathname === item.href ||
+              (item.href !== "/panel" && pathname.startsWith(item.href + "/"))
             return (
               <Link
                 key={item.href}
@@ -62,7 +74,7 @@ export function PanelLayout({ children }: { children: React.ReactNode }) {
           </Button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto bg-background">
+      <main className="flex-1 min-w-0 pl-64 h-screen overflow-auto bg-background">
         <div className="p-6 lg:p-8">{children}</div>
       </main>
     </div>

@@ -3,8 +3,8 @@ import { Gavel, MapPin, Phone, Mail, Clock } from "lucide-react"
 
 const quickLinks = [
   { name: "Inicio", href: "/" },
-  { name: "Matriculados", href: "/matriculados" },
-  { name: "Buscar Martillero", href: "/buscar" },
+  { name: "Asociados", href: "/matriculados" },
+  { name: "Padrón de asociados", href: "/buscar" },
   { name: "Subastas", href: "/subastas" },
 ]
 
