@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { login, saveToken, API_BASE_URL } from "@/lib/api"
+import { login, saveToken } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 
 export function LoginForm() {
@@ -168,13 +168,6 @@ export function LoginForm() {
             <Link href="/contacto" className="text-primary hover:underline">
               Contáctenos
             </Link>
-          </p>
-          <p className="text-xs text-muted-foreground/80 font-mono break-all">
-            API: {API_BASE_URL.replace("/api", "")}
-          </p>
-          <p className="text-xs text-muted-foreground/80">
-            Si falla la conexión, en el backend configurá CORS para permitir{" "}
-            <code className="bg-muted px-1 rounded">http://localhost:3000</code>
           </p>
         </div>
       </div>
