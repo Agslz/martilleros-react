@@ -114,7 +114,7 @@ export default function PanelSubastasPage() {
                   <td className="p-4 text-right">
                     <Button size="sm" variant="outline" asChild>
                       <Link
-                        href={`/subastas/${s.id}`}
+                        href={`/edictos/${s.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >

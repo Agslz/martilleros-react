@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   getSubastasPrivadas,
@@ -65,11 +66,11 @@ export default function AdminSubastasPage() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Subastas</h1>
+        <h1 className="text-2xl font-bold text-foreground">Subastas / Edictos</h1>
         <Button asChild>
           <Link href="/admin/subastas/nueva">
             <Plus className="h-4 w-4 mr-2" />
-            Nueva subasta
+            Publicación externa
           </Link>
         </Button>
       </div>
@@ -86,6 +87,7 @@ export default function AdminSubastasPage() {
             <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-4 font-semibold">Título</th>
+                <th className="text-left p-4 font-semibold">Origen</th>
                 <th className="text-left p-4 font-semibold">Fechas</th>
                 <th className="text-left p-4 font-semibold">Precio inicial</th>
                 <th className="text-right p-4 font-semibold">Acciones</th>
@@ -96,11 +98,18 @@ export default function AdminSubastasPage() {
                 <tr key={s.id} className="border-t border-border hover:bg-muted/30">
                   <td className="p-4">
                     <Link
-                      href={`/subastas/${s.id}`}
+                      href={`/edictos/${s.id}`}
                       className="font-medium text-primary hover:underline"
                     >
                       {s.titulo}
                     </Link>
+                  </td>
+                  <td className="p-4">
+                    {s.esPublicacionExterna ? (
+                      <Badge variant="secondary">Externa</Badge>
+                    ) : (
+                      <Badge variant="outline">Matriculado</Badge>
+                    )}
                   </td>
                   <td className="p-4 text-muted-foreground text-sm">
                     {formatFecha(s.fechaInicio)} – {formatFecha(s.fechaFin)}
@@ -114,12 +123,24 @@ export default function AdminSubastasPage() {
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/admin/subastas/${s.id}/editar`}>
+                      {s.esPublicacionExterna ? (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/admin/subastas/${s.id}/editar`}>
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Editar
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          title="Solo se editan publicaciones externas"
+                        >
                           <Pencil className="h-4 w-4 mr-1" />
                           Editar
-                        </Link>
-                      </Button>
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"

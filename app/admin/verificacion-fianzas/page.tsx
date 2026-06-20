@@ -15,8 +15,8 @@ import {
   getFianzasPendientesAdmin,
   aprobarFianzaAdmin,
   notificarRechazoFianzaAdmin,
-  API_BASE_URL,
 } from "@/lib/api"
+import { resolveStorageFileUrl } from "@/lib/storage-url"
 import type { FianzaPendienteAdminResponse } from "@/lib/api"
 import { useToast } from "@/components/ui/use-toast"
 import {
@@ -35,12 +35,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-
-function buildConstanciaUrl(constanciaUrl: string): string {
-  if (constanciaUrl.startsWith("http")) return constanciaUrl
-  const base = API_BASE_URL.replace(/\/api\/?$/, "")
-  return `${base}/api/dev/files/${constanciaUrl.replace(/^\//, "")}`
-}
 
 export default function AdminVerificacionFianzasPage() {
   const [list, setList] = useState<FianzaPendienteAdminResponse[]>([])
@@ -92,7 +86,7 @@ export default function AdminVerificacionFianzasPage() {
       toast({
         title: "Error",
         description: es404
-          ? "El backend aún no expone POST /api/admin/fianzas/{id}/aprobar. Ver TODO_BACKEND_CAMBIOS_SOLICITADOS.txt."
+          ? "El backend aún no expone POST /api/admin/fianzas/{id}/aprobar."
           : msg,
         variant: "destructive",
       })
@@ -127,7 +121,7 @@ export default function AdminVerificacionFianzasPage() {
       toast({
         title: "Error",
         description: es404
-          ? "El backend aún no expone POST /api/admin/fianzas/{id}/notificar-rechazo. Ver TODO_BACKEND_CAMBIOS_SOLICITADOS.txt."
+          ? "El backend aún no expone POST /api/admin/fianzas/{id}/notificar-rechazo."
           : msg,
         variant: "destructive",
       })
@@ -151,7 +145,7 @@ export default function AdminVerificacionFianzasPage() {
           <p className="text-sm text-amber-800 dark:text-amber-200">
             El backend aún no expone los endpoints de verificación de fianzas (GET
             /api/admin/fianzas/pendientes, POST .../aprobar, POST .../notificar-rechazo).
-            Ver <strong>TODO_BACKEND_CAMBIOS_SOLICITADOS.txt</strong> sección 7.
+            Ver <strong>FRONTEND_API_DOCUMENTACION.md</strong> en cm-backend (fianzas admin).
           </p>
         </div>
       )}
@@ -178,7 +172,9 @@ export default function AdminVerificacionFianzasPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {list.map((item) => (
+              {list.map((item) => {
+                const constanciaHref = resolveStorageFileUrl(item.constanciaUrl)
+                return (
                 <TableRow key={item.id} className="hover:bg-muted/30">
                   <TableCell className="font-medium">{item.matricula}</TableCell>
                   <TableCell>{item.apellido}</TableCell>
@@ -191,20 +187,28 @@ export default function AdminVerificacionFianzasPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                      >
-                        <a
-                          href={buildConstanciaUrl(item.constanciaUrl)}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {constanciaHref ? (
+                        <Button variant="outline" size="sm" asChild>
+                          <a
+                            href={constanciaHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-1" />
+                            Ver archivo
+                          </a>
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          title="El enlace al PDF no está disponible. En producción el backend debe devolver una URL pública (S3)."
                         >
                           <ExternalLink className="h-4 w-4 mr-1" />
-                          Ver archivo
-                        </a>
-                      </Button>
+                          Sin enlace
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         className="bg-green-600 hover:bg-green-700"
@@ -231,7 +235,7 @@ export default function AdminVerificacionFianzasPage() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              )})}
             </TableBody>
           </Table>
         </div>

@@ -2,22 +2,14 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { Menu, X, Gavel, ChevronDown } from "lucide-react"
+import { Menu, X, Gavel } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 const navigation = [
   { name: "Inicio", href: "/" },
-  { name: "Asociados", href: "/matriculados" },
   { name: "Padrón de asociados", href: "/buscar" },
-  { name: "Subastas", href: "/subastas" },
+  { name: "Edictos", href: "/edictos" },
   { name: "Contacto", href: "/contacto" },
-  { name: "Direcciones", href: "/direcciones" },
 ]
 
 export function Header() {

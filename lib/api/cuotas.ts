@@ -16,47 +16,6 @@ export async function getCuotas(): Promise<CuotaItemResponse[]> {
   }
 }
 
-export interface InitPointResponse {
-  initPoint?: string
-  [key: string]: unknown
-}
-
-export async function pagarCupon(
-  periodo: string // YYYY-MM
-): Promise<InitPointResponse | null> {
-  try {
-    const res = await apiRequest<InitPointResponse>(
-      `/private/cuotas/${periodo}/pagar-cupon`,
-      { method: "POST" }
-    )
-    if (res.success && res.data) return res.data
-    return null
-  } catch (e) {
-    console.error("Error al solicitar cupón:", e)
-    throw e
-  }
-}
-
-export async function crearSuscripcionCuota(body?: {
-  monto?: number
-  descripcion?: string
-}): Promise<InitPointResponse | null> {
-  try {
-    const res = await apiRequest<InitPointResponse>(
-      "/private/cuotas/suscripcion",
-      {
-        method: "POST",
-        body: JSON.stringify(body ?? {}),
-      }
-    )
-    if (res.success && res.data) return res.data
-    return null
-  } catch (e) {
-    console.error("Error al crear suscripción:", e)
-    throw e
-  }
-}
-
 // --- Admin ---
 export async function crearPeriodoCuota(
   body: CuotaPeriodoRequest

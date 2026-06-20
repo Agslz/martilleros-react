@@ -1,9 +1,12 @@
+import type { Metadata } from "next"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { OlvideContrasenaForm } from "@/components/auth/olvide-contrasena-form"
 
-export const metadata = {
-  title: "Olvidé mi contraseña | Colegio de Martilleros de Mendoza",
-  description: "Solicite una contraseña temporal por email para acceder al área de matriculados.",
+export const metadata: Metadata = {
+  title: "Olvidé mi contraseña",
+  description:
+    "Solicite una contraseña temporal por email para acceder al área de matriculados.",
+  robots: { index: false, follow: false },
 }
 
 export default function OlvideContrasenaPage() {

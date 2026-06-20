@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { removeToken } from "@/lib/api"
+import { endClientSession } from "@/lib/auth-session"
 
 const panelNav = [
   { name: "Mi estado", href: "/panel", icon: User },
@@ -27,22 +27,28 @@ const panelNav = [
 export function PanelLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
-  const handleLogout = () => {
-    removeToken()
+  const handleLogout = async () => {
+    await endClientSession()
     window.location.href = "/login"
+  }
+
+  const handleBackToSite = async () => {
+    await endClientSession()
+    window.location.href = "/"
   }
 
   return (
     <div className="h-screen flex overflow-hidden">
       <aside className="fixed inset-y-0 left-0 z-10 w-64 border-r border-border bg-card flex flex-col shrink-0">
         <div className="p-4 border-b border-border">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          <button
+            type="button"
+            onClick={() => void handleBackToSite()}
+            className="flex w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al sitio
-          </Link>
+          </button>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {panelNav.map((item) => {

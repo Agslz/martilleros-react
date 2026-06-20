@@ -1,12 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CreditCard, Loader2, ExternalLink } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { MercadoPagoLogo } from "@/components/ui/mercado-pago-logo"
-import { getCuotas, pagarCupon, crearSuscripcionCuota, type CuotaItemResponse } from "@/lib/api"
-import { useToast } from "@/hooks/use-toast"
+import { CreditCard, Loader2, Info } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getCuotas, type CuotaItemResponse } from "@/lib/api"
 
 function formatFecha(s: string) {
   try {
@@ -20,138 +17,57 @@ function formatFecha(s: string) {
   }
 }
 
+function labelMetodoPago(metodo?: string) {
+  if (!metodo) return null
+  const map: Record<string, string> = {
+    SUSCRIPCION: "Débito automático",
+    CUPON_EFECTIVO: "Cupón en efectivo",
+    PAGOS360: "Pagos360",
+    MANUAL: "Registrado por el Colegio",
+  }
+  return map[metodo] ?? metodo
+}
+
 export default function PanelCuotasPage() {
-  const { toast } = useToast()
   const [list, setList] = useState<CuotaItemResponse[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [actionPeriodo, setActionPeriodo] = useState<string | null>(null)
 
-  const load = () => {
-    setLoading(true)
+  useEffect(() => {
     getCuotas()
       .then(setList)
       .finally(() => setLoading(false))
-  }
-
-  useEffect(() => {
-    load()
   }, [])
-
-  const handlePagarCupon = async (periodo: string) => {
-    setError(null)
-    setActionPeriodo(periodo)
-    try {
-      const res = await pagarCupon(periodo)
-      if (res?.initPoint) {
-        toast({
-          title: "Redirigiendo",
-          description: "Redirigiendo a Mercado Pago para completar el pago.",
-        })
-        window.location.href = res.initPoint
-        return
-      }
-      setError("No se obtuvo el link de pago.")
-      toast({
-        title: "Error",
-        description: "No se pudo procesar. Intente de nuevo.",
-        variant: "destructive",
-      })
-    } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "data" in err
-          ? (err as { data?: { message?: string } }).data?.message
-          : null
-      setError(msg ?? "Error al solicitar cupón.")
-      toast({
-        title: "Error",
-        description: "No se pudo procesar. Intente de nuevo.",
-        variant: "destructive",
-      })
-    } finally {
-      setActionPeriodo(null)
-    }
-  }
-
-  const handleSuscripcion = async () => {
-    setError(null)
-    setActionPeriodo("suscripcion")
-    try {
-      const res = await crearSuscripcionCuota()
-      if (res?.initPoint) {
-        toast({
-          title: "Suscripción",
-          description: "Suscripción a débito automático solicitada.",
-        })
-        window.location.href = res.initPoint
-        return
-      }
-      setError("No se obtuvo el link de suscripción.")
-      toast({
-        title: "Error",
-        description: "No se pudo procesar. Intente de nuevo.",
-        variant: "destructive",
-      })
-    } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "data" in err
-          ? (err as { data?: { message?: string } }).data?.message
-          : null
-      setError(msg ?? "Error al crear suscripción.")
-      toast({
-        title: "Error",
-        description: "No se pudo procesar. Intente de nuevo.",
-        variant: "destructive",
-      })
-    } finally {
-      setActionPeriodo(null)
-    }
-  }
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-foreground mb-2">Mis cuotas</h1>
       <p className="text-muted-foreground mb-6">
-        El pago de la cuota al Colegio se realiza con Mercado Pago. Podés adherirte al débito automático o generar un cupón de pago.
+        Consultá el estado de tus cuotas al Colegio. El pago en línea se habilitará
+        próximamente.
       </p>
 
-      {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
-        </div>
-      )}
-
-      <Card className="mb-8 border-primary/20 bg-primary/5">
+      <Card className="mb-8 border-amber-500/30 bg-amber-500/5">
         <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <MercadoPagoLogo height={28} className="shrink-0" />
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                Pagar con Mercado Pago
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Dos opciones: débito automático o cupón de pago (PagoFácil / Rapipago).
+              <CardTitle className="text-lg font-semibold text-foreground">
+                Pago en línea — próximamente
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                El cobro digital de cuotas con Mercado Pago ya no está disponible.
+                Estamos integrando <strong>Pagos360</strong> para débito y cupones.
+                Mientras tanto, coordiná el pago con la administración del Colegio si
+                tenés una cuota pendiente.
               </p>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-4">
-          <Button
-            variant="default"
-            onClick={handleSuscripcion}
-            disabled={actionPeriodo !== null}
-          >
-            {actionPeriodo === "suscripcion" ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <CreditCard className="h-4 w-4 mr-2" />
-            )}
-            Adherirse al débito automático (Mercado Pago)
-          </Button>
-          <span className="text-sm text-muted-foreground self-center">o</span>
-          <p className="text-sm text-muted-foreground self-center w-full sm:w-auto">
-            Generar cupón de pago (Mercado Pago) por período en la tabla debajo.
-          </p>
+        <CardContent>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <CreditCard className="h-4 w-4 shrink-0" />
+            <span>No hay acciones de pago disponibles en esta pantalla por ahora.</span>
+          </div>
         </CardContent>
       </Card>
 
@@ -165,7 +81,8 @@ export default function PanelCuotasPage() {
         <div className="rounded-xl border border-border p-6 text-muted-foreground space-y-2">
           <p>No hay períodos de cuota cargados.</p>
           <p className="text-sm">
-            El botón <strong>Generar cupón</strong> aparece en la tabla cuando existan períodos (ej. 2025-01, 2025-02) creados por el Colegio desde el panel de administración. Mientras no haya períodos, solo podés usar <strong>Adherirse al débito automático</strong> si está disponible.
+            Cuando el Colegio publique períodos desde el panel de administración,
+            aparecerán aquí con su monto, vencimiento y estado.
           </p>
         </div>
       ) : (
@@ -177,7 +94,7 @@ export default function PanelCuotasPage() {
                 <th className="text-left p-4 font-semibold">Monto</th>
                 <th className="text-left p-4 font-semibold">Vencimiento</th>
                 <th className="text-left p-4 font-semibold">Estado</th>
-                <th className="text-right p-4 font-semibold">Acción</th>
+                <th className="text-left p-4 font-semibold">Forma de pago</th>
               </tr>
             </thead>
             <tbody>
@@ -207,24 +124,12 @@ export default function PanelCuotasPage() {
                       {c.estado}
                     </span>
                   </td>
-                  <td className="p-4 text-right">
-                    {c.estado === "PENDIENTE" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handlePagarCupon(c.periodo)}
-                        disabled={actionPeriodo !== null}
-                        title="Generar cupón de pago con Mercado Pago"
-                      >
-                        {actionPeriodo === c.periodo ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            Generar cupón
-                          </>
-                        )}
-                      </Button>
+                  <td className="p-4 text-sm text-muted-foreground">
+                    {labelMetodoPago(c.metodoPago) ?? "—"}
+                    {c.paidAt && (
+                      <span className="block text-xs">
+                        Pagado: {formatFecha(c.paidAt.slice(0, 10))}
+                      </span>
                     )}
                   </td>
                 </tr>

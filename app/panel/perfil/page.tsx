@@ -6,7 +6,12 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getCurrentUser, cambiarContrasena, actualizarPerfil } from "@/lib/api"
+import {
+  AUTH_PASSWORD_MIN_LENGTH,
+  getCurrentUser,
+  cambiarContrasena,
+  actualizarPerfil,
+} from "@/lib/api"
 import type { UserInfoResponse } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 
@@ -113,12 +118,19 @@ export default function PanelPerfilPage() {
       })
       return
     }
+    if (form.passwordNueva.length < AUTH_PASSWORD_MIN_LENGTH) {
+      toast({
+        title: "Error",
+        description: `La contraseña nueva debe tener al menos ${AUTH_PASSWORD_MIN_LENGTH} caracteres.`,
+        variant: "destructive",
+      })
+      return
+    }
     setLoading(true)
     try {
       const res = await cambiarContrasena({
-        passwordActual: form.passwordActual,
-        passwordNueva: form.passwordNueva,
-        passwordNuevaConfirm: form.passwordNuevaConfirm,
+        contrasenaActual: form.passwordActual,
+        nuevaContrasena: form.passwordNueva,
       })
       if (res.success) {
         toast({
@@ -314,11 +326,15 @@ export default function PanelPerfilPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="passwordNueva">Contraseña nueva</Label>
+              <p className="text-xs text-muted-foreground">
+                Mínimo {AUTH_PASSWORD_MIN_LENGTH} caracteres.
+              </p>
               <div className="relative">
                 <Input
                   id="passwordNueva"
                   type={showNueva ? "text" : "password"}
                   required
+                  minLength={AUTH_PASSWORD_MIN_LENGTH}
                   className="pr-10"
                   value={form.passwordNueva}
                   onChange={(e) =>
@@ -344,6 +360,7 @@ export default function PanelPerfilPage() {
                 id="passwordNuevaConfirm"
                 type="password"
                 required
+                minLength={AUTH_PASSWORD_MIN_LENGTH}
                 value={form.passwordNuevaConfirm}
                 onChange={(e) =>
                   setForm({ ...form, passwordNuevaConfirm: e.target.value })

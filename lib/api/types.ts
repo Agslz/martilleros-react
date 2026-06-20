@@ -15,14 +15,26 @@ export interface LoginRequest {
   password: string
 }
 
+export interface AdminLoginRequest extends LoginRequest {
+  force?: boolean
+}
+
+export interface AdminSessionInfo {
+  ocupado: boolean
+  inactivityTimeoutMinutes: number
+}
+
 export interface LoginResponse {
   token: string
   matricula: string
   nombre: string
   apellido: string
-  email?: string
+  email?: string | null
+  fotoCarnetUrl?: string | null
   role: "ADMIN" | "MATRICULADO"
   primeraVezLogin: boolean
+  adminInactivityTimeoutMinutes?: number
+  adminSessionExpiresAt?: string
 }
 
 export type UserInfoResponse = Omit<LoginResponse, "token"> & { cuit?: string }
@@ -40,18 +52,21 @@ export interface OlvideContrasenaRequest {
   matricula: string
 }
 
-/** POST /auth/completar-perfil (Bearer) */
+/** Longitud mínima de contraseña (backend @Size(min = 8)). */
+export const AUTH_PASSWORD_MIN_LENGTH = 8
+
+/** POST /auth/completar-perfil (Bearer) — primer login */
 export interface CompletarPerfilRequest {
   email: string
-  password: string
+  contrasenaActual: string
+  nuevaContrasena: string
   cuit?: string
 }
 
 /** POST /auth/cambiar-contrasena (Bearer) */
 export interface CambiarContrasenaRequest {
-  passwordActual: string
-  passwordNueva: string
-  passwordNuevaConfirmacion: string
+  contrasenaActual: string
+  nuevaContrasena: string
 }
 
 // --- Subastas ---
@@ -73,19 +88,19 @@ export interface SubastaResponse {
   domicilio: string
   fechaInicio: string
   fechaFin: string
-  edictoUrl?: string
-  fechaPublicacion?: string
+  edictoUrl: string
+  fechaPublicacion: string
   visiblePublico: boolean
   createdAt: string
   imagenes: ImagenSubastaResponse[]
-  edictoTexto?: string | null
-  numeroEdicto?: string | null
-  fechaPublicacionBoletin?: string | null
-  urlBoletinOficial?: string | null
+  edictoTexto?: string
+  numeroEdicto?: string
+  fechaPublicacionBoletin?: string
+  esPublicacionExterna: boolean
 }
 
 // --- Contenidos ---
-export type ContenidoKey = "HOME" | "CONTACTO" | "DIRECCIONES" | "TEXTOS"
+export type ContenidoKey = "HOME" | "CONTACTO" | "TEXTOS"
 
 export interface ContenidoResponse {
   key: string
@@ -94,7 +109,13 @@ export interface ContenidoResponse {
   updatedAt: string
 }
 
-// --- Matriculados (público) ---
+// --- Matriculados (público / privado) ---
+export type EstadoFianza =
+  | "ACTIVA"
+  | "VENCIDA"
+  | "PENDIENTE"
+  | "NO_REQUERIDA"
+
 export interface MatriculadoPublicResponse {
   id: number
   nombre: string
@@ -102,12 +123,13 @@ export interface MatriculadoPublicResponse {
   matricula: string
   email?: string
   cuit?: string
+  fotoCarnetUrl?: string
   habilitado: boolean
-  estadoFianza: "ACTIVA" | "VENCIDA" | "PENDIENTE"
+  estadoFianza: EstadoFianza
 }
 
-// --- Subastas (admin) ---
-export interface SubastaRequest {
+// --- Subastas: publicación externa (admin, terceros no matriculados) ---
+export interface CrearSubastaExternaRequest {
   titulo: string
   descripcion: string
   precioInicial: number
@@ -115,12 +137,26 @@ export interface SubastaRequest {
   nombreMartillero: string
   cuitMartillero: string
   domicilio: string
-  fechaInicio: string // YYYY-MM-DD
-  fechaFin: string // YYYY-MM-DD
+  fechaInicio: string
+  fechaFin: string
+  edictoTexto: string
+  numeroEdicto: string
+  fechaPublicacionBoletin: string
+}
+
+export type ActualizarSubastaExternaRequest = CrearSubastaExternaRequest
+
+// --- Subastas: matriculado (POST /api/private/subastas) ---
+export interface CrearSubastaMatriculadoRequest {
+  titulo: string
+  descripcion: string
+  precioInicial: number
+  domicilio: string
+  fechaInicio: string
+  fechaFin: string
   edictoTexto?: string
   numeroEdicto?: string
-  fechaPublicacionBoletin?: string // YYYY-MM-DD
-  urlBoletinOficial?: string
+  fechaPublicacionBoletin?: string
 }
 
 export interface FileUploadResponse {
@@ -149,12 +185,15 @@ export interface DocumentoBibliotecaResponse {
   createdAt: string
 }
 
-// --- Matriculados (privado / admin) ---
+/** GET /api/private/matriculados/estado */
 export interface EstadoMatriculadoResponse {
+  nombre: string
+  apellido: string
+  matricula: string
   habilitado: boolean
-  estadoFianza: "ACTIVA" | "VENCIDA" | "PENDIENTE"
-  fechaVencimientoFianza?: string
+  estadoFianza: EstadoFianza
   puedeEjercer: boolean
+  fotoCarnetUrl?: string | null
 }
 
 export interface CrearMatriculadoRequest {
@@ -162,8 +201,8 @@ export interface CrearMatriculadoRequest {
   apellido: string
   dni: string
   matricula: string
-  email?: string
-  cuit?: string
+  email: string
+  cuit: string
 }
 
 // --- Fianzas ---
@@ -188,27 +227,6 @@ export interface FianzaPendienteAdminResponse {
   nombre: string
   apellido: string
   email?: string
-}
-
-// --- Pagos ---
-export type TipoPago = "MATRICULA" | "CUOTA" | "OTRO"
-export type EstadoPago = "PENDIENTE" | "PAGADO" | "CANCELADO"
-
-export interface PagoRequest {
-  tipoPago: TipoPago
-  monto: number
-  descripcion?: string
-}
-
-export interface PagoResponse {
-  id: number
-  matriculadoId: number
-  tipoPago: TipoPago
-  monto: number
-  descripcion?: string
-  estado: EstadoPago
-  createdAt: string
-  updatedAt: string
 }
 
 // --- Contenidos (admin) ---

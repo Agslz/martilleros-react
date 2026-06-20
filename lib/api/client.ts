@@ -1,5 +1,11 @@
 import { API_BASE_URL } from "./config"
 import type { ApiResponse } from "./types"
+import {
+  clearAdminLoginSession,
+  isAdminSessionRole,
+  notifyAdminSessionActivity,
+  setAdminLogoutMessage,
+} from "@/lib/admin-session"
 
 const getToken = (): string | null => {
   if (typeof window === "undefined") return null
@@ -11,9 +17,52 @@ export interface ApiClientOptions extends RequestInit {
   auth?: boolean
 }
 
+async function tryAdminLogoutOn401(): Promise<void> {
+  const token = getToken()
+  if (!token) return
+  try {
+    await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  } catch {
+    // ignorar
+  }
+}
+
+function handleUnauthorized(message?: string): never {
+  const onAdminRoute =
+    typeof window !== "undefined" &&
+    window.location.pathname.startsWith("/admin")
+  const isAdmin =
+    onAdminRoute || isAdminSessionRole()
+
+  if (isAdmin && typeof window !== "undefined") {
+    void tryAdminLogoutOn401()
+    clearAdminLoginSession()
+    setAdminLogoutMessage(
+      message ??
+        "La sesión del panel finalizó. Inicie sesión nuevamente."
+    )
+  }
+
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("token")
+    if (!window.location.pathname.startsWith("/login")) {
+      window.location.href = "/login"
+    }
+  }
+
+  const err = new Error(message ?? "Unauthorized") as Error & {
+    status?: number
+    data?: ApiResponse<unknown>
+  }
+  err.status = 401
+  throw err
+}
+
 /**
  * Cliente HTTP para la API del backend.
- * Añade Authorization: Bearer cuando hay token y maneja 401 redirigiendo a /login.
  */
 export async function apiRequest<T>(
   endpoint: string,
@@ -29,7 +78,7 @@ export async function apiRequest<T>(
   if (auth) {
     const token = getToken()
     if (token) {
-      (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`
+      ;(headers as Record<string, string>)["Authorization"] = `Bearer ${token}`
     }
   }
 
@@ -43,31 +92,31 @@ export async function apiRequest<T>(
   } catch (fetchError) {
     const msg =
       fetchError instanceof Error ? fetchError.message : "Error de red"
-    const hint =
-      msg === "Failed to fetch" || msg.includes("NetworkError")
-        ? " (¿Backend encendido en " +
-          API_BASE_URL.replace("/api", "") +
-          "? ¿CORS permite " +
-          (typeof window !== "undefined" ? window.location.origin : "tu origen") +
-          "?)"
+    const cause =
+      fetchError instanceof Error &&
+      fetchError.cause instanceof Error
+        ? fetchError.cause.message
         : ""
+    const isNetwork =
+      msg === "Failed to fetch" ||
+      msg === "fetch failed" ||
+      msg.includes("NetworkError") ||
+      cause.includes("ECONNREFUSED") ||
+      cause.includes("ENOTFOUND")
+    const hint = isNetwork
+      ? " (¿Backend encendido en " +
+        API_BASE_URL.replace(/\/api\/?$/, "") +
+        "?)"
+      : ""
     throw new Error(msg + hint)
   }
 
+  const data = (await response.json().catch(() => ({}))) as ApiResponse<T>
+
   if (response.status === 401 && typeof window !== "undefined") {
-    // Limpiamos el token, pero solo forzamos redirect completo a /login
-    // si no estamos ya en la pantalla de login. Así, en /login podemos
-    // mostrar toasts de error sin que la página se recargue inmediatamente.
-    localStorage.removeItem("token")
-    if (!window.location.pathname.startsWith("/login")) {
-      window.location.href = "/login"
-    }
-    const err = new Error("Unauthorized") as Error & { status?: number }
-    err.status = 401
-    throw err
+    handleUnauthorized(data?.message)
   }
 
-  const data = (await response.json().catch(() => ({}))) as ApiResponse<T>
   if (!response.ok) {
     const err = new Error(data?.message ?? `HTTP ${response.status}`) as Error & {
       status: number
@@ -76,6 +125,14 @@ export async function apiRequest<T>(
     err.status = response.status
     err.data = data
     throw err
+  }
+
+  if (
+    typeof window !== "undefined" &&
+    auth &&
+    window.location.pathname.startsWith("/admin")
+  ) {
+    notifyAdminSessionActivity()
   }
 
   return data
@@ -104,17 +161,12 @@ export async function apiRequestFormData<T>(
     ...rest,
   })
 
+  const data = (await response.json().catch(() => ({}))) as ApiResponse<T>
+
   if (response.status === 401 && typeof window !== "undefined") {
-    localStorage.removeItem("token")
-    if (!window.location.pathname.startsWith("/login")) {
-      window.location.href = "/login"
-    }
-    const err = new Error("Unauthorized") as Error & { status?: number }
-    err.status = 401
-    throw err
+    handleUnauthorized(data?.message)
   }
 
-  const data = (await response.json().catch(() => ({}))) as ApiResponse<T>
   if (!response.ok) {
     const err = new Error(data?.message ?? `HTTP ${response.status}`) as Error & {
       status: number
@@ -123,6 +175,14 @@ export async function apiRequestFormData<T>(
     err.status = response.status
     err.data = data
     throw err
+  }
+
+  if (
+    typeof window !== "undefined" &&
+    auth &&
+    window.location.pathname.startsWith("/admin")
+  ) {
+    notifyAdminSessionActivity()
   }
 
   return data

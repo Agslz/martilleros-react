@@ -1,11 +1,11 @@
 import Link from "next/link"
-import { Gavel, MapPin, Phone, Mail, Clock } from "lucide-react"
+import { Gavel } from "lucide-react"
+import type { ContenidoResponse } from "@/lib/api"
 
 const quickLinks = [
   { name: "Inicio", href: "/" },
-  { name: "Asociados", href: "/matriculados" },
   { name: "Padrón de asociados", href: "/buscar" },
-  { name: "Subastas", href: "/subastas" },
+  { name: "Edictos", href: "/edictos" },
 ]
 
 const legalLinks = [
@@ -14,13 +14,25 @@ const legalLinks = [
   { name: "Código de Ética", href: "#" },
 ]
 
-export function Footer() {
+const fallbackContactHtml = `
+  <p><strong>Dirección</strong><br/>Av. San Martín 1234, Ciudad<br/>Mendoza, Argentina</p>
+  <p><strong>Teléfono</strong><br/>(0261) 123-4567</p>
+  <p><strong>Email</strong><br/>info@martillerosmendoza.org.ar</p>
+  <p><strong>Horario</strong><br/>Lunes a Viernes<br/>9:00 a 14:00 hs</p>
+`
+
+interface FooterProps {
+  contenidoContacto?: ContenidoResponse | null
+}
+
+export function Footer({ contenidoContacto }: FooterProps) {
+  const contactTitle = contenidoContacto?.titulo?.trim() || "Contacto"
+  const contactBody = contenidoContacto?.cuerpo?.trim() || fallbackContactHtml
+
   return (
     <footer className="bg-institutional-navy text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Main Footer */}
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
@@ -34,11 +46,11 @@ export function Footer() {
               </div>
             </Link>
             <p className="mt-4 text-sm text-white/70 leading-relaxed">
-              Institución que regula y supervisa el ejercicio profesional de martilleros y corredores públicos en la Provincia de Mendoza.
+              Institución que regula y supervisa el ejercicio profesional de
+              martilleros y corredores públicos en la Provincia de Mendoza.
             </p>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">
               Enlaces Rápidos
@@ -57,7 +69,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">
               Información Legal
@@ -76,50 +87,29 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">
-              Contacto
+              {contactTitle}
             </h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-white/50 shrink-0 mt-0.5" />
-                <span className="text-sm text-white/70">
-                  Av. San Martín 1234, Ciudad<br />
-                  Mendoza, Argentina
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-white/50 shrink-0" />
-                <span className="text-sm text-white/70">(0261) 123-4567</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-white/50 shrink-0" />
-                <span className="text-sm text-white/70">info@martillerosmendoza.org.ar</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Clock className="h-5 w-5 text-white/50 shrink-0 mt-0.5" />
-                <span className="text-sm text-white/70">
-                  Lunes a Viernes<br />
-                  9:00 a 14:00 hs
-                </span>
-              </li>
-            </ul>
+            <div
+              className="footer-contact-prose text-sm text-white/70 space-y-3 [&_a]:text-white/90 [&_a]:underline [&_a:hover]:text-white [&_p]:leading-relaxed [&_strong]:text-white/90"
+              dangerouslySetInnerHTML={{ __html: contactBody }}
+            />
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="border-t border-white/10 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-white/50">
-              © {new Date().getFullYear()} Colegio de Martilleros de Mendoza. Todos los derechos reservados.
+              © {new Date().getFullYear()} Colegio de Martilleros de Mendoza.
+              Todos los derechos reservados.
             </p>
             <div className="flex items-center gap-6">
-              <Link href="/contacto" className="text-sm text-white/50 hover:text-white transition-colors">
+              <Link
+                href="/contacto"
+                className="text-sm text-white/50 hover:text-white transition-colors"
+              >
                 Contacto
-              </Link>
-              <Link href="/direcciones" className="text-sm text-white/50 hover:text-white transition-colors">
-                Direcciones
               </Link>
             </div>
           </div>

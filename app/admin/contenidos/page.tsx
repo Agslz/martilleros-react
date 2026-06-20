@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getContenido, actualizarContenido, type ContenidoKey } from "@/lib/api"
 import type { ContenidoResponse } from "@/lib/api"
 
-const KEYS: ContenidoKey[] = ["HOME", "CONTACTO", "DIRECCIONES", "TEXTOS"]
+const KEYS: ContenidoKey[] = ["HOME", "CONTACTO", "TEXTOS"]
 
 export default function AdminContenidosPage() {
   const router = useRouter()

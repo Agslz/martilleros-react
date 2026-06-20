@@ -2,6 +2,8 @@ export { API_BASE_URL } from "./config"
 export type {
   ApiResponse,
   LoginRequest,
+  AdminLoginRequest,
+  AdminSessionInfo,
   LoginResponse,
   UserInfoResponse,
   OlvideContrasenaRequest,
@@ -9,12 +11,15 @@ export type {
   CambiarContrasenaRequest,
   ActualizarPerfilRequest,
   SubastaResponse,
-  SubastaRequest,
+  CrearSubastaExternaRequest,
+  ActualizarSubastaExternaRequest,
+  CrearSubastaMatriculadoRequest,
   ImagenSubastaResponse,
   FileUploadResponse,
   ContenidoKey,
   ContenidoResponse,
   ContenidoRequest,
+  EstadoFianza,
   MatriculadoPublicResponse,
   DocumentoBibliotecaRequest,
   DocumentoBibliotecaResponse,
@@ -22,19 +27,18 @@ export type {
   CrearMatriculadoRequest,
   FianzaResponse,
   FianzaPendienteAdminResponse,
-  PagoRequest,
-  PagoResponse,
-  TipoPago,
-  EstadoPago,
   CuotaItemResponse,
   CuotaPeriodoRequest,
   CuotaEstadoItemResponse,
   EstadoCuota,
 } from "./types"
+export { AUTH_PASSWORD_MIN_LENGTH } from "./types"
 export { apiRequest, apiRequestFormData } from "./client"
 export type { ApiClientOptions } from "./client"
 export {
   login,
+  logout,
+  getAdminSessionInfo,
   saveToken,
   removeToken,
   getToken,
@@ -52,18 +56,25 @@ export {
   subirImagenSubastaMatriculado,
 } from "./subastas"
 export {
-  crearSubasta,
-  actualizarSubasta,
+  crearPublicacionExterna,
+  actualizarPublicacionExterna,
   eliminarSubasta,
   subirImagenSubasta,
   eliminarImagenSubasta,
-  subirEdictoSubasta,
 } from "./admin-subastas"
+export type { PublicacionExternaArchivos } from "./admin-subastas"
 export { getContenido } from "./contenidos"
 export { actualizarContenido } from "./admin-contenidos"
 export { getMatriculadosPublicos } from "./matriculados"
-export { crearMatriculado, getMatriculadosAdmin, updateMatriculadoHabilitado } from "./admin-matriculados"
-export type { CrearMatriculadoResponse } from "./admin-matriculados"
+export {
+  crearMatriculado,
+  getMatriculadosAdmin,
+  updateMatriculadoHabilitado,
+} from "./admin-matriculados"
+export type {
+  AdminMatriculadosFiltros,
+  CrearMatriculadoResponse,
+} from "./admin-matriculados"
 export { getEstadoMatriculado } from "./private-matriculados"
 export {
   getDocumentosBiblioteca,
@@ -79,11 +90,8 @@ export {
   notificarRechazoFianzaAdmin,
 } from "./admin-fianzas"
 export type { NotificarRechazoFianzaRequest } from "./admin-fianzas"
-export { getPagos, getPagoById, crearPago } from "./pagos"
 export {
   getCuotas,
-  pagarCupon,
-  crearSuscripcionCuota,
   crearPeriodoCuota,
   getEstadoCuotasPorPeriodo,
 } from "./cuotas"

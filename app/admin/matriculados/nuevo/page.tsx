@@ -10,10 +10,18 @@ import { Label } from "@/components/ui/label"
 import { crearMatriculado, type CrearMatriculadoRequest } from "@/lib/api"
 
 export default function NuevoMatriculadoPage() {
+  const allowedImageTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+  ]
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [createdPassword, setCreatedPassword] = useState<string | null>(null)
+  const [foto, setFoto] = useState<File | null>(null)
   const [form, setForm] = useState<CrearMatriculadoRequest>({
     nombre: "",
     apellido: "",
@@ -29,12 +37,19 @@ export default function NuevoMatriculadoPage() {
     setCreatedPassword(null)
     setLoading(true)
     try {
+      const email = form.email.trim()
+      const cuit = form.cuit.trim()
+      if (!email || !cuit) {
+        setError("El email y el CUIT son obligatorios.")
+        setLoading(false)
+        return
+      }
       const body = {
         ...form,
-        email: form.email?.trim() || undefined,
-        cuit: form.cuit?.trim() || undefined,
+        email,
+        cuit,
       }
-      const created = await crearMatriculado(body)
+      const created = await crearMatriculado(body, foto)
       if (created) {
         if (created.password) {
           setCreatedPassword(created.password)
@@ -137,23 +152,53 @@ export default function NuevoMatriculadoPage() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email (opcional)</Label>
+          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
-            value={form.email ?? ""}
+            required
+            value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="cuit">CUIT (opcional)</Label>
+          <Label htmlFor="cuit">CUIT</Label>
           <Input
             id="cuit"
-            value={form.cuit ?? ""}
+            required
+            value={form.cuit}
             onChange={(e) =>
               setForm({ ...form, cuit: e.target.value.replace(/\D/g, "") })
             }
           />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="foto">Foto carnet</Label>
+          <Input
+            id="foto"
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null
+              if (!file) {
+                setFoto(null)
+                return
+              }
+              if (!allowedImageTypes.includes(file.type)) {
+                setError(
+                  "Formato de foto no permitido. Usá JPEG, JPG, PNG, WEBP o GIF."
+                )
+                e.target.value = ""
+                setFoto(null)
+                return
+              }
+              setError(null)
+              setFoto(file)
+            }}
+          />
+          <p className="text-xs text-muted-foreground">
+            Tipos permitidos: JPG, JPEG, PNG, WEBP, GIF.
+          </p>
         </div>
         <div className="flex gap-4">
           <Button type="submit" disabled={loading}>

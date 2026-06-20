@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { getFianzas, subirFianza, type FianzaResponse } from "@/lib/api"
+import { resolveStorageFileUrl } from "@/lib/storage-url"
 import { useToast } from "@/hooks/use-toast"
 
 function formatFecha(s: string) {
@@ -186,23 +187,31 @@ export default function PanelFianzasPage() {
               </tr>
             </thead>
             <tbody>
-              {list.map((f) => (
+              {list.map((f) => {
+                const constanciaHref = resolveStorageFileUrl(f.constanciaUrl)
+                return (
                 <tr key={f.id} className="border-t border-border">
                   <td className="p-4">{formatFecha(f.fechaInicio)}</td>
                   <td className="p-4">{formatFecha(f.fechaVencimiento)}</td>
                   <td className="p-4">
-                    <a
-                      href={f.constanciaUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline inline-flex items-center gap-1"
-                    >
-                      Ver PDF
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
+                    {constanciaHref ? (
+                      <a
+                        href={constanciaHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline inline-flex items-center gap-1"
+                      >
+                        Ver PDF
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        PDF no disponible
+                      </span>
+                    )}
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>

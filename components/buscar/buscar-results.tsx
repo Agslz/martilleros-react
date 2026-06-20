@@ -10,10 +10,10 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import type { MatriculadoPublicResponse } from "@/lib/api"
+import { matriculaPuedeEjercer } from "@/lib/estado-fianza"
 
 function estadoHabilitado(m: MatriculadoPublicResponse) {
-  if (!m.habilitado) return false
-  return m.estadoFianza === "ACTIVA"
+  return matriculaPuedeEjercer(m)
 }
 
 interface BuscarResultsProps {
@@ -78,9 +78,6 @@ export function BuscarResults({
                     <p className="font-semibold text-green-800">
                       Martillero habilitado para ejercer
                     </p>
-                    <p className="text-sm text-green-600">
-                      Fianza activa · Puede ejercer en Mendoza
-                    </p>
                   </div>
                 </>
               ) : (
@@ -89,11 +86,6 @@ export function BuscarResults({
                   <div>
                     <p className="font-semibold text-red-800">
                       No habilitado para ejercer
-                    </p>
-                    <p className="text-sm text-red-600">
-                      {!matriculado.habilitado
-                        ? "Matriculado no habilitado"
-                        : `Fianza: ${matriculado.estadoFianza}`}
                     </p>
                   </div>
                 </>

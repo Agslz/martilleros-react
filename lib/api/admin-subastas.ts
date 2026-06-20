@@ -1,29 +1,75 @@
 import { apiRequest, apiRequestFormData } from "./client"
 import type {
-  SubastaRequest,
-  SubastaResponse,
+  ActualizarSubastaExternaRequest,
+  CrearSubastaExternaRequest,
   FileUploadResponse,
+  SubastaResponse,
 } from "./types"
 
-export async function crearSubasta(
-  body: SubastaRequest
+function appendSubastaExternaFields(
+  formData: FormData,
+  body: CrearSubastaExternaRequest
+) {
+  formData.append("titulo", body.titulo)
+  formData.append("descripcion", body.descripcion)
+  formData.append("precioInicial", String(body.precioInicial))
+  formData.append("martilleroACargo", body.martilleroACargo)
+  formData.append("nombreMartillero", body.nombreMartillero)
+  formData.append("cuitMartillero", body.cuitMartillero)
+  formData.append("domicilio", body.domicilio)
+  formData.append("fechaInicio", body.fechaInicio)
+  formData.append("fechaFin", body.fechaFin)
+  formData.append("edictoTexto", body.edictoTexto)
+  formData.append("numeroEdicto", body.numeroEdicto)
+  formData.append("fechaPublicacionBoletin", body.fechaPublicacionBoletin)
+}
+
+export type PublicacionExternaArchivos = {
+  imagenes?: File[]
+}
+
+/**
+ * Crea una publicación externa (admin). JSON o multipart si hay imágenes.
+ * El PDF del edicto lo genera el Boletín Oficial; no se sube desde el front.
+ */
+export async function crearPublicacionExterna(
+  body: CrearSubastaExternaRequest,
+  archivos?: PublicacionExternaArchivos
 ): Promise<SubastaResponse | null> {
+  const tieneImagenes = (archivos?.imagenes?.length ?? 0) > 0
+
   try {
-    const res = await apiRequest<SubastaResponse>("/admin/subastas", {
-      method: "POST",
-      body: JSON.stringify(body),
-    })
+    if (tieneImagenes) {
+      const formData = new FormData()
+      appendSubastaExternaFields(formData, body)
+      archivos?.imagenes?.forEach((file) => formData.append("imagenes", file))
+
+      const res = await apiRequestFormData<SubastaResponse>(
+        "/admin/subastas/publicacion-externa",
+        formData
+      )
+      if (res.success && res.data) return res.data
+      return null
+    }
+
+    const res = await apiRequest<SubastaResponse>(
+      "/admin/subastas/publicacion-externa",
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      }
+    )
     if (res.success && res.data) return res.data
     return null
   } catch (e) {
-    console.error("Error al crear subasta:", e)
+    console.error("Error al crear publicación externa:", e)
     throw e
   }
 }
 
-export async function actualizarSubasta(
+export async function actualizarPublicacionExterna(
   id: number,
-  body: SubastaRequest
+  body: ActualizarSubastaExternaRequest
 ): Promise<SubastaResponse | null> {
   try {
     const res = await apiRequest<SubastaResponse>(`/admin/subastas/${id}`, {
@@ -33,7 +79,7 @@ export async function actualizarSubasta(
     if (res.success && res.data) return res.data
     return null
   } catch (e) {
-    console.error("Error al actualizar subasta:", e)
+    console.error("Error al actualizar publicación externa:", e)
     throw e
   }
 }
@@ -83,28 +129,6 @@ export async function eliminarImagenSubasta(
     return res.success
   } catch (e) {
     console.error("Error al eliminar imagen:", e)
-    throw e
-  }
-}
-
-export async function subirEdictoSubasta(
-  subastaId: number,
-  file: File
-): Promise<FileUploadResponse | null> {
-  if (file.type !== "application/pdf") {
-    throw new Error("Solo se permiten archivos PDF")
-  }
-  const formData = new FormData()
-  formData.append("file", file)
-  try {
-    const res = await apiRequestFormData<FileUploadResponse>(
-      `/admin/subastas/${subastaId}/edicto`,
-      formData
-    )
-    if (res.success && res.data) return res.data
-    return null
-  } catch (e) {
-    console.error("Error al subir edicto:", e)
     throw e
   }
 }

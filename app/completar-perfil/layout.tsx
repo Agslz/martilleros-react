@@ -1,14 +1,17 @@
 import type { Metadata } from "next"
+import type { ReactNode } from "react"
+import { PublicLayout } from "@/components/layout/public-layout"
 
 export const metadata: Metadata = {
-  title: "Completar perfil | Colegio de Martilleros de Mendoza",
+  title: "Completar perfil",
   description: "Complete su email y contraseña para continuar.",
+  robots: { index: false, follow: false },
 }
 
 export default function CompletarPerfilLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: ReactNode
 }) {
-  return <>{children}</>
+  return <PublicLayout>{children}</PublicLayout>
 }

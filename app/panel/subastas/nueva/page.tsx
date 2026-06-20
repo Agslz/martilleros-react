@@ -13,7 +13,7 @@ import {
   getCurrentUser,
   crearSubastaMatriculado,
   subirImagenSubastaMatriculado,
-  type SubastaRequest,
+  type CrearSubastaMatriculadoRequest,
 } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 
@@ -27,35 +27,43 @@ export default function PanelNuevaSubastaPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [imagenes, setImagenes] = useState<File[]>([])
-  const [form, setForm] = useState<SubastaRequest>({
+  const [perfilMartillero, setPerfilMartillero] = useState({
+    matricula: "",
+    nombre: "",
+  })
+  const [form, setForm] = useState<CrearSubastaMatriculadoRequest>({
     titulo: "",
     descripcion: "",
     precioInicial: 0,
-    martilleroACargo: "",
-    nombreMartillero: "",
-    cuitMartillero: "",
     domicilio: "",
     fechaInicio: "",
     fechaFin: "",
     edictoTexto: "",
     numeroEdicto: "",
     fechaPublicacionBoletin: "",
-    urlBoletinOficial: "",
   })
 
   useEffect(() => {
     getCurrentUser().then((user) => {
       if (user) {
-        setForm((f) => ({
-          ...f,
-          martilleroACargo: user.matricula,
-          nombreMartillero: [user.nombre, user.apellido].filter(Boolean).join(" "),
-          cuitMartillero: user.cuit ?? "",
-        }))
+        setPerfilMartillero({
+          matricula: user.matricula,
+          nombre: [user.nombre, user.apellido].filter(Boolean).join(" "),
+        })
       }
       setUserLoaded(true)
     })
   }, [])
+
+  const setFechaInicio = (fechaInicio: string) => {
+    setForm((f) => ({
+      ...f,
+      fechaInicio,
+      fechaPublicacionBoletin: f.fechaPublicacionBoletin
+        ? fechaInicio
+        : f.fechaPublicacionBoletin,
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,44 +80,42 @@ export default function PanelNuevaSubastaPage() {
       })
       return
     }
+    const fechaBoletin = (form.fechaPublicacionBoletin ?? "").trim()
+    if (fechaBoletin && fechaBoletin !== form.fechaInicio) {
+      setError(
+        "La fecha de publicación en el Boletín debe coincidir con la fecha de inicio."
+      )
+      setFieldErrors((prev) => ({
+        ...prev,
+        fechaPublicacionBoletin: "Debe ser igual a la fecha de inicio.",
+      }))
+      toast({
+        title: "Fechas inconsistentes",
+        description: "Ajustá la fecha del Boletín o la fecha de inicio.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setLoading(true)
     try {
-      // Si el CUIT está vacío, intentar usar el último del perfil (por si actualizó y no recargó)
-      let cuitParaEnviar = (form.cuitMartillero ?? "").trim()
-      if (!cuitParaEnviar) {
-        const usuarioActual = await getCurrentUser()
-        cuitParaEnviar = (usuarioActual?.cuit ?? "").trim()
-      }
-      if (!cuitParaEnviar) {
-        setError("El CUIT del martillero es obligatorio.")
-        setFieldErrors((prev) => ({ ...prev, cuitMartillero: "Completalo en el recuadro de datos del martillero arriba o en Mi perfil." }))
-        toast({
-          title: "Falta el CUIT",
-          description: "Completá el CUIT en los datos del martillero o actualizalo en Mi perfil.",
-          variant: "destructive",
-        })
-        setLoading(false)
-        return
-      }
-
-      // Armar body: campos obligatorios + edicto; opcionales solo si tienen valor (evitar "" que el backend puede rechazar)
-      const body: SubastaRequest = {
+      const body: CrearSubastaMatriculadoRequest = {
         titulo: form.titulo,
         descripcion: form.descripcion,
         precioInicial: form.precioInicial,
-        martilleroACargo: form.martilleroACargo,
-        nombreMartillero: form.nombreMartillero,
-        cuitMartillero: cuitParaEnviar,
         domicilio: form.domicilio,
         fechaInicio: form.fechaInicio,
         fechaFin: form.fechaFin,
         edictoTexto: edictoTrim,
       }
-      if ((form.numeroEdicto ?? "").trim()) body.numeroEdicto = form.numeroEdicto!.trim()
-      if ((form.fechaPublicacionBoletin ?? "").trim()) body.fechaPublicacionBoletin = form.fechaPublicacionBoletin!.trim()
-      if ((form.urlBoletinOficial ?? "").trim()) body.urlBoletinOficial = form.urlBoletinOficial!.trim()
+      if ((form.numeroEdicto ?? "").trim()) {
+        body.numeroEdicto = form.numeroEdicto!.trim()
+      }
+      if (fechaBoletin) {
+        body.fechaPublicacionBoletin = fechaBoletin
+      }
 
-      // 1) Crear subasta (endpoint 1)
+      // 1) Crear subasta
       const created = await crearSubastaMatriculado(body)
       if (!created) {
         setError("No se pudo crear la subasta.")
@@ -224,28 +230,19 @@ export default function PanelNuevaSubastaPage() {
             Martillero a cargo (datos de su perfil)
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-muted-foreground">Matrícula</p>
-            <p className="font-medium">{form.martilleroACargo || "—"}</p>
+            <p className="font-medium">{perfilMartillero.matricula || "—"}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Nombre</p>
-            <p className="font-medium">{form.nombreMartillero || "—"}</p>
+            <p className="font-medium">{perfilMartillero.nombre || "—"}</p>
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="cuit-martillero" className="text-muted-foreground text-sm">CUIT (obligatorio)</Label>
-            <Input
-              id="cuit-martillero"
-              placeholder="20-12345678-9"
-              value={form.cuitMartillero ?? ""}
-              onChange={(e) => setForm({ ...form, cuitMartillero: e.target.value })}
-              className={fieldErrors.cuitMartillero ? "border-destructive" : ""}
-            />
-            {fieldErrors.cuitMartillero && (
-              <p className="text-xs text-destructive">{fieldErrors.cuitMartillero}</p>
-            )}
-          </div>
+          <p className="sm:col-span-2 text-xs text-muted-foreground">
+            El backend toma matrícula, nombre y CUIT de su sesión; no hace falta
+            enviarlos en el formulario.
+          </p>
         </CardContent>
       </Card>
 
@@ -301,7 +298,7 @@ export default function PanelNuevaSubastaPage() {
               type="date"
               required
               value={form.fechaInicio}
-              onChange={(e) => setForm({ ...form, fechaInicio: e.target.value })}
+              onChange={(e) => setFechaInicio(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -323,7 +320,9 @@ export default function PanelNuevaSubastaPage() {
               Edicto
             </CardTitle>
             <p className="text-sm text-muted-foreground font-normal">
-              Texto del edicto publicado en el Boletín Oficial de Mendoza. Se mostrará primero en la página pública de la subasta.
+              Texto del edicto publicado en el Boletín Oficial de Mendoza. El PDF
+              lo genera el boletín al publicarse; aquí solo cargás el texto y la
+              referencia. Se mostrará en la página pública de la subasta.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -349,24 +348,24 @@ export default function PanelNuevaSubastaPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="fechaPublicacionBoletin">Fecha publicación en Boletín</Label>
+                <Label htmlFor="fechaPublicacionBoletin">
+                  Fecha publicación en Boletín (opcional)
+                </Label>
                 <Input
                   id="fechaPublicacionBoletin"
                   type="date"
                   value={form.fechaPublicacionBoletin ?? ""}
-                  onChange={(e) => setForm({ ...form, fechaPublicacionBoletin: e.target.value })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      fechaPublicacionBoletin: e.target.value,
+                    })
+                  }
                 />
+                <p className="text-xs text-muted-foreground">
+                  Si la cargás, debe ser el mismo día que la fecha de inicio.
+                </p>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="urlBoletinOficial">URL del Boletín Oficial (si tenés el enlace)</Label>
-              <Input
-                id="urlBoletinOficial"
-                type="url"
-                placeholder="https://..."
-                value={form.urlBoletinOficial ?? ""}
-                onChange={(e) => setForm({ ...form, urlBoletinOficial: e.target.value })}
-              />
             </div>
           </CardContent>
         </Card>

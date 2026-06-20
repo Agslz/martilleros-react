@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { User, Shield, Wallet, Loader2 } from "lucide-react"
 import { getEstadoMatriculado } from "@/lib/api"
 import type { EstadoMatriculadoResponse } from "@/lib/api"
+import { etiquetaEstadoFianza } from "@/lib/estado-fianza"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
@@ -43,16 +44,17 @@ export default function PanelPage() {
     )
   }
 
-  // Regla de negocio: puede ejercer solo si está habilitado y tiene fianza ACTIVA
-  const puedeEjercer = estado.habilitado && estado.estadoFianza === "ACTIVA"
   const fianzaActiva = estado.estadoFianza === "ACTIVA"
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Mi estado</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-2">Mi estado</h1>
+      <p className="text-muted-foreground mb-6">
+        {estado.apellido}, {estado.nombre} — Mat. {estado.matricula}
+      </p>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className={puedeEjercer ? "border-green-500/50" : "border-amber-500/50"}>
+        <Card className={estado.puedeEjercer ? "border-green-500/50" : "border-amber-500/50"}>
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <User className="h-5 w-5 text-primary" />
             <CardTitle className="text-base">Habilitado</CardTitle>
@@ -84,13 +86,8 @@ export default function PanelPage() {
                   : "bg-amber-100 text-amber-800 hover:bg-amber-100"
               }
             >
-              {estado.estadoFianza}
+              {etiquetaEstadoFianza(estado.estadoFianza)}
             </Badge>
-            {estado.fechaVencimientoFianza && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Vence: {new Date(estado.fechaVencimientoFianza).toLocaleDateString("es-AR")}
-              </p>
-            )}
           </CardContent>
         </Card>
         <Card>
@@ -100,14 +97,14 @@ export default function PanelPage() {
           </CardHeader>
           <CardContent>
             <Badge
-              variant={puedeEjercer ? "default" : "secondary"}
+              variant={estado.puedeEjercer ? "default" : "secondary"}
               className={
-                puedeEjercer
+                estado.puedeEjercer
                   ? "bg-green-100 text-green-800 hover:bg-green-100"
                   : "bg-amber-100 text-amber-800 hover:bg-amber-100"
               }
             >
-              {puedeEjercer ? "Sí" : "No"}
+              {estado.puedeEjercer ? "Sí" : "No"}
             </Badge>
           </CardContent>
         </Card>

@@ -1,7 +1,8 @@
 import { apiRequest } from "./client"
 import type {
   ApiResponse,
-  LoginRequest,
+  AdminLoginRequest,
+  AdminSessionInfo,
   LoginResponse,
   UserInfoResponse,
   OlvideContrasenaRequest,
@@ -10,15 +11,44 @@ import type {
   ActualizarPerfilRequest,
 } from "./types"
 
+/** GET /auth/admin/sesion — sin token; indica si el panel admin está ocupado. */
+export async function getAdminSessionInfo(): Promise<AdminSessionInfo | null> {
+  try {
+    const res = await apiRequest<AdminSessionInfo>("/auth/admin/sesion", {
+      auth: false,
+    })
+    if (res.success && res.data) return res.data
+    return null
+  } catch {
+    return null
+  }
+}
+
 export async function login(
   matricula: string,
-  password: string
+  password: string,
+  options?: { force?: boolean }
 ): Promise<ApiResponse<LoginResponse>> {
+  const body: AdminLoginRequest = { matricula, password }
+  if (options?.force) body.force = true
+
   return apiRequest<LoginResponse>("/auth/login", {
     method: "POST",
-    body: JSON.stringify({ matricula, password } as LoginRequest),
+    body: JSON.stringify(body),
     auth: false,
   })
+}
+
+/** POST /auth/logout — obligatorio al salir del panel admin. */
+export async function logout(): Promise<void> {
+  try {
+    await apiRequest<unknown>("/auth/logout", {
+      method: "POST",
+      auth: true,
+    })
+  } catch {
+    // Si el token ya venció, igual limpiamos en el cliente.
+  }
 }
 
 export async function olvideContrasena(

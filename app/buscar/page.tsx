@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { PublicLayout } from "@/components/layout/public-layout"
 import { BuscarHeader } from "@/components/buscar/buscar-header"
 import { BuscarForm } from "@/components/buscar/buscar-form"
 import { BuscarResults } from "@/components/buscar/buscar-results"
@@ -43,7 +42,7 @@ export default function BuscarPage() {
   }
 
   return (
-    <PublicLayout>
+    <>
       <BuscarHeader />
       <section className="py-12 bg-background">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -55,6 +54,6 @@ export default function BuscarPage() {
           />
         </div>
       </section>
-    </PublicLayout>
+    </>
   )
 }

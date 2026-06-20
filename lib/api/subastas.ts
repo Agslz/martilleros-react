@@ -1,6 +1,6 @@
 import { apiRequest, apiRequestFormData } from "./client"
 import type {
-  SubastaRequest,
+  CrearSubastaMatriculadoRequest,
   SubastaResponse,
   FileUploadResponse,
 } from "./types"
@@ -47,7 +47,7 @@ export async function getSubastasPrivadas(): Promise<SubastaResponse[]> {
  * y tomar datos del martillero del JWT o del body.
  */
 export async function crearSubastaMatriculado(
-  body: SubastaRequest
+  body: CrearSubastaMatriculadoRequest
 ): Promise<SubastaResponse | null> {
   try {
     const res = await apiRequest<SubastaResponse>("/private/subastas", {
@@ -89,7 +89,7 @@ export async function subirImagenSubastaMatriculado(
 
 /**
  * Obtiene una subasta por id desde la lista pública.
- * Si la subasta ya venció (fechaFin pasada), no está en /api/public/subastas y devuelve null → 404 en /subastas/[id].
+ * Si la subasta ya venció (fechaFin pasada), no está en /api/public/subastas y devuelve null → 404 en /edictos/[id].
  */
 export async function getSubastaById(
   id: number

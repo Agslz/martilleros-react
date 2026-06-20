@@ -9,10 +9,10 @@ export function SubastasHeader() {
             <Gavel className="h-7 w-7 text-white" />
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-white">
-            Subastas
+            Edictos
           </h1>
           <p className="mt-4 text-lg text-white/80 leading-relaxed">
-            Consulte las próximas subastas programadas por martilleros 
+            Consulte los edictos y próximas subastas publicadas por martilleros
             matriculados en nuestra institución.
           </p>
         </div>

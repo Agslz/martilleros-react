@@ -1,9 +1,12 @@
+import type { Metadata } from "next"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { LoginForm } from "@/components/auth/login-form"
 
-export const metadata = {
-  title: "Acceso Matriculados | Colegio de Martilleros de Mendoza",
-  description: "Ingrese al área privada para matriculados del Colegio de Martilleros de Mendoza.",
+export const metadata: Metadata = {
+  title: "Acceso matriculados",
+  description:
+    "Ingrese al área privada para matriculados del Colegio de Martilleros de Mendoza.",
+  robots: { index: false, follow: false },
 }
 
 export default function LoginPage() {

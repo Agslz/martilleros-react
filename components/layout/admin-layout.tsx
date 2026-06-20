@@ -15,14 +15,15 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { removeToken } from "@/lib/api"
+import { AdminInactivityMonitor } from "@/components/auth/admin-inactivity-monitor"
+import { endClientSession } from "@/lib/auth-session"
 
 const adminNav = [
-  { name: "Panel", href: "/admin", icon: LayoutDashboard },
+  { name: "Panel", href: "/admin", icon: LayoutDashboard, exact: true },
   { name: "Subastas", href: "/admin/subastas", icon: Gavel },
   { name: "Biblioteca", href: "/admin/biblioteca", icon: BookOpen },
   { name: "Verificación de fianzas", href: "/admin/verificacion-fianzas", icon: ShieldCheck },
-  { name: "Matriculados", href: "/admin/matriculados", icon: Users },
+  { name: "Matriculados", href: "/admin/matriculados", icon: Users, exact: true },
   { name: "Nuevo matriculado", href: "/admin/matriculados/nuevo", icon: Users },
   { name: "Contenidos", href: "/admin/contenidos", icon: FileText },
   { name: "Cuotas", href: "/admin/cuotas", icon: CreditCard },
@@ -31,30 +32,36 @@ const adminNav = [
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
-  const handleLogout = () => {
-    removeToken()
+  const handleLogout = async () => {
+    await endClientSession()
     window.location.href = "/login"
+  }
+
+  const handleBackToSite = async () => {
+    await endClientSession()
+    window.location.href = "/"
   }
 
   return (
     <div className="flex min-h-screen">
+      <AdminInactivityMonitor />
       <aside className="w-64 border-r border-border bg-card flex flex-col">
         <div className="p-4 border-b border-border">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          <button
+            type="button"
+            onClick={() => void handleBackToSite()}
+            className="flex w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al sitio
-          </Link>
+          </button>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {adminNav.map((item) => {
             const Icon = item.icon
-            const active =
-              item.href === "/admin"
-                ? pathname === "/admin"
-                : pathname === item.href || pathname.startsWith(item.href + "/")
+            const active = item.exact
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(item.href + "/")
             return (
               <Link
                 key={item.href}

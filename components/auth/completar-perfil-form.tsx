@@ -6,24 +6,30 @@ import { Gavel, UserPlus, Loader2, Eye, EyeOff } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { completarPerfil, getCurrentUser } from "@/lib/api"
+import { AUTH_PASSWORD_MIN_LENGTH, completarPerfil, getCurrentUser } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 
 export function CompletarPerfilForm() {
   const { toast } = useToast()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [showActual, setShowActual] = useState(false)
+  const [showNueva, setShowNueva] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
-    passwordConfirm: "",
+    contrasenaActual: "",
+    nuevaContrasena: "",
+    nuevaContrasenaConfirm: "",
     cuit: "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.email.trim() || !formData.password) {
+    if (
+      !formData.email.trim() ||
+      !formData.contrasenaActual ||
+      !formData.nuevaContrasena
+    ) {
       toast({
         title: "Error",
         description: "Complete los campos requeridos.",
@@ -31,10 +37,18 @@ export function CompletarPerfilForm() {
       })
       return
     }
-    if (formData.password !== formData.passwordConfirm) {
+    if (formData.nuevaContrasena.length < AUTH_PASSWORD_MIN_LENGTH) {
       toast({
         title: "Error",
-        description: "Las contraseñas no coinciden.",
+        description: `La contraseña nueva debe tener al menos ${AUTH_PASSWORD_MIN_LENGTH} caracteres.`,
+        variant: "destructive",
+      })
+      return
+    }
+    if (formData.nuevaContrasena !== formData.nuevaContrasenaConfirm) {
+      toast({
+        title: "Error",
+        description: "Las contraseñas nuevas no coinciden.",
         variant: "destructive",
       })
       return
@@ -43,7 +57,8 @@ export function CompletarPerfilForm() {
     try {
       const res = await completarPerfil({
         email: formData.email.trim(),
-        password: formData.password,
+        contrasenaActual: formData.contrasenaActual,
+        nuevaContrasena: formData.nuevaContrasena,
         cuit: formData.cuit.trim() || undefined,
       })
       if (res.success) {
@@ -60,10 +75,15 @@ export function CompletarPerfilForm() {
         description: res.message ?? "Error al guardar. Intente de nuevo.",
         variant: "destructive",
       })
-    } catch {
+    } catch (err: unknown) {
+      const errObj = err as { message?: string; data?: { message?: string } }
+      const msg =
+        errObj?.data?.message ??
+        errObj?.message ??
+        "Error al guardar. Intente de nuevo."
       toast({
         title: "Error",
-        description: "Error al guardar. Intente de nuevo.",
+        description: msg,
         variant: "destructive",
       })
     } finally {
@@ -81,7 +101,8 @@ export function CompletarPerfilForm() {
           Completar perfil
         </h1>
         <p className="mt-2 text-white/70">
-          Es su primer acceso. Complete su email y contraseña para continuar.
+          Es su primer acceso. Indique su email, la contraseña con la que ingresó
+          y elija una contraseña nueva para continuar.
         </p>
       </div>
       <div className="p-6 sm:p-8">
@@ -100,25 +121,28 @@ export function CompletarPerfilForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Contraseña nueva *</Label>
+            <Label htmlFor="contrasenaActual">Contraseña actual *</Label>
+            <p className="text-xs text-muted-foreground">
+              La contraseña temporal con la que acaba de iniciar sesión.
+            </p>
             <div className="relative">
               <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Contraseña nueva"
+                id="contrasenaActual"
+                type={showActual ? "text" : "password"}
+                placeholder="Contraseña con la que ingresó"
                 required
                 className="pr-10"
-                value={formData.password}
+                value={formData.contrasenaActual}
                 onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
+                  setFormData({ ...formData, contrasenaActual: e.target.value })
                 }
               />
               <button
                 type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowActual(!showActual)}
               >
-                {showPassword ? (
+                {showActual ? (
                   <EyeOff className="h-5 w-5" />
                 ) : (
                   <Eye className="h-5 w-5" />
@@ -127,15 +151,50 @@ export function CompletarPerfilForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="passwordConfirm">Confirmar contraseña *</Label>
+            <Label htmlFor="nuevaContrasena">Contraseña nueva *</Label>
+            <p className="text-xs text-muted-foreground">
+              Mínimo {AUTH_PASSWORD_MIN_LENGTH} caracteres.
+            </p>
+            <div className="relative">
+              <Input
+                id="nuevaContrasena"
+                type={showNueva ? "text" : "password"}
+                placeholder="Contraseña nueva"
+                required
+                minLength={AUTH_PASSWORD_MIN_LENGTH}
+                className="pr-10"
+                value={formData.nuevaContrasena}
+                onChange={(e) =>
+                  setFormData({ ...formData, nuevaContrasena: e.target.value })
+                }
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowNueva(!showNueva)}
+              >
+                {showNueva ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="nuevaContrasenaConfirm">Confirmar contraseña nueva *</Label>
             <Input
-              id="passwordConfirm"
+              id="nuevaContrasenaConfirm"
               type="password"
-              placeholder="Repetir contraseña"
+              placeholder="Repetir contraseña nueva"
               required
-              value={formData.passwordConfirm}
+              minLength={AUTH_PASSWORD_MIN_LENGTH}
+              value={formData.nuevaContrasenaConfirm}
               onChange={(e) =>
-                setFormData({ ...formData, passwordConfirm: e.target.value })
+                setFormData({
+                  ...formData,
+                  nuevaContrasenaConfirm: e.target.value,
+                })
               }
             />
           </div>

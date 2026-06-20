@@ -61,7 +61,7 @@ export function SubastasList({ subastas }: SubastasListProps) {
             <div className="flex flex-col md:flex-row">
               {primeraImagen && (
                 <Link
-                  href={`/subastas/${subasta.id}`}
+                  href={`/edictos/${subasta.id}`}
                   className="relative w-full md:w-64 h-48 md:h-auto shrink-0"
                 >
                   <Image
@@ -131,7 +131,7 @@ export function SubastasList({ subastas }: SubastasListProps) {
                         </span>
                       </div>
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/subastas/${subasta.id}`}>
+                        <Link href={`/edictos/${subasta.id}`}>
                           Ver Detalle
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>

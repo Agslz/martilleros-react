@@ -1,10 +1,10 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { PublicLayout } from "@/components/layout/public-layout"
 import { MatriculadosHeader } from "@/components/matriculados/matriculados-header"
 import { MatriculadosSearch } from "@/components/matriculados/matriculados-search"
 import { MatriculadosList } from "@/components/matriculados/matriculados-list"
+import { matriculaPuedeEjercer } from "@/lib/estado-fianza"
 import { getMatriculadosPublicos } from "@/lib/api"
 import type { MatriculadoPublicResponse } from "@/lib/api"
 
@@ -40,13 +40,13 @@ export default function MatriculadosPage() {
   const filtered = useMemo(() => {
     if (estadoFilter === "todos") return list
     if (estadoFilter === "habilitado") {
-      return list.filter((m) => m.habilitado && m.estadoFianza === "ACTIVA")
+      return list.filter(matriculaPuedeEjercer)
     }
-    return list.filter((m) => !m.habilitado || m.estadoFianza !== "ACTIVA")
+    return list.filter((m) => !matriculaPuedeEjercer(m))
   }, [list, estadoFilter])
 
   return (
-    <PublicLayout>
+    <>
       <MatriculadosHeader />
       <section className="py-12 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -63,6 +63,6 @@ export default function MatriculadosPage() {
           />
         </div>
       </section>
-    </PublicLayout>
+    </>
   )
 }

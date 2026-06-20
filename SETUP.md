@@ -1,5 +1,7 @@
 # Cómo hacer correr el proyecto
 
+Estado de integración y pendientes: ver [`ESTADO_PROYECTO.md`](./ESTADO_PROYECTO.md).
+
 ## Requisito: Node.js 20 o superior
 
 Este proyecto usa **Next.js 16**, que requiere **Node.js >= 20.9.0**.  
@@ -65,12 +67,12 @@ Si usás solo **npm**, con `npm install` y `npm run dev` alcanza.
 
 ## Conectar con el backend (login y API)
 
-El frontend llama al backend en **http://localhost:8080/api** por defecto.
+El frontend llama al backend en **http://127.0.0.1:8080/api** por defecto (en Windows evita fallos de `localhost` con Node).
 
 ### 1. Backend en marcha
 
-El backend (Spring Boot) debe estar corriendo en **http://localhost:8080**.  
-Probá en Postman: `POST http://localhost:8080/api/auth/login` con body `{ "matricula": "MAT-001", "password": "Test123!" }`.
+El backend (Spring Boot) debe estar corriendo en **http://127.0.0.1:8080**.  
+Probá en Postman: `POST http://127.0.0.1:8080/api/auth/login` con body `{ "matricula": "MAT-001", "password": "Test123!" }`.
 
 ### 2. CORS en el backend
 
