@@ -230,10 +230,15 @@ Patrón de respuesta: `ApiResponse<T>` con `success`, `data`, `message`.
 ## 10. Despliegue (referencia)
 
 1. Build: `npm run build`
-2. Servir: `npm run start` o plataforma (Vercel, etc.)
-3. Configurar `NEXT_PUBLIC_API_URL` y `NEXT_PUBLIC_SITE_URL` en el entorno de producción
-4. Backend con CORS permitiendo el origen del front
-5. Storage en producción: URLs absolutas S3 en respuestas de archivos
+2. Servir: `npm run start` o plataforma (Vercel, Railway, etc.)
+3. Configurar variables de entorno (ver `.env.example`):
+   - **Front en Railway + backend en Railway:** `BACKEND_URL=http://colegiodemartilleros.railway.internal:8080` (sin `NEXT_PUBLIC_API_URL`; el navegador usa `/api` y Next reenvía al backend).
+   - **Front en otro host (Vercel, etc.):** `NEXT_PUBLIC_API_URL=https://<dominio-publico-backend>.up.railway.app/api`
+   - `NEXT_PUBLIC_SITE_URL` = URL pública del sitio
+4. **No** poner `*.railway.internal` en variables `NEXT_PUBLIC_*`: el navegador no resuelve esa red privada.
+5. Backend con CORS permitiendo el origen del front (solo si usás `NEXT_PUBLIC_API_URL` directo).
+6. Storage en producción: URLs absolutas S3 en respuestas de archivos
+7. Tras cambiar variables `NEXT_PUBLIC_*`, **rebuild** del front (quedan embebidas en el build).
 
 ---
 

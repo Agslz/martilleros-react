@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./config"
+import { API_BASE_URL, getApiConnectionErrorMessage, isApiMisconfiguredInBrowser } from "./config"
 import type { ApiResponse } from "./types"
 import {
   clearAdminLoginSession,
@@ -104,9 +104,11 @@ export async function apiRequest<T>(
       cause.includes("ECONNREFUSED") ||
       cause.includes("ENOTFOUND")
     const hint = isNetwork
-      ? " (¿Backend encendido en " +
-        API_BASE_URL.replace(/\/api\/?$/, "") +
-        "?)"
+      ? isApiMisconfiguredInBrowser()
+        ? ` ${getApiConnectionErrorMessage()}`
+        : " (¿Backend encendido en " +
+          API_BASE_URL.replace(/\/api\/?$/, "") +
+          "?)"
       : ""
     throw new Error(msg + hint)
   }

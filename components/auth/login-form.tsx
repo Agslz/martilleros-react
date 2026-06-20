@@ -13,6 +13,7 @@ import {
   login,
   saveToken,
 } from "@/lib/api"
+import { getApiConnectionErrorMessage, isApiMisconfiguredInBrowser } from "@/lib/api/config"
 import {
   consumeAdminLogoutMessage,
   saveAdminLoginSession,
@@ -113,18 +114,17 @@ export function LoginForm() {
       const isCorsOrNetwork =
         networkMessage?.includes("Failed to fetch") ||
         networkMessage?.includes("NetworkError") ||
-        networkMessage?.includes("CORS")
+        networkMessage?.includes("CORS") ||
+        networkMessage?.includes("fetch failed")
       const message =
         apiMessage ??
-        (isCorsOrNetwork
-          ? "Error al conectar. Verifique que el backend esté en marcha."
+        (isCorsOrNetwork || isApiMisconfiguredInBrowser()
+          ? getApiConnectionErrorMessage()
           : "Error al conectar con el servidor.")
       setError(message)
       toast({
         title: "Error",
-        description: isCorsOrNetwork
-          ? "Error al conectar. Verifique que el backend esté en marcha."
-          : message,
+        description: message,
         variant: "destructive",
       })
     } finally {
