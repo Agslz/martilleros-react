@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   getAdminSessionInfo,
+  getCurrentUser,
+  getToken,
   login,
   saveToken,
 } from "@/lib/api"
@@ -19,6 +21,11 @@ import {
   saveAdminLoginSession,
   saveMatriculadoLoginSession,
 } from "@/lib/admin-session"
+import {
+  getPrivateAreaPath,
+  loadRememberedLogin,
+  persistRememberedLogin,
+} from "@/lib/remember-login"
 import { useToast } from "@/hooks/use-toast"
 
 const ADMIN_PANEL_OCCUPIED_MSG =
@@ -48,10 +55,38 @@ export function LoginForm() {
   useEffect(() => {
     setSessionMessage(consumeAdminLogoutMessage())
     void refreshAdminSessionStatus()
-  }, [])
 
-  const completeLogin = (token: string, role: string, primeraVezLogin: boolean) => {
-    saveToken(token)
+    const remembered = loadRememberedLogin()
+    setFormData((prev) => ({
+      ...prev,
+      remember: remembered.remember,
+      matricula: remembered.matricula || prev.matricula,
+    }))
+
+    const token = typeof window !== "undefined" ? getToken() : null
+    if (!token) return
+
+    getCurrentUser()
+      .then((user) => {
+        if (!user) return
+        router.replace(
+          getPrivateAreaPath(user.role, user.primeraVezLogin)
+        )
+      })
+      .catch(() => {
+        /* token inválido: mostrar formulario */
+      })
+  }, [router])
+
+  const completeLogin = (
+    token: string,
+    role: string,
+    primeraVezLogin: boolean,
+    remember: boolean,
+    matricula: string
+  ) => {
+    persistRememberedLogin(remember, matricula)
+    saveToken(token, remember)
     if (role === "ADMIN") {
       router.push("/admin")
     } else if (primeraVezLogin) {
@@ -74,7 +109,13 @@ export function LoginForm() {
         } else {
           saveMatriculadoLoginSession()
         }
-        completeLogin(res.data.token, res.data.role, res.data.primeraVezLogin)
+        completeLogin(
+          res.data.token,
+          res.data.role,
+          res.data.primeraVezLogin,
+          formData.remember,
+          formData.matricula
+        )
         return
       }
       const msg = res.message ?? "Credenciales incorrectas"

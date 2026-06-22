@@ -11,6 +11,9 @@ import type {
   ActualizarPerfilRequest,
 } from "./types"
 
+/** Reexportado desde token.ts para compatibilidad. */
+export { saveToken, removeToken, getToken } from "./token"
+
 /** GET /auth/admin/sesion — sin token; indica si el panel admin está ocupado. */
 export async function getAdminSessionInfo(): Promise<AdminSessionInfo | null> {
   try {
@@ -90,23 +93,6 @@ export async function actualizarPerfil(
     body: JSON.stringify(body),
     auth: true,
   })
-}
-
-export function saveToken(token: string): void {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("token", token)
-  }
-}
-
-export function removeToken(): void {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("token")
-  }
-}
-
-export function getToken(): string | null {
-  if (typeof window === "undefined") return null
-  return localStorage.getItem("token")
 }
 
 export async function getCurrentUser(): Promise<UserInfoResponse | null> {

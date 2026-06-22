@@ -32,8 +32,7 @@ export function PanelLayout({ children }: { children: React.ReactNode }) {
     window.location.href = "/login"
   }
 
-  const handleBackToSite = async () => {
-    await endClientSession()
+  const handleBackToSite = () => {
     window.location.href = "/"
   }
 

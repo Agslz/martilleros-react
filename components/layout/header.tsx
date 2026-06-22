@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { Menu, X, Gavel } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { MatriculadoAccessLink } from "@/components/layout/matriculado-access-link"
 
 const navigation = [
   { name: "Inicio", href: "/" },
@@ -47,9 +47,7 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex lg:items-center lg:gap-3">
-            <Button variant="outline" asChild>
-              <Link href="/login">Acceso Matriculados</Link>
-            </Button>
+            <MatriculadoAccessLink />
           </div>
 
           {/* Mobile menu button */}
@@ -82,9 +80,7 @@ export function Header() {
                 </Link>
               ))}
               <div className="mt-4 pt-4 border-t border-border">
-                <Button className="w-full" asChild>
-                  <Link href="/login">Acceso Matriculados</Link>
-                </Button>
+                <MatriculadoAccessLink fullWidth />
               </div>
             </div>
           </div>

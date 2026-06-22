@@ -1,4 +1,5 @@
 import { API_BASE_URL, getApiConnectionErrorMessage, isApiMisconfiguredInBrowser } from "./config"
+import { getToken, removeToken } from "./token"
 import type { ApiResponse } from "./types"
 import {
   clearAdminLoginSession,
@@ -6,11 +7,6 @@ import {
   notifyAdminSessionActivity,
   setAdminLogoutMessage,
 } from "@/lib/admin-session"
-
-const getToken = (): string | null => {
-  if (typeof window === "undefined") return null
-  return localStorage.getItem("token")
-}
 
 export interface ApiClientOptions extends RequestInit {
   /** Si es false, no se envía el header Authorization (por defecto true) */
@@ -47,7 +43,7 @@ function handleUnauthorized(message?: string): never {
   }
 
   if (typeof window !== "undefined") {
-    localStorage.removeItem("token")
+    removeToken()
     if (!window.location.pathname.startsWith("/login")) {
       window.location.href = "/login"
     }
