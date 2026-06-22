@@ -13,7 +13,7 @@ export function SiteJsonLd() {
     name: ORG_NAME,
     description: ORG_DESC,
     url: siteUrl,
-    logo: `${siteUrl}/icon.svg`,
+    logo: `${siteUrl}/images/logo-colegio.png`,
   }
   const website = {
     "@context": "https://schema.org",
