@@ -1,16 +1,21 @@
 import { apiRequest, apiRequestFormData } from "./client"
-import type { CrearMatriculadoRequest } from "./types"
+import type { CrearMatriculadoRequest, EstadoFianza } from "./types"
 import type { MatriculadoPublicResponse } from "./types"
 
+/** Respuesta exclusiva del POST de alta; incluye contrasenaTemporal en texto plano. */
 export interface CrearMatriculadoResponse {
   id: number
-  matricula: string
   nombre: string
   apellido: string
-  email?: string
-  fotoCarnetUrl?: string
-  password?: string // Solo en respuesta al crear
-  [key: string]: unknown
+  dni: string
+  matricula: string
+  email: string | null
+  cuit: string | null
+  fotoCarnetUrl: string | null
+  habilitado: boolean
+  primeraVezLogin: boolean
+  estadoFianza: EstadoFianza
+  contrasenaTemporal: string
 }
 
 export async function crearMatriculado(

@@ -7,7 +7,12 @@ import { ArrowLeft, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { crearMatriculado, type CrearMatriculadoRequest } from "@/lib/api"
+import { CredencialesMatriculadoDialog } from "@/components/admin/credenciales-matriculado-dialog"
+import {
+  crearMatriculado,
+  type CrearMatriculadoRequest,
+  type CrearMatriculadoResponse,
+} from "@/lib/api"
 
 export default function NuevoMatriculadoPage() {
   const allowedImageTypes = [
@@ -20,7 +25,7 @@ export default function NuevoMatriculadoPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [createdPassword, setCreatedPassword] = useState<string | null>(null)
+  const [created, setCreated] = useState<CrearMatriculadoResponse | null>(null)
   const [foto, setFoto] = useState<File | null>(null)
   const [form, setForm] = useState<CrearMatriculadoRequest>({
     nombre: "",
@@ -34,7 +39,7 @@ export default function NuevoMatriculadoPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setCreatedPassword(null)
+    setCreated(null)
     setLoading(true)
     try {
       const email = form.email.trim()
@@ -49,16 +54,16 @@ export default function NuevoMatriculadoPage() {
         email,
         cuit,
       }
-      const created = await crearMatriculado(body, foto)
-      if (created) {
-        if (created.password) {
-          setCreatedPassword(created.password)
-        } else {
-          router.push("/admin/matriculados/nuevo")
-        }
+      const result = await crearMatriculado(body, foto)
+      if (result?.contrasenaTemporal) {
+        setCreated(result)
         return
       }
-      setError("No se pudo crear el matriculado.")
+      setError(
+        result
+          ? "El matriculado se creó pero no se recibió la contraseña temporal. Verificá el email o contactá al administrador del sistema."
+          : "No se pudo crear el matriculado."
+      )
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "data" in err
@@ -70,148 +75,142 @@ export default function NuevoMatriculadoPage() {
     }
   }
 
-  if (createdPassword) {
-    return (
-      <div>
-        <h1 className="text-2xl font-bold text-foreground mb-4">
-          Matriculado creado
-        </h1>
-        <div className="rounded-lg border border-border bg-muted/30 p-4 max-w-md">
-          <p className="text-sm text-muted-foreground mb-2">
-            La contraseña temporal generada es (guardala, no se volverá a mostrar):
-          </p>
-          <p className="font-mono font-semibold text-foreground break-all">
-            {createdPassword}
-          </p>
-        </div>
-        <Button className="mt-6" asChild>
-          <Link href="/admin/matriculados/nuevo">Crear otro matriculado</Link>
-        </Button>
-      </div>
-    )
+  const handleConfirmCredenciales = () => {
+    setCreated(null)
+    router.push("/admin/matriculados")
   }
 
   return (
-    <div>
-      <Link
-        href="/admin"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Volver al panel
-      </Link>
-      <h1 className="text-2xl font-bold text-foreground mb-6">
-        Nuevo matriculado
-      </h1>
-
-      {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
-        </div>
+    <>
+      {created && (
+        <CredencialesMatriculadoDialog
+          open
+          data={created}
+          onConfirm={handleConfirmCredenciales}
+        />
       )}
 
-      <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Volver al panel
+        </Link>
+        <h1 className="text-2xl font-bold text-foreground mb-6">
+          Nuevo matriculado
+        </h1>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="nombre">Nombre</Label>
+              <Input
+                id="nombre"
+                required
+                value={form.nombre}
+                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="apellido">Apellido</Label>
+              <Input
+                id="apellido"
+                required
+                value={form.apellido}
+                onChange={(e) => setForm({ ...form, apellido: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="dni">DNI</Label>
+              <Input
+                id="dni"
+                required
+                value={form.dni}
+                onChange={(e) => setForm({ ...form, dni: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="matricula">Matrícula</Label>
+              <Input
+                id="matricula"
+                required
+                value={form.matricula}
+                onChange={(e) => setForm({ ...form, matricula: e.target.value })}
+              />
+            </div>
+          </div>
           <div className="space-y-2">
-            <Label htmlFor="nombre">Nombre</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
-              id="nombre"
+              id="email"
+              type="email"
               required
-              value={form.nombre}
-              onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="apellido">Apellido</Label>
+            <Label htmlFor="cuit">CUIT</Label>
             <Input
-              id="apellido"
+              id="cuit"
               required
-              value={form.apellido}
-              onChange={(e) => setForm({ ...form, apellido: e.target.value })}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="dni">DNI</Label>
-            <Input
-              id="dni"
-              required
-              value={form.dni}
-              onChange={(e) => setForm({ ...form, dni: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="matricula">Matrícula</Label>
-            <Input
-              id="matricula"
-              required
-              value={form.matricula}
-              onChange={(e) => setForm({ ...form, matricula: e.target.value })}
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            required
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="cuit">CUIT</Label>
-          <Input
-            id="cuit"
-            required
-            value={form.cuit}
-            onChange={(e) =>
-              setForm({ ...form, cuit: e.target.value.replace(/\D/g, "") })
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="foto">Foto carnet</Label>
-          <Input
-            id="foto"
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-            onChange={(e) => {
-              const file = e.target.files?.[0] ?? null
-              if (!file) {
-                setFoto(null)
-                return
+              value={form.cuit}
+              onChange={(e) =>
+                setForm({ ...form, cuit: e.target.value.replace(/\D/g, "") })
               }
-              if (!allowedImageTypes.includes(file.type)) {
-                setError(
-                  "Formato de foto no permitido. Usá JPEG, JPG, PNG, WEBP o GIF."
-                )
-                e.target.value = ""
-                setFoto(null)
-                return
-              }
-              setError(null)
-              setFoto(file)
-            }}
-          />
-          <p className="text-xs text-muted-foreground">
-            Tipos permitidos: JPG, JPEG, PNG, WEBP, GIF.
-          </p>
-        </div>
-        <div className="flex gap-4">
-          <Button type="submit" disabled={loading}>
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            Crear matriculado
-          </Button>
-          <Button type="button" variant="outline" asChild>
-            <Link href="/admin">Cancelar</Link>
-          </Button>
-        </div>
-      </form>
-    </div>
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="foto">Foto carnet</Label>
+            <Input
+              id="foto"
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null
+                if (!file) {
+                  setFoto(null)
+                  return
+                }
+                if (!allowedImageTypes.includes(file.type)) {
+                  setError(
+                    "Formato de foto no permitido. Usá JPEG, JPG, PNG, WEBP o GIF."
+                  )
+                  e.target.value = ""
+                  setFoto(null)
+                  return
+                }
+                setError(null)
+                setFoto(file)
+              }}
+            />
+            <p className="text-xs text-muted-foreground">
+              Tipos permitidos: JPG, JPEG, PNG, WEBP, GIF.
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <Button type="submit" disabled={loading}>
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Crear matriculado
+            </Button>
+            <Button type="button" variant="outline" asChild>
+              <Link href="/admin">Cancelar</Link>
+            </Button>
+          </div>
+        </form>
+      </div>
+    </>
   )
 }
