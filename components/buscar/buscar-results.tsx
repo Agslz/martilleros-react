@@ -94,9 +94,18 @@ export function BuscarResults({
 
             <div className="p-6">
               <div className="flex items-start gap-4 mb-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                  <User className="h-8 w-8 text-muted-foreground" />
-                </div>
+                {matriculado.fotoCarnetUrl ? (
+                  <img
+                    src={matriculado.fotoCarnetUrl}
+                    alt={`Foto de ${matriculado.nombre} ${matriculado.apellido}`}
+                    className="h-16 w-16 rounded-full object-cover border border-border shrink-0"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted shrink-0">
+                    <User className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
                 <div>
                   <h3 className="text-xl font-semibold text-foreground">
                     {matriculado.apellido}, {matriculado.nombre}
