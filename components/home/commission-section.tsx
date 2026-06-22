@@ -26,19 +26,19 @@ const GRUPOS_COMISION: GrupoComision[] = [
         cargo: "Presidente",
       },
       {
-        id: "elias-baquet",
-        nombre: "Elias Baquet",
+        id: "elias-vaquer",
+        nombre: "Elias Vaquer",
         cargo: "Vicepresidente",
       },
       {
         id: "patricia-maturano",
         nombre: "Patricia Maturano",
-        cargo: "Secretaria",
+        cargo: "Secretaría",
       },
       {
         id: "fanny-maldonado",
         nombre: "Fanny Maldonado",
-        cargo: "Pro-secretaria",
+        cargo: "Pro-secretaría",
       },
       {
         id: "luis-duarte",
@@ -72,7 +72,7 @@ const GRUPOS_COMISION: GrupoComision[] = [
     miembros: [
       {
         id: "magdalena-aguero",
-        nombre: "Magdalena Aguero",
+        nombre: "Magdalena Agüero",
         cargo: "Vocal suplente",
       },
       {
@@ -92,7 +92,7 @@ const GRUPOS_COMISION: GrupoComision[] = [
     miembros: [
       {
         id: "javier-paniagua-y-correa",
-        nombre: "Javier Paniagua y Correa",
+        nombre: "Javier Paniagua y Correas",
         cargo: "Tribunal de ética",
       },
       {
@@ -112,7 +112,7 @@ const GRUPOS_COMISION: GrupoComision[] = [
     miembros: [
       {
         id: "nestor-buseta",
-        nombre: "Nestor Buseta",
+        nombre: "Néstor Buseta",
         cargo: "Tribunal de cuentas",
       },
       {

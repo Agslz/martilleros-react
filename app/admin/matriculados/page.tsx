@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { Plus, Loader2, CheckCircle2, XCircle, AlertTriangle, Search } from "lucide-react"
+import { Plus, Loader2, CheckCircle2, XCircle, AlertTriangle, Search, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -15,6 +15,7 @@ import {
 import {
   getMatriculadosAdmin,
   updateMatriculadoHabilitado,
+  eliminarMatriculado,
   type AdminMatriculadosFiltros,
   type MatriculadoPublicResponse,
 } from "@/lib/api"
@@ -23,6 +24,17 @@ import {
   matriculaPuedeEjercer,
 } from "@/lib/estado-fianza"
 import { useToast } from "@/components/ui/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import {
   Table,
   TableBody,
@@ -54,6 +66,7 @@ export default function AdminMatriculadosPage() {
   const [list, setList] = useState<MatriculadoPublicResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const [backendNoDisponible, setBackendNoDisponible] = useState(false)
   const [apellidoInput, setApellidoInput] = useState("")
   const [apellidoFiltro, setApellidoFiltro] = useState("")
@@ -124,6 +137,27 @@ export default function AdminMatriculadosPage() {
       })
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  const handleEliminar = async (m: MatriculadoPublicResponse) => {
+    setDeletingId(m.id)
+    try {
+      await eliminarMatriculado(m.id)
+      toast({
+        title: "Matriculado eliminado",
+        description: `${m.apellido}, ${m.nombre} (${m.matricula}) fue eliminado del sistema.`,
+      })
+      load(apellidoFiltro, filtroHabilitado)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "No se pudo eliminar el matriculado."
+      toast({
+        title: "Error",
+        description: msg,
+        variant: "destructive",
+      })
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -222,7 +256,9 @@ export default function AdminMatriculadosPage() {
                 <TableHead className="font-semibold">Apellido</TableHead>
                 <TableHead className="font-semibold">Nombre</TableHead>
                 <TableHead className="font-semibold text-center">Estado</TableHead>
-                <TableHead className="font-semibold text-right">Acción</TableHead>
+                <TableHead className="font-semibold w-[220px]">
+                  <div className="flex justify-end pr-1">Acciones</div>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -242,6 +278,11 @@ export default function AdminMatriculadosPage() {
                         <XCircle className="h-3 w-3" />
                         No habilitado
                       </span>
+                    ) : m.estadoFianza === "RECHAZADA" ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300 px-3 py-1 text-xs font-medium">
+                        <XCircle className="h-3 w-3" />
+                        Fianza: Rechazada
+                      </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 px-3 py-1 text-xs font-medium">
                         <AlertTriangle className="h-3 w-3" />
@@ -249,21 +290,61 @@ export default function AdminMatriculadosPage() {
                       </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={updatingId === m.id}
-                      onClick={() => handleToggleHabilitado(m)}
-                    >
-                      {updatingId === m.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : m.habilitado ? (
-                        "Deshabilitar"
-                      ) : (
-                        "Habilitar"
-                      )}
-                    </Button>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={updatingId === m.id || deletingId === m.id}
+                        onClick={() => handleToggleHabilitado(m)}
+                      >
+                        {updatingId === m.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : m.habilitado ? (
+                          "Deshabilitar"
+                        ) : (
+                          "Habilitar"
+                        )}
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            disabled={deletingId === m.id || updatingId === m.id}
+                          >
+                            {deletingId === m.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Eliminar
+                              </>
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar matriculado?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Se eliminará permanentemente a {m.nombre} {m.apellido}{" "}
+                              (matrícula {m.matricula}), junto con sus fianzas y cuotas
+                              asociadas. Esta acción no se puede deshacer.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => handleEliminar(m)}
+                            >
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { User, Lock, Loader2, Eye, EyeOff, Pencil } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,8 @@ import {
   actualizarPerfil,
 } from "@/lib/api"
 import type { UserInfoResponse } from "@/lib/api"
+import { displayCuit, formatCuitInput, stripCuit } from "@/lib/cuit"
+import { resolveStorageFileUrl } from "@/lib/storage-url"
 import { useToast } from "@/hooks/use-toast"
 
 export default function PanelPerfilPage() {
@@ -51,12 +54,24 @@ export default function PanelPerfilPage() {
       .finally(() => setLoadingUser(false))
   }, [])
 
+  const fotoUrl = user?.fotoCarnetUrl
+    ? resolveStorageFileUrl(user.fotoCarnetUrl)
+    : null
+
   const handleSubmitProfile = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!profileForm.nombre.trim() || !profileForm.apellido.trim()) {
+    if (!profileForm.nombre.trim()) {
       toast({
-        title: "Error",
-        description: "Nombre y apellido son obligatorios.",
+        title: "Campo requerido",
+        description: "Completá el campo «Nombre».",
+        variant: "destructive",
+      })
+      return
+    }
+    if (!profileForm.apellido.trim()) {
+      toast({
+        title: "Campo requerido",
+        description: "Completá el campo «Apellido».",
         variant: "destructive",
       })
       return
@@ -67,7 +82,7 @@ export default function PanelPerfilPage() {
         nombre: profileForm.nombre.trim(),
         apellido: profileForm.apellido.trim(),
         email: profileForm.email.trim() || undefined,
-        cuit: profileForm.cuit.trim() || undefined,
+        cuit: stripCuit(profileForm.cuit) || undefined,
       })
       if (res.success && res.data) {
         setUser(res.data)
@@ -110,10 +125,18 @@ export default function PanelPerfilPage() {
       })
       return
     }
-    if (!form.passwordActual || !form.passwordNueva) {
+    if (!form.passwordActual) {
       toast({
-        title: "Error",
-        description: "Complete todos los campos.",
+        title: "Campo requerido",
+        description: "Completá el campo «Contraseña actual».",
+        variant: "destructive",
+      })
+      return
+    }
+    if (!form.passwordNueva) {
+      toast({
+        title: "Campo requerido",
+        description: "Completá el campo «Contraseña nueva».",
         variant: "destructive",
       })
       return
@@ -182,6 +205,55 @@ export default function PanelPerfilPage() {
         <>
           <Card className="mb-8">
             <CardHeader>
+              <CardTitle className="text-lg">Datos de la cuenta</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-6">
+                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-full border border-border bg-muted ring-2 ring-primary/10">
+                  {fotoUrl ? (
+                    <Image
+                      src={fotoUrl}
+                      alt={`Foto de ${user.nombre} ${user.apellido}`}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                      <User className="h-12 w-12" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2 text-sm flex-1">
+                  <p>
+                    <span className="text-muted-foreground">Matrícula:</span>{" "}
+                    <span className="font-medium">{user.matricula}</span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Nombre:</span>{" "}
+                    <span className="font-medium">
+                      {user.nombre} {user.apellido}
+                    </span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Email:</span>{" "}
+                    <span className="font-medium">
+                      {user.email || "—"}
+                    </span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">CUIT:</span>{" "}
+                    <span className="font-medium">
+                      {user.cuit ? displayCuit(user.cuit) : "—"}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-8">
+            <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Pencil className="h-5 w-5 text-primary" />
                 Editar mis datos
@@ -206,7 +278,6 @@ export default function PanelPerfilPage() {
                     <Label htmlFor="nombre">Nombre</Label>
                     <Input
                       id="nombre"
-                      required
                       value={profileForm.nombre}
                       onChange={(e) =>
                         setProfileForm({ ...profileForm, nombre: e.target.value })
@@ -217,7 +288,6 @@ export default function PanelPerfilPage() {
                     <Label htmlFor="apellido">Apellido</Label>
                     <Input
                       id="apellido"
-                      required
                       value={profileForm.apellido}
                       onChange={(e) =>
                         setProfileForm({ ...profileForm, apellido: e.target.value })
@@ -241,10 +311,14 @@ export default function PanelPerfilPage() {
                   <Label htmlFor="cuit">CUIT</Label>
                   <Input
                     id="cuit"
+                    inputMode="numeric"
                     placeholder="20-12345678-9"
-                    value={profileForm.cuit}
+                    value={formatCuitInput(profileForm.cuit)}
                     onChange={(e) =>
-                      setProfileForm({ ...profileForm, cuit: e.target.value })
+                      setProfileForm({
+                        ...profileForm,
+                        cuit: stripCuit(e.target.value),
+                      })
                     }
                   />
                 </div>
@@ -257,33 +331,6 @@ export default function PanelPerfilPage() {
                   Guardar cambios
                 </Button>
               </form>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-lg">Datos de la cuenta</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p>
-                <span className="text-muted-foreground">Matrícula:</span>{" "}
-                {user.matricula}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Nombre:</span>{" "}
-                {user.nombre} {user.apellido}
-              </p>
-              {user.email && (
-                <p>
-                  <span className="text-muted-foreground">Email:</span>{" "}
-                  {user.email}
-                </p>
-              )}
-              {user.cuit && (
-                <p>
-                  <span className="text-muted-foreground">CUIT:</span> {user.cuit}
-                </p>
-              )}
             </CardContent>
           </Card>
         </>
@@ -304,7 +351,6 @@ export default function PanelPerfilPage() {
                 <Input
                   id="passwordActual"
                   type={showActual ? "text" : "password"}
-                  required
                   className="pr-10"
                   value={form.passwordActual}
                   onChange={(e) =>
@@ -333,7 +379,6 @@ export default function PanelPerfilPage() {
                 <Input
                   id="passwordNueva"
                   type={showNueva ? "text" : "password"}
-                  required
                   minLength={AUTH_PASSWORD_MIN_LENGTH}
                   className="pr-10"
                   value={form.passwordNueva}
@@ -359,7 +404,6 @@ export default function PanelPerfilPage() {
               <Input
                 id="passwordNuevaConfirm"
                 type="password"
-                required
                 minLength={AUTH_PASSWORD_MIN_LENGTH}
                 value={form.passwordNuevaConfirm}
                 onChange={(e) =>

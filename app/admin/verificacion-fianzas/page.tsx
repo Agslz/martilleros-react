@@ -111,7 +111,7 @@ export default function AdminVerificacionFianzasPage() {
       })
       toast({
         title: "Correo enviado",
-        description: `Se notificó a ${rechazoFianza.apellido}, ${rechazoFianza.nombre} (${rechazoFianza.matricula}).`,
+        description: "Se notificó el rechazo a ${rechazoFianza.apellido}, ${rechazoFianza.nombre} (${rechazoFianza.matricula}). La fianza quedó marcada como rechazada.",
       })
       setRechazoFianza(null)
       load()

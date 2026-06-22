@@ -4,6 +4,7 @@ const ETIQUETAS_ESTADO_FIANZA: Record<EstadoFianza, string> = {
   ACTIVA: "Activa",
   VENCIDA: "Vencida",
   PENDIENTE: "Pendiente",
+  RECHAZADA: "Rechazada",
   NO_REQUERIDA: "No requerida",
 }
 

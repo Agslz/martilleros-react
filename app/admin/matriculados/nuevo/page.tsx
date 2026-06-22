@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,20 +14,39 @@ import {
   type CrearMatriculadoRequest,
   type CrearMatriculadoResponse,
 } from "@/lib/api"
+import {
+  formatCuitInput,
+  isValidCuit,
+  stripCuit,
+} from "@/lib/cuit"
+import { useToast } from "@/hooks/use-toast"
+
+const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]
+
+const REQUIRED_FIELDS: { key: keyof CrearMatriculadoRequest; label: string }[] =
+  [
+    { key: "nombre", label: "Nombre" },
+    { key: "apellido", label: "Apellido" },
+    { key: "dni", label: "DNI" },
+    { key: "matricula", label: "Matrícula" },
+    { key: "email", label: "Email" },
+    { key: "cuit", label: "CUIT" },
+  ]
 
 export default function NuevoMatriculadoPage() {
-  const allowedImageTypes = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-  ]
   const router = useRouter()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<CrearMatriculadoResponse | null>(null)
   const [foto, setFoto] = useState<File | null>(null)
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null)
   const [form, setForm] = useState<CrearMatriculadoRequest>({
     nombre: "",
     apellido: "",
@@ -36,23 +56,58 @@ export default function NuevoMatriculadoPage() {
     cuit: "",
   })
 
+  useEffect(() => {
+    if (!foto) {
+      setFotoPreview(null)
+      return
+    }
+    const url = URL.createObjectURL(foto)
+    setFotoPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [foto])
+
+  const validateForm = (): boolean => {
+    for (const { key, label } of REQUIRED_FIELDS) {
+      const value = String(form[key] ?? "").trim()
+      if (!value) {
+        toast({
+          title: "Campo requerido",
+          description: `Completá el campo «${label}».`,
+          variant: "destructive",
+        })
+        return false
+      }
+    }
+
+    if (!isValidCuit(form.cuit)) {
+      toast({
+        title: "CUIT inválido",
+        description: "El CUIT debe tener 11 dígitos (formato xx-xxxxxxxx-x).",
+        variant: "destructive",
+      })
+      return false
+    }
+
+    return true
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setCreated(null)
+
+    if (!validateForm()) return
+
     setLoading(true)
     try {
-      const email = form.email.trim()
-      const cuit = form.cuit.trim()
-      if (!email || !cuit) {
-        setError("El email y el CUIT son obligatorios.")
-        setLoading(false)
-        return
-      }
       const body = {
         ...form,
-        email,
-        cuit,
+        nombre: form.nombre.trim(),
+        apellido: form.apellido.trim(),
+        dni: form.dni.trim(),
+        matricula: form.matricula.trim(),
+        email: form.email.trim(),
+        cuit: stripCuit(form.cuit),
       }
       const result = await crearMatriculado(body, foto)
       if (result?.contrasenaTemporal) {
@@ -79,6 +134,8 @@ export default function NuevoMatriculadoPage() {
     setCreated(null)
     router.push("/admin/matriculados")
   }
+
+  const cuitDisplay = useMemo(() => formatCuitInput(form.cuit), [form.cuit])
 
   return (
     <>
@@ -114,7 +171,6 @@ export default function NuevoMatriculadoPage() {
               <Label htmlFor="nombre">Nombre</Label>
               <Input
                 id="nombre"
-                required
                 value={form.nombre}
                 onChange={(e) => setForm({ ...form, nombre: e.target.value })}
               />
@@ -123,7 +179,6 @@ export default function NuevoMatriculadoPage() {
               <Label htmlFor="apellido">Apellido</Label>
               <Input
                 id="apellido"
-                required
                 value={form.apellido}
                 onChange={(e) => setForm({ ...form, apellido: e.target.value })}
               />
@@ -134,7 +189,6 @@ export default function NuevoMatriculadoPage() {
               <Label htmlFor="dni">DNI</Label>
               <Input
                 id="dni"
-                required
                 value={form.dni}
                 onChange={(e) => setForm({ ...form, dni: e.target.value })}
               />
@@ -143,7 +197,6 @@ export default function NuevoMatriculadoPage() {
               <Label htmlFor="matricula">Matrícula</Label>
               <Input
                 id="matricula"
-                required
                 value={form.matricula}
                 onChange={(e) => setForm({ ...form, matricula: e.target.value })}
               />
@@ -154,7 +207,6 @@ export default function NuevoMatriculadoPage() {
             <Input
               id="email"
               type="email"
-              required
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
@@ -163,40 +215,63 @@ export default function NuevoMatriculadoPage() {
             <Label htmlFor="cuit">CUIT</Label>
             <Input
               id="cuit"
-              required
-              value={form.cuit}
+              inputMode="numeric"
+              placeholder="20-12345678-9"
+              value={cuitDisplay}
               onChange={(e) =>
-                setForm({ ...form, cuit: e.target.value.replace(/\D/g, "") })
+                setForm({ ...form, cuit: stripCuit(e.target.value) })
               }
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="foto">Foto carnet</Label>
-            <Input
-              id="foto"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-              onChange={(e) => {
-                const file = e.target.files?.[0] ?? null
-                if (!file) {
-                  setFoto(null)
-                  return
-                }
-                if (!allowedImageTypes.includes(file.type)) {
-                  setError(
-                    "Formato de foto no permitido. Usá JPEG, JPG, PNG, WEBP o GIF."
-                  )
-                  e.target.value = ""
-                  setFoto(null)
-                  return
-                }
-                setError(null)
-                setFoto(file)
-              }}
-            />
-            <p className="text-xs text-muted-foreground">
-              Tipos permitidos: JPG, JPEG, PNG, WEBP, GIF.
-            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border border-border bg-muted ring-2 ring-primary/10">
+                {fotoPreview ? (
+                  <Image
+                    src={fotoPreview}
+                    alt="Vista previa de la foto carnet"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                    <User className="h-10 w-10" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <Input
+                  id="foto"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] ?? null
+                    if (!file) {
+                      setFoto(null)
+                      return
+                    }
+                    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+                      toast({
+                        title: "Formato no permitido",
+                        description:
+                          "Usá JPEG, JPG, PNG, WEBP o GIF para la foto carnet.",
+                        variant: "destructive",
+                      })
+                      e.target.value = ""
+                      setFoto(null)
+                      return
+                    }
+                    setError(null)
+                    setFoto(file)
+                  }}
+                />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Tipos permitidos: JPG, JPEG, PNG, WEBP, GIF.
+                </p>
+              </div>
+            </div>
           </div>
           <div className="flex gap-4">
             <Button type="submit" disabled={loading}>

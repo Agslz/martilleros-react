@@ -12,7 +12,7 @@ export function ContactoHeader() {
             Contacto
           </h1>
           <p className="mt-4 text-lg text-white/80 leading-relaxed">
-            Estamos aquí para ayudarle. Complete el formulario o contáctenos 
+            Estamos aquí para ayudarte. Completá el formulario o contactanos 
             directamente a través de nuestros canales de comunicación.
           </p>
         </div>

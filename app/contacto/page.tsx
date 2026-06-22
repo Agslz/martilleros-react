@@ -8,7 +8,7 @@ import { getContenido } from "@/lib/api"
 export const metadata: Metadata = {
   title: "Contacto",
   description:
-    "Póngase en contacto con el Colegio de Martilleros de Mendoza. Estamos aquí para ayudarle.",
+    "Contactá al Colegio de Martilleros de Mendoza. Estamos para ayudarte.",
   alternates: { canonical: "/contacto" },
 }
 

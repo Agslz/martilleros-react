@@ -12,7 +12,7 @@ export function BuscarHeader() {
             Buscar Martillero Habilitado
           </h1>
           <p className="mt-4 text-lg text-white/80 leading-relaxed">
-            Verifique si un martillero está habilitado para ejercer la profesión 
+            Verificá si un martillero está habilitado para ejercer la profesión 
             en la Provincia de Mendoza.
           </p>
         </div>

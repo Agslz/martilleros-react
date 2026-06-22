@@ -229,16 +229,17 @@ Patrón de respuesta: `ApiResponse<T>` con `success`, `data`, `message`.
 
 ## 10. Despliegue (referencia)
 
-1. Build: `npm run build`
-2. Servir: `npm run start` o plataforma (Vercel, Railway, etc.)
-3. Configurar variables de entorno (ver `.env.example`):
-   - **Front en Railway + backend en Railway:** `BACKEND_URL=http://colegiodemartilleros.railway.internal:8080` (sin `NEXT_PUBLIC_API_URL`; el navegador usa `/api` y Next reenvía al backend).
-   - **Front en otro host (Vercel, etc.):** `NEXT_PUBLIC_API_URL=https://<dominio-publico-backend>.up.railway.app/api`
-   - `NEXT_PUBLIC_SITE_URL` = URL pública del sitio
-4. **No** poner `*.railway.internal` en variables `NEXT_PUBLIC_*`: el navegador no resuelve esa red privada.
-5. Backend con CORS permitiendo el origen del front (solo si usás `NEXT_PUBLIC_API_URL` directo).
-6. Storage en producción: URLs absolutas S3 en respuestas de archivos
-7. Tras cambiar variables `NEXT_PUBLIC_*`, **rebuild** del front (quedan embebidas en el build).
+**Arquitectura actual:** front en **Vercel**, backend en **Railway**.
+
+1. Build: `npm run build` (Vercel lo hace automáticamente)
+2. Variables en **Vercel** (ver también `README.md`):
+   - **Recomendado:** `BACKEND_URL=https://<dominio-público-backend>.up.railway.app` (sin `/api`). Sin `NEXT_PUBLIC_API_URL` → el navegador usa `/api` y Vercel reenvía al backend.
+   - **Alternativa:** `NEXT_PUBLIC_API_URL=https://<dominio-público-backend>.up.railway.app/api` + CORS en el backend con el origen de Vercel.
+   - `NEXT_PUBLIC_SITE_URL` = URL pública del sitio (ej. `https://….vercel.app`)
+3. **No** usar `*.railway.internal` en Vercel: esa red privada no es alcanzable desde los servidores de Vercel ni desde el navegador.
+4. Backend en Railway: exponer dominio público en Networking; CORS solo si usás `NEXT_PUBLIC_API_URL` directo.
+5. Storage en producción: URLs absolutas S3 en respuestas de archivos.
+6. Tras cambiar `NEXT_PUBLIC_*`, **redeploy** en Vercel.
 
 ---
 

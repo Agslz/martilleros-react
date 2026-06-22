@@ -312,7 +312,7 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                       Martillero no habilitado para ejercer
                     </p>
                     <p className="text-xs text-red-600">
-                      Estado según el padrón público. Verifique en la sección
+                      Estado según el padrón público. Verificá en la sección
                       &quot;Padrón de asociados&quot; para más detalle.
                     </p>
                   </div>

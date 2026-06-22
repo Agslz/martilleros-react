@@ -7,15 +7,19 @@ function normalizeApiBase(url: string): string {
 /**
  * URL base de la API del backend (Colegio de Martilleros).
  *
- * Producción (elegir una opción):
- * 1. Proxy same-origin (recomendado si el front también está en Railway):
- *    BACKEND_URL=http://colegiodemartilleros.railway.internal:8080
- *    (sin NEXT_PUBLIC_API_URL → el navegador usa /api y Next reenvía al backend)
+ * Desarrollo local:
+ *   NEXT_PUBLIC_API_URL=http://127.0.0.1:8080/api
  *
- * 2. URL pública directa (Vercel u otro hosting):
- *    NEXT_PUBLIC_API_URL=https://tu-backend.up.railway.app/api
+ * Producción — front en Vercel + backend en Railway (setup actual):
+ *   Opción A (recomendada, evita CORS): en Vercel definir
+ *     BACKEND_URL=https://<dominio-publico-backend>.up.railway.app
+ *   sin NEXT_PUBLIC_API_URL → el navegador llama a /api y Vercel reenvía al backend.
  *
- * No usar *.railway.internal en NEXT_PUBLIC_*: el navegador no puede resolver esa red.
+ *   Opción B (llamada directa desde el navegador):
+ *     NEXT_PUBLIC_API_URL=https://<dominio-publico-backend>.up.railway.app/api
+ *   y CORS en el backend debe incluir el dominio de Vercel.
+ *
+ * No usar *.railway.internal en Vercel: esa red solo existe dentro de Railway.
  */
 export function getApiBaseUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL?.trim()
@@ -56,9 +60,10 @@ export function getApiConnectionErrorMessage(): string {
     }
 
     return (
-      "La API apunta a localhost en producción. Configurá NEXT_PUBLIC_API_URL con la " +
-      "URL pública del backend en Railway (ej. https://….up.railway.app/api) o BACKEND_URL " +
-      "con la red interna si el front también está en Railway, y volvé a desplegar."
+      "La API apunta a localhost en producción. En Vercel configurá " +
+      "BACKEND_URL con la URL pública del backend en Railway " +
+      "(ej. https://….up.railway.app, sin /api) o NEXT_PUBLIC_API_URL con …/api, " +
+      "y volvé a desplegar."
     )
   }
 

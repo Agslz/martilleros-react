@@ -90,3 +90,13 @@ export async function updateMatriculadoHabilitado(
     body: JSON.stringify({ habilitado }),
   })
 }
+
+/**
+ * Elimina un matriculado (borrado físico con cascada en BD).
+ * DELETE /api/admin/matriculados/{id}
+ */
+export async function eliminarMatriculado(id: number): Promise<void> {
+  await apiRequest(`/admin/matriculados/${id}`, {
+    method: "DELETE",
+  })
+}

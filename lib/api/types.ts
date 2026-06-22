@@ -114,6 +114,7 @@ export type EstadoFianza =
   | "ACTIVA"
   | "VENCIDA"
   | "PENDIENTE"
+  | "RECHAZADA"
   | "NO_REQUERIDA"
 
 export interface MatriculadoPublicResponse {
@@ -213,6 +214,7 @@ export interface FianzaResponse {
   fechaInicio: string
   fechaVencimiento: string
   createdAt: string
+  estado: EstadoFianza
 }
 
 /** Fianza pendiente de verificación para el panel admin (incluye datos del matriculado). */

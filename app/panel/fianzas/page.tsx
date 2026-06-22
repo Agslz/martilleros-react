@@ -7,8 +7,25 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { getFianzas, subirFianza, type FianzaResponse } from "@/lib/api"
+import { etiquetaEstadoFianza } from "@/lib/estado-fianza"
 import { resolveStorageFileUrl } from "@/lib/storage-url"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+
+function estadoBadgeClass(estado: FianzaResponse["estado"]) {
+  switch (estado) {
+    case "ACTIVA":
+      return "bg-green-50 text-green-800 dark:bg-green-950/50 dark:text-green-300"
+    case "RECHAZADA":
+      return "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300"
+    case "PENDIENTE":
+      return "bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+    case "VENCIDA":
+      return "bg-stone-100 text-stone-700 dark:bg-stone-900/50 dark:text-stone-300"
+    default:
+      return "bg-muted text-muted-foreground"
+  }
+}
 
 function formatFecha(s: string) {
   try {
@@ -76,7 +93,7 @@ export default function PanelFianzasPage() {
         setError("No se pudo subir la fianza.")
         toast({
           title: "Error",
-          description: "Error al subir el archivo. Verifique que sea un PDF válido.",
+          description: "Error al subir el archivo. Verificá que sea un PDF válido.",
           variant: "destructive",
         })
       }
@@ -88,7 +105,7 @@ export default function PanelFianzasPage() {
       setError(msg ?? "Error al subir la fianza.")
       toast({
         title: "Error",
-        description: "Error al subir el archivo. Verifique que sea un PDF válido.",
+        description: "Error al subir el archivo. Verificá que sea un PDF válido.",
         variant: "destructive",
       })
     } finally {
@@ -183,6 +200,7 @@ export default function PanelFianzasPage() {
               <tr>
                 <th className="text-left p-4 font-semibold">Inicio</th>
                 <th className="text-left p-4 font-semibold">Vencimiento</th>
+                <th className="text-left p-4 font-semibold">Estado</th>
                 <th className="text-left p-4 font-semibold">Constancia</th>
               </tr>
             </thead>
@@ -193,6 +211,16 @@ export default function PanelFianzasPage() {
                 <tr key={f.id} className="border-t border-border">
                   <td className="p-4">{formatFecha(f.fechaInicio)}</td>
                   <td className="p-4">{formatFecha(f.fechaVencimiento)}</td>
+                  <td className="p-4">
+                    <span
+                      className={cn(
+                        "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                        estadoBadgeClass(f.estado)
+                      )}
+                    >
+                      {etiquetaEstadoFianza(f.estado)}
+                    </span>
+                  </td>
                   <td className="p-4">
                     {constanciaHref ? (
                       <a

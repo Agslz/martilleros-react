@@ -5,7 +5,7 @@ import { PublicLayout } from "@/components/layout/public-layout"
 export const metadata: Metadata = {
   title: "Buscar martillero habilitado",
   description:
-    "Verifique si un martillero o corredor está matriculado y habilitado en el Colegio de Martilleros de Mendoza.",
+    "Verificá si un martillero o corredor está matriculado y habilitado en el Colegio de Martilleros de Mendoza.",
   alternates: { canonical: "/buscar" },
 }
 

@@ -262,7 +262,7 @@ export function HeroSection() {
             </div>
             <div>
               <h2 className="font-semibold text-stone-900">Buscar Martillero</h2>
-              <p className="text-sm text-stone-500">Verifique habilitación</p>
+              <p className="text-sm text-stone-500">Verificá habilitación</p>
             </div>
             <ArrowRight className="ml-auto h-5 w-5 text-stone-300 group-hover:text-stone-600 transition-colors" />
           </Link>

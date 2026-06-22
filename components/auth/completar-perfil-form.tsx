@@ -1,18 +1,30 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Gavel, UserPlus, Loader2, Eye, EyeOff } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { AUTH_PASSWORD_MIN_LENGTH, completarPerfil, getCurrentUser } from "@/lib/api"
+import {
+  AUTH_PASSWORD_MIN_LENGTH,
+  completarPerfil,
+  getCurrentUser,
+} from "@/lib/api"
+import {
+  displayCuit,
+  formatCuitInput,
+  isValidCuit,
+  stripCuit,
+} from "@/lib/cuit"
 import { useToast } from "@/hooks/use-toast"
 
 export function CompletarPerfilForm() {
   const { toast } = useToast()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [loadingUser, setLoadingUser] = useState(true)
+  const [cuitFromAdmin, setCuitFromAdmin] = useState(false)
   const [showActual, setShowActual] = useState(false)
   const [showNueva, setShowNueva] = useState(false)
   const [formData, setFormData] = useState({
@@ -23,16 +35,44 @@ export function CompletarPerfilForm() {
     cuit: "",
   })
 
+  useEffect(() => {
+    getCurrentUser()
+      .then((user) => {
+        if (!user) return
+        const adminCuit = stripCuit(user.cuit ?? "")
+        setCuitFromAdmin(adminCuit.length === 11)
+        setFormData((prev) => ({
+          ...prev,
+          email: user.email?.trim() ?? prev.email,
+          cuit: adminCuit,
+        }))
+      })
+      .finally(() => setLoadingUser(false))
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (
-      !formData.email.trim() ||
-      !formData.contrasenaActual ||
-      !formData.nuevaContrasena
-    ) {
+
+    if (!formData.email.trim()) {
       toast({
-        title: "Error",
-        description: "Complete los campos requeridos.",
+        title: "Campo requerido",
+        description: "Completá el campo «Correo electrónico».",
+        variant: "destructive",
+      })
+      return
+    }
+    if (!formData.contrasenaActual) {
+      toast({
+        title: "Campo requerido",
+        description: "Completá el campo «Contraseña actual».",
+        variant: "destructive",
+      })
+      return
+    }
+    if (!formData.nuevaContrasena) {
+      toast({
+        title: "Campo requerido",
+        description: "Completá el campo «Contraseña nueva».",
         variant: "destructive",
       })
       return
@@ -53,13 +93,23 @@ export function CompletarPerfilForm() {
       })
       return
     }
+    if (!cuitFromAdmin && !isValidCuit(formData.cuit)) {
+      toast({
+        title: "CUIT requerido",
+        description:
+          "Debés cargar tu CUIT con 11 dígitos (formato xx-xxxxxxxx-x).",
+        variant: "destructive",
+      })
+      return
+    }
+
     setLoading(true)
     try {
       const res = await completarPerfil({
         email: formData.email.trim(),
         contrasenaActual: formData.contrasenaActual,
         nuevaContrasena: formData.nuevaContrasena,
-        cuit: formData.cuit.trim() || undefined,
+        cuit: cuitFromAdmin ? undefined : stripCuit(formData.cuit),
       })
       if (res.success) {
         toast({
@@ -91,6 +141,14 @@ export function CompletarPerfilForm() {
     }
   }
 
+  if (loadingUser) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
   return (
     <div className="bg-card rounded-xl border border-border shadow-lg overflow-hidden">
       <div className="bg-institutional-navy px-6 py-8 text-center">
@@ -108,12 +166,11 @@ export function CompletarPerfilForm() {
       <div className="p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email">Correo electrónico *</Label>
+            <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
               type="email"
               placeholder="su@email.com"
-              required
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
@@ -121,7 +178,7 @@ export function CompletarPerfilForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="contrasenaActual">Contraseña actual *</Label>
+            <Label htmlFor="contrasenaActual">Contraseña actual</Label>
             <p className="text-xs text-muted-foreground">
               La contraseña temporal con la que acaba de iniciar sesión.
             </p>
@@ -130,7 +187,6 @@ export function CompletarPerfilForm() {
                 id="contrasenaActual"
                 type={showActual ? "text" : "password"}
                 placeholder="Contraseña con la que ingresó"
-                required
                 className="pr-10"
                 value={formData.contrasenaActual}
                 onChange={(e) =>
@@ -151,7 +207,7 @@ export function CompletarPerfilForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="nuevaContrasena">Contraseña nueva *</Label>
+            <Label htmlFor="nuevaContrasena">Contraseña nueva</Label>
             <p className="text-xs text-muted-foreground">
               Mínimo {AUTH_PASSWORD_MIN_LENGTH} caracteres.
             </p>
@@ -160,7 +216,6 @@ export function CompletarPerfilForm() {
                 id="nuevaContrasena"
                 type={showNueva ? "text" : "password"}
                 placeholder="Contraseña nueva"
-                required
                 minLength={AUTH_PASSWORD_MIN_LENGTH}
                 className="pr-10"
                 value={formData.nuevaContrasena}
@@ -182,12 +237,11 @@ export function CompletarPerfilForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="nuevaContrasenaConfirm">Confirmar contraseña nueva *</Label>
+            <Label htmlFor="nuevaContrasenaConfirm">Confirmar contraseña nueva</Label>
             <Input
               id="nuevaContrasenaConfirm"
               type="password"
               placeholder="Repetir contraseña nueva"
-              required
               minLength={AUTH_PASSWORD_MIN_LENGTH}
               value={formData.nuevaContrasenaConfirm}
               onChange={(e) =>
@@ -199,16 +253,40 @@ export function CompletarPerfilForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="cuit">CUIT (opcional)</Label>
-            <Input
-              id="cuit"
-              type="text"
-              placeholder="20-12345678-9"
-              value={formData.cuit}
-              onChange={(e) =>
-                setFormData({ ...formData, cuit: e.target.value })
-              }
-            />
+            <Label htmlFor="cuit">
+              CUIT {cuitFromAdmin ? "" : "(obligatorio)"}
+            </Label>
+            {cuitFromAdmin ? (
+              <>
+                <Input
+                  id="cuit"
+                  value={displayCuit(formData.cuit)}
+                  disabled
+                  className="bg-muted"
+                />
+                <p className="text-xs text-muted-foreground">
+                  El CUIT fue cargado por el Colegio al dar de alta su matrícula.
+                </p>
+              </>
+            ) : (
+              <>
+                <Input
+                  id="cuit"
+                  inputMode="numeric"
+                  placeholder="20-12345678-9"
+                  value={formatCuitInput(formData.cuit)}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      cuit: stripCuit(e.target.value),
+                    })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Si el administrador no cargó su CUIT, debe ingresarlo aquí.
+                </p>
+              </>
+            )}
           </div>
           <Button
             type="submit"

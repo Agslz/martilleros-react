@@ -70,6 +70,7 @@ export {
   crearMatriculado,
   getMatriculadosAdmin,
   updateMatriculadoHabilitado,
+  eliminarMatriculado,
 } from "./admin-matriculados"
 export type {
   AdminMatriculadosFiltros,

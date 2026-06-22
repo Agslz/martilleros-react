@@ -12,7 +12,7 @@ export function CTASection() {
               ¿Necesita verificar un martillero o consultar información?
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Estamos aquí para ayudarle. Puede buscar en nuestro registro público o 
+              Estamos para ayudarte. Podés buscar en nuestro registro público o 
               contactarnos directamente para cualquier consulta.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
