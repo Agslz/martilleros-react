@@ -25,9 +25,9 @@ export function Header() {
             <Image
               src="/images/logo-colegio-header.png"
               alt="Colegio de Martilleros Públicos y Corredores de Comercio de Mendoza"
-              width={56}
-              height={56}
-              className="h-14 w-auto shrink-0 object-contain"
+              width={52}
+              height={64}
+              className="h-16 w-[52px] shrink-0 object-contain object-center"
               priority
             />
             <div className="hidden sm:block">

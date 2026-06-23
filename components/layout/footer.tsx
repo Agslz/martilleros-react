@@ -38,9 +38,9 @@ export function Footer({ contenidoContacto }: FooterProps) {
               <Image
                 src="/images/logo-colegio-header.png"
                 alt="Colegio de Martilleros Públicos y Corredores de Comercio de Mendoza"
-                width={48}
-                height={48}
-                className="h-12 w-auto shrink-0 rounded-lg bg-white object-contain p-0.5"
+                width={44}
+                height={54}
+                className="h-14 w-[44px] shrink-0 object-contain object-center"
               />
               <div>
                 <p className="font-serif text-lg font-semibold leading-tight">
