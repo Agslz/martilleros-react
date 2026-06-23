@@ -8,6 +8,7 @@ import {
   Mail,
   Phone,
   Loader2,
+  type LucideIcon,
 } from "lucide-react"
 import type { MatriculadoPublicResponse } from "@/lib/api"
 import { matriculaPuedeEjercer } from "@/lib/estado-fianza"
@@ -15,6 +16,45 @@ import { displayTelefono } from "@/lib/telefono"
 
 function estadoHabilitado(m: MatriculadoPublicResponse) {
   return matriculaPuedeEjercer(m)
+}
+
+type InfoItem = {
+  label: string
+  value: string
+  icon: LucideIcon
+}
+
+function buildInfoItems(matriculado: MatriculadoPublicResponse): InfoItem[] {
+  const items: InfoItem[] = []
+
+  const matricula = matriculado.matricula?.trim()
+  if (matricula) {
+    items.push({
+      label: "Matrícula",
+      value: matricula,
+      icon: CheckCircle2,
+    })
+  }
+
+  const email = matriculado.email?.trim()
+  if (email) {
+    items.push({
+      label: "Correo",
+      value: email,
+      icon: Mail,
+    })
+  }
+
+  const telefono = matriculado.telefono?.trim()
+  if (telefono) {
+    items.push({
+      label: "Número de teléfono",
+      value: displayTelefono(telefono),
+      icon: Phone,
+    })
+  }
+
+  return items
 }
 
 interface BuscarResultsProps {
@@ -60,6 +100,8 @@ export function BuscarResults({
     <div className="mt-8 space-y-6">
       {results.map((matriculado) => {
         const habilitado = estadoHabilitado(matriculado)
+        const infoItems = buildInfoItems(matriculado)
+
         return (
           <div
             key={matriculado.id}
@@ -107,57 +149,36 @@ export function BuscarResults({
                     <User className="h-8 w-8 text-muted-foreground" />
                   </div>
                 )}
-                <div>
+                <div className="min-w-0 pt-1">
                   <h3 className="text-xl font-semibold text-foreground">
                     {matriculado.apellido}, {matriculado.nombre}
                   </h3>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                  <CheckCircle2 className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Matrícula</p>
-                    <p className="font-medium text-foreground">
-                      {matriculado.matricula}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                  <Mail className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Correo</p>
-                    <p className="font-medium text-foreground break-all">
-                      {matriculado.email ?? "—"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                  <Phone className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Número de teléfono
-                    </p>
-                    <p className="font-medium text-foreground">
-                      {matriculado.telefono
-                        ? displayTelefono(matriculado.telefono)
-                        : "—"}
-                    </p>
-                  </div>
-                </div>
-                {matriculado.cuit && (
-                  <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                    <CheckCircle2 className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">CUIT</p>
-                      <p className="font-medium text-foreground">
-                        {matriculado.cuit}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {infoItems.length > 0 && (
+                <ul className="space-y-2">
+                  {infoItems.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <li
+                        key={item.label}
+                        className="flex items-start gap-3 rounded-lg border border-primary/25 bg-primary/10 px-4 py-3"
+                      >
+                        <Icon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        <p className="text-sm leading-relaxed min-w-0">
+                          <span className="font-semibold text-primary">
+                            {item.label}:
+                          </span>{" "}
+                          <span className="font-medium text-foreground break-all">
+                            {item.value}
+                          </span>
+                        </p>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
             </div>
           </div>
         )

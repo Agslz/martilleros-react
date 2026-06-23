@@ -1,10 +1,34 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const WHATSAPP_URL = "https://wa.me/2617570100"
 
+function usePointerHover() {
+  const [canHover, setCanHover] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia("(hover: hover) and (pointer: fine)")
+    const update = () => setCanHover(media.matches)
+    update()
+    media.addEventListener("change", update)
+    return () => media.removeEventListener("change", update)
+  }, [])
+
+  return canHover
+}
+
 export function WhatsAppFab() {
-  return (
+  const canHover = usePointerHover()
+
+  const button = (
     <Link
       href={WHATSAPP_URL}
       target="_blank"
@@ -21,5 +45,16 @@ export function WhatsAppFab() {
         aria-hidden
       />
     </Link>
+  )
+
+  if (!canHover) return button
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent side="left" sideOffset={8}>
+        Contactar por wsp
+      </TooltipContent>
+    </Tooltip>
   )
 }
