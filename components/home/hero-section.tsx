@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { HomeBloque } from "@/lib/contenidos"
 
 const HERO_SLIDES = [
   {
@@ -39,7 +40,11 @@ const MARQUEE_MESSAGE =
 
 const MARQUEE_COPIES = 6
 
-export function HeroSection() {
+type HeroSectionProps = {
+  intro: HomeBloque
+}
+
+export function HeroSection({ intro }: HeroSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [reduceMotion, setReduceMotion] = useState(false)
   const [slideTransitionEnabled, setSlideTransitionEnabled] = useState(false)
@@ -217,15 +222,11 @@ export function HeroSection() {
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-10 sm:pb-14 lg:pb-16 pt-4 sm:pt-6">
         <h1 className="max-w-4xl font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 leading-tight text-balance">
-          Conoce a la primera comisión del Colegio de Martilleros Públicos y
-          Corredores de Comercio de Mendoza
+          {intro.titulo}
         </h1>
 
         <p className="mt-5 max-w-3xl text-base sm:text-lg text-stone-600 leading-relaxed">
-          Luego de muchos años de trabajo y gestión, se constituyó la nueva
-          comisión: un paso decisivo que renueva el liderazgo colegial y
-          refuerza nuestro compromiso con la transparencia, la legalidad y el
-          acompañamiento a matriculados y ciudadanía.
+          {intro.cuerpo}
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-4">

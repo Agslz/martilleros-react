@@ -1,4 +1,6 @@
 import { CheckCircle2 } from "lucide-react"
+import type { HomeBloque } from "@/lib/contenidos"
+import { splitParagraphs } from "@/lib/contenidos"
 
 const features = [
   "Control y supervisión del ejercicio profesional",
@@ -9,31 +11,37 @@ const features = [
   "Mediación en conflictos profesionales",
 ]
 
-export function AboutSection() {
+type AboutSectionProps = {
+  sobre: HomeBloque
+}
+
+export function AboutSection({ sobre }: AboutSectionProps) {
+  const parrafos = splitParagraphs(sobre.cuerpo)
+
   return (
     <section className="py-20 lg:py-28 bg-muted/50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          {/* Content */}
           <div>
             <p className="text-sm font-semibold uppercase tracking-wider text-primary">
               Sobre Nosotros
             </p>
             <h2 className="mt-2 font-serif text-3xl sm:text-4xl font-bold text-foreground text-balance">
-              Más de 50 años regulando la profesión en Mendoza
+              {sobre.titulo}
             </h2>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              El Colegio de Martilleros y Corredores Públicos de Mendoza es la institución 
-              encargada de regular, supervisar y promover el ejercicio ético y profesional 
-              de martilleros y corredores en toda la provincia.
-            </p>
-            <p className="mt-4 text-muted-foreground leading-relaxed">
-              Nuestra misión es garantizar que todos los profesionales matriculados cumplan 
-              con los más altos estándares de calidad, transparencia y legalidad en cada 
-              operación que realizan.
-            </p>
+            {parrafos.map((parrafo, index) => (
+              <p
+                key={parrafo}
+                className={
+                  index === 0
+                    ? "mt-6 text-lg text-muted-foreground leading-relaxed"
+                    : "mt-4 text-muted-foreground leading-relaxed"
+                }
+              >
+                {parrafo}
+              </p>
+            ))}
 
-            {/* Features List */}
             <ul className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {features.map((feature) => (
                 <li key={feature} className="flex items-start gap-3">
@@ -44,7 +52,6 @@ export function AboutSection() {
             </ul>
           </div>
 
-          {/* Visual */}
           <div className="relative">
             <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-institutional-navy to-institutional-blue overflow-hidden">
               <div className="absolute inset-0 flex items-center justify-center">
@@ -64,7 +71,6 @@ export function AboutSection() {
                 </div>
               </div>
             </div>
-            {/* Decorative element */}
             <div className="absolute -bottom-4 -right-4 h-32 w-32 rounded-2xl bg-institutional-gold/20 -z-10" />
           </div>
         </div>

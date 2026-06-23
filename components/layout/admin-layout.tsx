@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
@@ -12,19 +11,40 @@ import {
   LogOut,
   ArrowLeft,
   ShieldCheck,
+  UserPlus,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { AdminInactivityMonitor } from "@/components/auth/admin-inactivity-monitor"
 import { endClientSession } from "@/lib/auth-session"
+import {
+  DashboardMobileBottomNav,
+  DashboardMobileTopBar,
+  DashboardSidebarNav,
+  type DashboardNavItem,
+} from "@/components/layout/dashboard-nav"
 
-const adminNav = [
+const adminNav: DashboardNavItem[] = [
   { name: "Panel", href: "/admin", icon: LayoutDashboard, exact: true },
   { name: "Subastas", href: "/admin/subastas", icon: Gavel },
   { name: "Biblioteca", href: "/admin/biblioteca", icon: BookOpen },
-  { name: "Verificación de credenciales", href: "/admin/verificacion-fianzas", icon: ShieldCheck },
-  { name: "Matriculados", href: "/admin/matriculados", icon: Users, exact: true },
-  { name: "Nuevo matriculado", href: "/admin/matriculados/nuevo", icon: Users },
+  {
+    name: "Verificación de credenciales",
+    shortName: "Credenciales",
+    href: "/admin/verificacion-fianzas",
+    icon: ShieldCheck,
+  },
+  {
+    name: "Matriculados",
+    href: "/admin/matriculados",
+    icon: Users,
+    exact: true,
+  },
+  {
+    name: "Nuevo matriculado",
+    shortName: "Nuevo",
+    href: "/admin/matriculados/nuevo",
+    icon: UserPlus,
+  },
   { name: "Contenidos", href: "/admin/contenidos", icon: FileText },
   { name: "Cuotas", href: "/admin/cuotas", icon: CreditCard },
 ]
@@ -43,10 +63,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen flex-col lg:flex-row">
       <AdminInactivityMonitor />
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
-        <div className="p-4 border-b border-border">
+
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
+        <div className="border-b border-border p-4">
           <button
             type="button"
             onClick={() => void handleBackToSite()}
@@ -56,39 +77,31 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             Volver al sitio
           </button>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
-          {adminNav.map((item) => {
-            const Icon = item.icon
-            const active = item.exact
-              ? pathname === item.href
-              : pathname === item.href || pathname.startsWith(item.href + "/")
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                {item.name}
-              </Link>
-            )
-          })}
-        </nav>
-        <div className="p-4 border-t border-border">
-          <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
+        <DashboardSidebarNav items={adminNav} pathname={pathname} />
+        <div className="border-t border-border p-4">
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => void handleLogout()}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
             Cerrar sesión
           </Button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto bg-background">
-        <div className="p-6 lg:p-8">{children}</div>
-      </main>
+
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+        <DashboardMobileTopBar
+          onBackToSite={() => void handleBackToSite()}
+          onLogout={() => void handleLogout()}
+        />
+
+        <main className="min-w-0 flex-1 overflow-auto bg-background pb-24 lg:pb-0">
+          <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+        </main>
+
+        <DashboardMobileBottomNav items={adminNav} pathname={pathname} />
+      </div>
     </div>
   )
 }

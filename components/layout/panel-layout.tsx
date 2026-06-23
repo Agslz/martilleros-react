@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   User,
@@ -11,17 +10,22 @@ import {
   BookOpen,
   Gavel,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { endClientSession } from "@/lib/auth-session"
+import {
+  DashboardMobileBottomNav,
+  DashboardMobileTopBar,
+  DashboardSidebarNav,
+  type DashboardNavItem,
+} from "@/components/layout/dashboard-nav"
 
-const panelNav = [
-  { name: "Mi estado", href: "/panel", icon: User },
+const panelNav: DashboardNavItem[] = [
+  { name: "Mi estado", shortName: "Estado", href: "/panel", icon: User, exact: true },
   { name: "Subastas", href: "/panel/subastas", icon: Gavel },
   { name: "Credenciales", href: "/panel/credenciales", icon: Shield },
   { name: "Cuotas", href: "/panel/cuotas", icon: CreditCard },
   { name: "Biblioteca", href: "/panel/biblioteca", icon: BookOpen },
-  { name: "Mi perfil", href: "/panel/perfil", icon: User },
+  { name: "Mi perfil", shortName: "Perfil", href: "/panel/perfil", icon: User },
 ]
 
 export function PanelLayout({ children }: { children: React.ReactNode }) {
@@ -37,51 +41,44 @@ export function PanelLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden">
-      <aside className="fixed inset-y-0 left-0 z-10 w-64 border-r border-border bg-card flex flex-col shrink-0">
-        <div className="p-4 border-b border-border">
+    <div className="flex h-screen flex-col overflow-hidden lg:flex-row">
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
+        <div className="border-b border-border p-4">
           <button
             type="button"
-            onClick={() => void handleBackToSite()}
+            onClick={handleBackToSite}
             className="flex w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al sitio
           </button>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
-          {panelNav.map((item) => {
-            const Icon = item.icon
-            const active =
-              pathname === item.href ||
-              (item.href !== "/panel" && pathname.startsWith(item.href + "/"))
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                {item.name}
-              </Link>
-            )
-          })}
-        </nav>
-        <div className="p-4 border-t border-border">
-          <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
+        <DashboardSidebarNav items={panelNav} pathname={pathname} />
+        <div className="border-t border-border p-4">
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => void handleLogout()}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
             Cerrar sesión
           </Button>
         </div>
       </aside>
-      <main className="flex-1 min-w-0 pl-64 h-screen overflow-auto bg-background">
-        <div className="p-6 lg:p-8">{children}</div>
-      </main>
+
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col lg:pl-64">
+        <DashboardMobileTopBar
+          backOnly
+          onBackToSite={handleBackToSite}
+          onLogout={() => void handleLogout()}
+        />
+
+        <main className="min-h-0 flex-1 overflow-auto bg-background pb-24 lg:pb-0">
+          <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+        </main>
+
+        <DashboardMobileBottomNav items={panelNav} pathname={pathname} />
+      </div>
     </div>
   )
 }

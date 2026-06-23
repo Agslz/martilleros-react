@@ -1,6 +1,8 @@
 import Link from "next/link"
 import Image from "next/image"
+import { ContactoDatos } from "@/components/contacto/contacto-datos"
 import type { ContenidoResponse } from "@/lib/api"
+import { parseContactoContenido } from "@/lib/contenidos"
 
 const quickLinks = [
   { name: "Inicio", href: "/" },
@@ -14,20 +16,12 @@ const legalLinks = [
   { name: "Código de Ética", href: "#" },
 ]
 
-const fallbackContactHtml = `
-  <p><strong>Dirección</strong><br/>Av. San Martín 1234, Ciudad<br/>Mendoza, Argentina</p>
-  <p><strong>Teléfono</strong><br/>(0261) 123-4567</p>
-  <p><strong>Email</strong><br/>info@martillerosmendoza.org.ar</p>
-  <p><strong>Horario</strong><br/>Lunes a Viernes<br/>9:00 a 14:00 hs</p>
-`
-
 interface FooterProps {
   contenidoContacto?: ContenidoResponse | null
 }
 
 export function Footer({ contenidoContacto }: FooterProps) {
-  const contactTitle = contenidoContacto?.titulo?.trim() || "Contacto"
-  const contactBody = contenidoContacto?.cuerpo?.trim() || fallbackContactHtml
+  const contactoDatos = parseContactoContenido(contenidoContacto)
 
   return (
     <footer className="bg-institutional-navy text-white">
@@ -93,12 +87,9 @@ export function Footer({ contenidoContacto }: FooterProps) {
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">
-              {contactTitle}
+              Contacto
             </h3>
-            <div
-              className="footer-contact-prose text-sm text-white/70 space-y-3 [&_a]:text-white/90 [&_a]:underline [&_a:hover]:text-white [&_p]:leading-relaxed [&_strong]:text-white/90"
-              dangerouslySetInnerHTML={{ __html: contactBody }}
-            />
+            <ContactoDatos datos={contactoDatos} variant="footer" />
           </div>
         </div>
 

@@ -7,6 +7,8 @@ import { CommissionSection } from "@/components/home/commission-section"
 import { CTASection } from "@/components/home/cta-section"
 import { WhatsAppFab } from "@/components/home/whatsapp-fab"
 import { getSiteUrl } from "@/lib/site"
+import { getContenido } from "@/lib/api"
+import { parseHomeContenido } from "@/lib/contenidos"
 
 const desc =
   "Institución oficial de Mendoza. Registro de matriculados, búsqueda de martilleros habilitados, edictos, trámites e información de contacto."
@@ -36,12 +38,15 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const contenidoHome = await getContenido("HOME")
+  const home = parseHomeContenido(contenidoHome)
+
   return (
     <PublicLayout>
-      <HeroSection />
+      <HeroSection intro={home.intro} />
       <ServicesSection />
-      <AboutSection />
+      <AboutSection sobre={home.sobre} />
       <CommissionSection />
       <CTASection />
       <WhatsAppFab />

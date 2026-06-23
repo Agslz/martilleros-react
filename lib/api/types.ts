@@ -103,7 +103,7 @@ export interface SubastaResponse {
 }
 
 // --- Contenidos ---
-export type ContenidoKey = "HOME" | "CONTACTO" | "TEXTOS"
+export type ContenidoKey = "HOME" | "CONTACTO"
 
 export interface ContenidoResponse {
   key: string
