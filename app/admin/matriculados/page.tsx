@@ -281,12 +281,12 @@ export default function AdminMatriculadosPage() {
                     ) : m.estadoFianza === "RECHAZADA" ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300 px-3 py-1 text-xs font-medium">
                         <XCircle className="h-3 w-3" />
-                        Fianza: Rechazada
+                        Credencial: Rechazada
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 px-3 py-1 text-xs font-medium">
                         <AlertTriangle className="h-3 w-3" />
-                        Fianza: {etiquetaEstadoFianza(m.estadoFianza)}
+                        Credencial: {etiquetaEstadoFianza(m.estadoFianza)}
                       </span>
                     )}
                   </TableCell>
@@ -329,7 +329,7 @@ export default function AdminMatriculadosPage() {
                             <AlertDialogTitle>¿Eliminar matriculado?</AlertDialogTitle>
                             <AlertDialogDescription>
                               Se eliminará permanentemente a {m.nombre} {m.apellido}{" "}
-                              (matrícula {m.matricula}), junto con sus fianzas y cuotas
+                              (matrícula {m.matricula}), junto con sus credenciales y cuotas
                               asociadas. Esta acción no se puede deshacer.
                             </AlertDialogDescription>
                           </AlertDialogHeader>

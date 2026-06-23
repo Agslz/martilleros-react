@@ -22,7 +22,7 @@ const adminNav = [
   { name: "Panel", href: "/admin", icon: LayoutDashboard, exact: true },
   { name: "Subastas", href: "/admin/subastas", icon: Gavel },
   { name: "Biblioteca", href: "/admin/biblioteca", icon: BookOpen },
-  { name: "Verificación de fianzas", href: "/admin/verificacion-fianzas", icon: ShieldCheck },
+  { name: "Verificación de credenciales", href: "/admin/verificacion-fianzas", icon: ShieldCheck },
   { name: "Matriculados", href: "/admin/matriculados", icon: Users, exact: true },
   { name: "Nuevo matriculado", href: "/admin/matriculados/nuevo", icon: Users },
   { name: "Contenidos", href: "/admin/contenidos", icon: FileText },

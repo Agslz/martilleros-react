@@ -5,6 +5,7 @@ import { ServicesSection } from "@/components/home/services-section"
 import { AboutSection } from "@/components/home/about-section"
 import { CommissionSection } from "@/components/home/commission-section"
 import { CTASection } from "@/components/home/cta-section"
+import { WhatsAppFab } from "@/components/home/whatsapp-fab"
 import { getSiteUrl } from "@/lib/site"
 
 const desc =
@@ -43,6 +44,7 @@ export default function HomePage() {
       <AboutSection />
       <CommissionSection />
       <CTASection />
+      <WhatsAppFab />
     </PublicLayout>
   )
 }

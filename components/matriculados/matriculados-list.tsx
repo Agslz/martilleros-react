@@ -97,7 +97,7 @@ export function MatriculadosList({
                 ) : (
                   <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 px-3 py-1 text-xs font-medium">
                     <AlertTriangle className="h-3 w-3" />
-                    <span>Fianza: {etiquetaEstadoFianza(matriculado.estadoFianza)}</span>
+                    <span>Credencial: {etiquetaEstadoFianza(matriculado.estadoFianza)}</span>
                   </div>
                 )}
               </TableCell>

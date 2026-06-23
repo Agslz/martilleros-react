@@ -3,13 +3,12 @@
 import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Gavel, Eye, EyeOff, LogIn, Loader2, AlertTriangle } from "lucide-react"
+import { Gavel, Eye, EyeOff, LogIn, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
-  getAdminSessionInfo,
   getCurrentUser,
   getToken,
   login,
@@ -38,7 +37,6 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sessionMessage, setSessionMessage] = useState<string | null>(null)
-  const [adminPanelOcupado, setAdminPanelOcupado] = useState(false)
   const [login409, setLogin409] = useState(false)
   const [formData, setFormData] = useState({
     matricula: "",
@@ -46,15 +44,8 @@ export function LoginForm() {
     remember: false,
   })
 
-  const refreshAdminSessionStatus = async () => {
-    const info = await getAdminSessionInfo()
-    if (info) setAdminPanelOcupado(info.ocupado)
-    return info
-  }
-
   useEffect(() => {
     setSessionMessage(consumeAdminLogoutMessage())
-    void refreshAdminSessionStatus()
 
     const remembered = loadRememberedLogin()
     setFormData((prev) => ({
@@ -105,7 +96,6 @@ export function LoginForm() {
       if (res.success && res.data) {
         if (res.data.role === "ADMIN") {
           saveAdminLoginSession(res.data)
-          setAdminPanelOcupado(false)
         } else {
           saveMatriculadoLoginSession()
         }
@@ -134,7 +124,6 @@ export function LoginForm() {
       if (errObj.status === 409) {
         const msg = errObj.data?.message ?? ADMIN_PANEL_OCCUPIED_MSG
         setLogin409(true)
-        setAdminPanelOcupado(true)
         setError(msg)
         return
       }
@@ -178,10 +167,9 @@ export function LoginForm() {
     await attemptLogin(false)
   }
 
-  const handleRetry = async () => {
+  const handleRetry = () => {
     setLogin409(false)
     setError(null)
-    await refreshAdminSessionStatus()
   }
 
   const handleForceLogin = async () => {
@@ -207,13 +195,6 @@ export function LoginForm() {
           </div>
         )}
 
-        {adminPanelOcupado && !login409 && (
-          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 text-amber-900 dark:text-amber-100 text-sm border border-amber-500/20 flex gap-2">
-            <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
-            <p>{ADMIN_PANEL_OCCUPIED_MSG}</p>
-          </div>
-        )}
-
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
             {error}
@@ -232,7 +213,7 @@ export function LoginForm() {
                 variant="outline"
                 className="flex-1"
                 disabled={loading}
-                onClick={() => void handleRetry()}
+                onClick={handleRetry}
               >
                 Reintentar
               </Button>

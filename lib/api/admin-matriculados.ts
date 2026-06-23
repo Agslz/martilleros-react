@@ -32,6 +32,9 @@ export async function crearMatriculado(
           formData.append("matricula", body.matricula)
           formData.append("email", body.email)
           formData.append("cuit", body.cuit)
+          if (body.telefono?.trim()) {
+            formData.append("telefono", body.telefono.trim())
+          }
           formData.append("foto", foto)
           return apiRequestFormData<CrearMatriculadoResponse>(
             "/admin/matriculados",

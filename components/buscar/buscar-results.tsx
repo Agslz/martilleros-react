@@ -6,11 +6,12 @@ import {
   AlertTriangle,
   User,
   Mail,
+  Phone,
   Loader2,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import type { MatriculadoPublicResponse } from "@/lib/api"
 import { matriculaPuedeEjercer } from "@/lib/estado-fianza"
+import { displayTelefono } from "@/lib/telefono"
 
 function estadoHabilitado(m: MatriculadoPublicResponse) {
   return matriculaPuedeEjercer(m)
@@ -110,24 +111,41 @@ export function BuscarResults({
                   <h3 className="text-xl font-semibold text-foreground">
                     {matriculado.apellido}, {matriculado.nombre}
                   </h3>
-                  <Badge className="mt-2 bg-primary/10 text-primary hover:bg-primary/10">
-                    {matriculado.matricula}
-                  </Badge>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {matriculado.email && (
-                  <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                    <Mail className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="font-medium text-foreground break-all">
-                        {matriculado.email}
-                      </p>
-                    </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
+                  <CheckCircle2 className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Matrícula</p>
+                    <p className="font-medium text-foreground">
+                      {matriculado.matricula}
+                    </p>
                   </div>
-                )}
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
+                  <Mail className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Correo</p>
+                    <p className="font-medium text-foreground break-all">
+                      {matriculado.email ?? "—"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
+                  <Phone className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Número de teléfono
+                    </p>
+                    <p className="font-medium text-foreground">
+                      {matriculado.telefono
+                        ? displayTelefono(matriculado.telefono)
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
                 {matriculado.cuit && (
                   <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
                     <CheckCircle2 className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />

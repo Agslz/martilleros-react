@@ -18,7 +18,7 @@ import { endClientSession } from "@/lib/auth-session"
 const panelNav = [
   { name: "Mi estado", href: "/panel", icon: User },
   { name: "Subastas", href: "/panel/subastas", icon: Gavel },
-  { name: "Fianzas", href: "/panel/fianzas", icon: Shield },
+  { name: "Credenciales", href: "/panel/credenciales", icon: Shield },
   { name: "Cuotas", href: "/panel/cuotas", icon: CreditCard },
   { name: "Biblioteca", href: "/panel/biblioteca", icon: BookOpen },
   { name: "Mi perfil", href: "/panel/perfil", icon: User },

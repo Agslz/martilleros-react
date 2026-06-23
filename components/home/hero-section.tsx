@@ -35,7 +35,7 @@ const SLIDE_TRANSITION_MS = 700
 const INITIAL_FADE_MS = 1000
 
 const MARQUEE_MESSAGE =
-  "Martilleros socios y no socios pueden publicar aquí su edicto."
+  "Martilleros socios y no socios pueden publicar aquí su edicto. — Teléfono: 2617570100 — Correo: colegiomartilleros.1916@gmail.com"
 
 const MARQUEE_COPIES = 6
 

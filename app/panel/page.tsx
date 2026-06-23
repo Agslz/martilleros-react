@@ -75,7 +75,7 @@ export default function PanelPage() {
         <Card>
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <Shield className="h-5 w-5 text-primary" />
-            <CardTitle className="text-base">Fianza</CardTitle>
+            <CardTitle className="text-base">Credencial</CardTitle>
           </CardHeader>
           <CardContent>
             <Badge

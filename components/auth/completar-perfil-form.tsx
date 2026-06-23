@@ -17,6 +17,13 @@ import {
   isValidCuit,
   stripCuit,
 } from "@/lib/cuit"
+import { TelefonoInput } from "@/components/ui/telefono-input"
+import {
+  displayTelefono,
+  isValidTelefono,
+  mergeTelefono,
+  splitTelefono,
+} from "@/lib/telefono"
 import { useToast } from "@/hooks/use-toast"
 
 export function CompletarPerfilForm() {
@@ -25,6 +32,9 @@ export function CompletarPerfilForm() {
   const [loading, setLoading] = useState(false)
   const [loadingUser, setLoadingUser] = useState(true)
   const [cuitFromAdmin, setCuitFromAdmin] = useState(false)
+  const [telefonoFromAdmin, setTelefonoFromAdmin] = useState(false)
+  const [telArea, setTelArea] = useState("")
+  const [telNumero, setTelNumero] = useState("")
   const [showActual, setShowActual] = useState(false)
   const [showNueva, setShowNueva] = useState(false)
   const [formData, setFormData] = useState({
@@ -40,7 +50,12 @@ export function CompletarPerfilForm() {
       .then((user) => {
         if (!user) return
         const adminCuit = stripCuit(user.cuit ?? "")
+        const adminTel = user.telefono?.trim() ?? ""
         setCuitFromAdmin(adminCuit.length === 11)
+        setTelefonoFromAdmin(adminTel.length >= 10)
+        const { codigoArea, numero } = splitTelefono(adminTel)
+        setTelArea(codigoArea)
+        setTelNumero(numero)
         setFormData((prev) => ({
           ...prev,
           email: user.email?.trim() ?? prev.email,
@@ -103,6 +118,16 @@ export function CompletarPerfilForm() {
       return
     }
 
+    const telefonoMerged = mergeTelefono(telArea, telNumero)
+    if (!telefonoFromAdmin && telefonoMerged && !isValidTelefono(telefonoMerged)) {
+      toast({
+        title: "Teléfono inválido",
+        description: "El teléfono debe tener entre 10 y 11 dígitos (sin el 15).",
+        variant: "destructive",
+      })
+      return
+    }
+
     setLoading(true)
     try {
       const res = await completarPerfil({
@@ -110,6 +135,9 @@ export function CompletarPerfilForm() {
         contrasenaActual: formData.contrasenaActual,
         nuevaContrasena: formData.nuevaContrasena,
         cuit: cuitFromAdmin ? undefined : stripCuit(formData.cuit),
+        telefono: telefonoFromAdmin
+          ? undefined
+          : telefonoMerged || undefined,
       })
       if (res.success) {
         toast({
@@ -288,6 +316,30 @@ export function CompletarPerfilForm() {
               </>
             )}
           </div>
+          {telefonoFromAdmin ? (
+            <div className="space-y-2">
+              <Label htmlFor="telefono-display">Teléfono celular</Label>
+              <Input
+                id="telefono-display"
+                value={displayTelefono(mergeTelefono(telArea, telNumero))}
+                disabled
+                className="bg-muted"
+              />
+              <p className="text-xs text-muted-foreground">
+                El teléfono fue cargado por el Colegio al dar de alta su matrícula.
+              </p>
+            </div>
+          ) : (
+            <TelefonoInput
+              idPrefix="completar-perfil"
+              codigoArea={telArea}
+              numero={telNumero}
+              onChange={(codigoArea, numero) => {
+                setTelArea(codigoArea)
+                setTelNumero(numero)
+              }}
+            />
+          )}
           <Button
             type="submit"
             className="w-full"

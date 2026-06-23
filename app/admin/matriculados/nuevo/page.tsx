@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CredencialesMatriculadoDialog } from "@/components/admin/credenciales-matriculado-dialog"
+import { TelefonoInput } from "@/components/ui/telefono-input"
 import {
   crearMatriculado,
   type CrearMatriculadoRequest,
@@ -19,6 +20,7 @@ import {
   isValidCuit,
   stripCuit,
 } from "@/lib/cuit"
+import { isValidTelefono, mergeTelefono } from "@/lib/telefono"
 import { useToast } from "@/hooks/use-toast"
 
 const ALLOWED_IMAGE_TYPES = [
@@ -55,6 +57,8 @@ export default function NuevoMatriculadoPage() {
     email: "",
     cuit: "",
   })
+  const [telArea, setTelArea] = useState("")
+  const [telNumero, setTelNumero] = useState("")
 
   useEffect(() => {
     if (!foto) {
@@ -88,6 +92,16 @@ export default function NuevoMatriculadoPage() {
       return false
     }
 
+    const telefonoMerged = mergeTelefono(telArea, telNumero)
+    if (telefonoMerged && !isValidTelefono(telefonoMerged)) {
+      toast({
+        title: "Teléfono inválido",
+        description: "El teléfono debe tener entre 10 y 11 dígitos (sin el 15).",
+        variant: "destructive",
+      })
+      return false
+    }
+
     return true
   }
 
@@ -100,6 +114,7 @@ export default function NuevoMatriculadoPage() {
 
     setLoading(true)
     try {
+      const telefonoMerged = mergeTelefono(telArea, telNumero)
       const body = {
         ...form,
         nombre: form.nombre.trim(),
@@ -108,6 +123,7 @@ export default function NuevoMatriculadoPage() {
         matricula: form.matricula.trim(),
         email: form.email.trim(),
         cuit: stripCuit(form.cuit),
+        telefono: telefonoMerged || undefined,
       }
       const result = await crearMatriculado(body, foto)
       if (result?.contrasenaTemporal) {
@@ -211,6 +227,15 @@ export default function NuevoMatriculadoPage() {
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
           </div>
+          <TelefonoInput
+            idPrefix="nuevo-mat"
+            codigoArea={telArea}
+            numero={telNumero}
+            onChange={(codigoArea, numero) => {
+              setTelArea(codigoArea)
+              setTelNumero(numero)
+            }}
+          />
           <div className="space-y-2">
             <Label htmlFor="cuit">CUIT</Label>
             <Input

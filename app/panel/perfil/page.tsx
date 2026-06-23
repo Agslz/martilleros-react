@@ -15,6 +15,13 @@ import {
 } from "@/lib/api"
 import type { UserInfoResponse } from "@/lib/api"
 import { displayCuit, formatCuitInput, stripCuit } from "@/lib/cuit"
+import { TelefonoInput } from "@/components/ui/telefono-input"
+import {
+  displayTelefono,
+  isValidTelefono,
+  mergeTelefono,
+  splitTelefono,
+} from "@/lib/telefono"
 import { resolveStorageFileUrl } from "@/lib/storage-url"
 import { useToast } from "@/hooks/use-toast"
 
@@ -37,6 +44,8 @@ export default function PanelPerfilPage() {
     email: "",
     cuit: "",
   })
+  const [telArea, setTelArea] = useState("")
+  const [telNumero, setTelNumero] = useState("")
 
   useEffect(() => {
     getCurrentUser()
@@ -49,6 +58,9 @@ export default function PanelPerfilPage() {
             email: u.email ?? "",
             cuit: u.cuit ?? "",
           })
+          const { codigoArea, numero } = splitTelefono(u.telefono)
+          setTelArea(codigoArea)
+          setTelNumero(numero)
         }
       })
       .finally(() => setLoadingUser(false))
@@ -76,16 +88,29 @@ export default function PanelPerfilPage() {
       })
       return
     }
+    const telefonoMerged = mergeTelefono(telArea, telNumero)
+    if (telefonoMerged && !isValidTelefono(telefonoMerged)) {
+      toast({
+        title: "Teléfono inválido",
+        description: "El teléfono debe tener entre 10 y 11 dígitos (sin el 15).",
+        variant: "destructive",
+      })
+      return
+    }
     setLoadingProfile(true)
     try {
       const res = await actualizarPerfil({
         nombre: profileForm.nombre.trim(),
         apellido: profileForm.apellido.trim(),
         email: profileForm.email.trim() || undefined,
+        telefono: telefonoMerged || undefined,
         cuit: stripCuit(profileForm.cuit) || undefined,
       })
       if (res.success && res.data) {
         setUser(res.data)
+        const { codigoArea, numero } = splitTelefono(res.data.telefono)
+        setTelArea(codigoArea)
+        setTelNumero(numero)
         toast({
           title: "Listo",
           description: "Datos actualizados correctamente.",
@@ -242,6 +267,12 @@ export default function PanelPerfilPage() {
                     </span>
                   </p>
                   <p>
+                    <span className="text-muted-foreground">Teléfono:</span>{" "}
+                    <span className="font-medium">
+                      {user.telefono ? displayTelefono(user.telefono) : "—"}
+                    </span>
+                  </p>
+                  <p>
                     <span className="text-muted-foreground">CUIT:</span>{" "}
                     <span className="font-medium">
                       {user.cuit ? displayCuit(user.cuit) : "—"}
@@ -259,7 +290,7 @@ export default function PanelPerfilPage() {
                 Editar mis datos
               </CardTitle>
               <p className="text-sm text-muted-foreground font-normal">
-                Modificá tu nombre, apellido, email y CUIT. La matrícula no se puede cambiar.
+                Modificá tu nombre, apellido, email, teléfono y CUIT. La matrícula no se puede cambiar.
               </p>
             </CardHeader>
             <CardContent>
@@ -307,6 +338,16 @@ export default function PanelPerfilPage() {
                     }
                   />
                 </div>
+                <TelefonoInput
+                  idPrefix="perfil"
+                  codigoArea={telArea}
+                  numero={telNumero}
+                  onChange={(codigoArea, numero) => {
+                    setTelArea(codigoArea)
+                    setTelNumero(numero)
+                  }}
+                  showHint={false}
+                />
                 <div className="space-y-2">
                   <Label htmlFor="cuit">CUIT</Label>
                   <Input

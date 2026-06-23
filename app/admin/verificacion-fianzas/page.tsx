@@ -133,10 +133,10 @@ export default function AdminVerificacionFianzasPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-foreground mb-2">
-        Verificación de fianzas
+        Verificación de credenciales
       </h1>
       <p className="text-muted-foreground text-sm mb-6">
-        El matriculado sube la constancia de fianza (cada 5 años). Acá podés ver el archivo,
+        El matriculado sube la constancia de credencial (cada 5 años). Acá podés ver el archivo,
         habilitarlo si está todo bien o enviarle un correo indicando qué debe corregir.
       </p>
 
@@ -156,7 +156,7 @@ export default function AdminVerificacionFianzasPage() {
         </div>
       ) : list.length === 0 && !backendNoDisponible ? (
         <p className="text-muted-foreground py-8">
-          No hay fianzas pendientes de verificación.
+          No hay credenciales pendientes de verificación.
         </p>
       ) : list.length === 0 ? null : (
         <div className="rounded-xl border border-border overflow-hidden">

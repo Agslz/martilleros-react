@@ -30,6 +30,7 @@ export interface LoginResponse {
   nombre: string
   apellido: string
   email?: string | null
+  telefono?: string | null
   fotoCarnetUrl?: string | null
   role: "ADMIN" | "MATRICULADO"
   primeraVezLogin: boolean
@@ -44,6 +45,7 @@ export interface ActualizarPerfilRequest {
   nombre: string
   apellido: string
   email?: string
+  telefono?: string
   cuit?: string
 }
 
@@ -61,6 +63,7 @@ export interface CompletarPerfilRequest {
   contrasenaActual: string
   nuevaContrasena: string
   cuit?: string
+  telefono?: string
 }
 
 /** POST /auth/cambiar-contrasena (Bearer) */
@@ -122,7 +125,8 @@ export interface MatriculadoPublicResponse {
   nombre: string
   apellido: string
   matricula: string
-  email?: string
+  email?: string | null
+  telefono?: string | null
   cuit?: string
   fotoCarnetUrl?: string
   habilitado: boolean
@@ -204,6 +208,7 @@ export interface CrearMatriculadoRequest {
   matricula: string
   email: string
   cuit: string
+  telefono?: string
 }
 
 // --- Fianzas ---

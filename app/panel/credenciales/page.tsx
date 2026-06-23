@@ -1,0 +1,253 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { Shield, Upload, Loader2, ExternalLink } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { getFianzas, subirFianza, type FianzaResponse } from "@/lib/api"
+import { etiquetaEstadoFianza } from "@/lib/estado-fianza"
+import { resolveStorageFileUrl } from "@/lib/storage-url"
+import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+
+function estadoBadgeClass(estado: FianzaResponse["estado"]) {
+  switch (estado) {
+    case "ACTIVA":
+      return "bg-green-50 text-green-800 dark:bg-green-950/50 dark:text-green-300"
+    case "RECHAZADA":
+      return "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300"
+    case "PENDIENTE":
+      return "bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+    case "VENCIDA":
+      return "bg-stone-100 text-stone-700 dark:bg-stone-900/50 dark:text-stone-300"
+    default:
+      return "bg-muted text-muted-foreground"
+  }
+}
+
+function formatFecha(s: string) {
+  try {
+    return new Date(s).toLocaleDateString("es-AR", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
+  } catch {
+    return s
+  }
+}
+
+export default function PanelCredencialesPage() {
+  const { toast } = useToast()
+  const [list, setList] = useState<FianzaResponse[]>([])
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [file, setFile] = useState<File | null>(null)
+  const [fechaInicio, setFechaInicio] = useState("")
+  const [fechaVencimiento, setFechaVencimiento] = useState("")
+
+  const load = () => {
+    setLoading(true)
+    getFianzas()
+      .then(setList)
+      .catch(() => {
+        toast({
+          title: "Error",
+          description: "No se pudo cargar el historial de credenciales.",
+          variant: "destructive",
+        })
+      })
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!file || !fechaInicio || !fechaVencimiento) {
+      setError("Completá archivo y fechas.")
+      return
+    }
+    setError(null)
+    setSuccess(null)
+    setUploading(true)
+    try {
+      const created = await subirFianza(file, fechaInicio, fechaVencimiento)
+      if (created) {
+        setSuccess("Credencial subida correctamente.")
+        setFile(null)
+        setFechaInicio("")
+        setFechaVencimiento("")
+        load()
+        toast({
+          title: "Listo",
+          description: "Constancia de credencial subida correctamente.",
+        })
+      } else {
+        setError("No se pudo subir la credencial.")
+        toast({
+          title: "Error",
+          description: "Error al subir el archivo. Verificá que sea un PDF válido.",
+          variant: "destructive",
+        })
+      }
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message?: string }).message)
+          : null
+      setError(msg ?? "Error al subir la credencial.")
+      toast({
+        title: "Error",
+        description: "Error al subir el archivo. Verificá que sea un PDF válido.",
+        variant: "destructive",
+      })
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-foreground mb-2">Mis credenciales</h1>
+      <p className="text-muted-foreground mb-6">
+        La credencial se abona fuera del sistema. Aquí solo se sube la{" "}
+        <strong>constancia de pago</strong> (comprobante) para que el Colegio registre
+        que está al día.
+      </p>
+
+      {error && (
+        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="mb-4 p-3 rounded-lg bg-green-500/10 text-green-700 dark:text-green-400 text-sm">
+          {success}
+        </div>
+      )}
+
+      <div className="max-w-xl rounded-xl border border-border p-6 mb-8">
+        <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Upload className="h-5 w-5 text-primary" />
+          Subir constancia de pago de credencial
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Adjuntá el PDF del comprobante de pago de la credencial (no se realiza el
+          pago en este sitio).
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="file">Archivo PDF</Label>
+            <Input
+              id="file"
+              type="file"
+              accept="application/pdf"
+              required
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="fechaInicio">Fecha inicio (YYYY-MM-DD)</Label>
+              <Input
+                id="fechaInicio"
+                type="date"
+                required
+                value={fechaInicio}
+                onChange={(e) => setFechaInicio(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fechaVencimiento">Fecha vencimiento (YYYY-MM-DD)</Label>
+              <Input
+                id="fechaVencimiento"
+                type="date"
+                required
+                value={fechaVencimiento}
+                onChange={(e) => setFechaVencimiento(e.target.value)}
+              />
+            </div>
+          </div>
+          <Button type="submit" disabled={uploading}>
+            {uploading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Upload className="h-4 w-4 mr-2" />
+            )}
+            Subir credencial
+          </Button>
+        </form>
+      </div>
+
+      <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+        <Shield className="h-5 w-5 text-primary" />
+        Historial
+      </h2>
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : list.length === 0 ? (
+        <p className="text-muted-foreground">No hay credenciales cargadas.</p>
+      ) : (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="text-left p-4 font-semibold">Inicio</th>
+                <th className="text-left p-4 font-semibold">Vencimiento</th>
+                <th className="text-left p-4 font-semibold">Estado</th>
+                <th className="text-left p-4 font-semibold">Constancia</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((f) => {
+                const constanciaHref = resolveStorageFileUrl(f.constanciaUrl)
+                return (
+                  <tr key={f.id} className="border-t border-border">
+                    <td className="p-4">{formatFecha(f.fechaInicio)}</td>
+                    <td className="p-4">{formatFecha(f.fechaVencimiento)}</td>
+                    <td className="p-4">
+                      <span
+                        className={cn(
+                          "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                          estadoBadgeClass(f.estado)
+                        )}
+                      >
+                        {etiquetaEstadoFianza(f.estado)}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      {constanciaHref ? (
+                        <a
+                          href={constanciaHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline inline-flex items-center gap-1"
+                        >
+                          Ver PDF
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          PDF no disponible
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}

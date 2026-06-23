@@ -299,7 +299,7 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                       Martillero habilitado para ejercer
                     </p>
                     <p className="text-xs text-green-600">
-                      Matriculado con fianza activa según el padrón público.
+                      Matriculado con credencial activa según el padrón público.
                     </p>
                   </div>
                 </div>

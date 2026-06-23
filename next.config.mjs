@@ -10,6 +10,7 @@ const nextConfig = {
     return [
       { source: "/subastas", destination: "/edictos", permanent: true },
       { source: "/subastas/:id", destination: "/edictos/:id", permanent: true },
+      { source: "/panel/fianzas", destination: "/panel/credenciales", permanent: true },
     ]
   },
   async rewrites() {
