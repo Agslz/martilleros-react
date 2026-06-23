@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState } from "react"
-import { Menu, X, Gavel } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { MatriculadoAccessLink } from "@/components/layout/matriculado-access-link"
 
 const navigation = [
@@ -21,9 +22,14 @@ export function Header() {
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-              <Gavel className="h-7 w-7 text-primary-foreground" />
-            </div>
+            <Image
+              src="/images/logo-colegio-header.png"
+              alt="Colegio de Martilleros Públicos y Corredores de Comercio de Mendoza"
+              width={56}
+              height={56}
+              className="h-14 w-auto shrink-0 object-contain"
+              priority
+            />
             <div className="hidden sm:block">
               <p className="font-serif text-lg font-semibold text-foreground leading-tight">
                 Colegio de Martilleros
