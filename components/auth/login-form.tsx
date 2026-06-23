@@ -87,12 +87,12 @@ export function LoginForm() {
     }
   }
 
-  const attemptLogin = async (force = false) => {
+  const attemptLogin = async () => {
     setError(null)
     setLogin409(false)
     setLoading(true)
     try {
-      const res = await login(formData.matricula, formData.password, { force })
+      const res = await login(formData.matricula, formData.password)
       if (res.success && res.data) {
         if (res.data.role === "ADMIN") {
           saveAdminLoginSession(res.data)
@@ -164,16 +164,12 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await attemptLogin(false)
+    await attemptLogin()
   }
 
-  const handleRetry = () => {
+  const handleVolver = () => {
     setLogin409(false)
     setError(null)
-  }
-
-  const handleForceLogin = async () => {
-    await attemptLogin(true)
   }
 
   return (
@@ -195,44 +191,29 @@ export function LoginForm() {
           </div>
         )}
 
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-            {error}
-          </div>
-        )}
-
         {login409 ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Si la comisión acordó reemplazar la sesión activa, puede forzar el
-              acceso. De lo contrario, coordinen por WhatsApp e intenten más tarde.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                disabled={loading}
-                onClick={handleRetry}
-              >
-                Reintentar
-              </Button>
-              <Button
-                type="button"
-                className="flex-1"
-                disabled={loading}
-                onClick={() => void handleForceLogin()}
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Forzar acceso"
-                )}
-              </Button>
+            <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+              {error ?? ADMIN_PANEL_OCCUPIED_MSG}
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleVolver}
+            >
+              Volver
+            </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <>
+            {error && (
+              <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="matricula">Número de Matrícula</Label>
               <Input
@@ -308,6 +289,7 @@ export function LoginForm() {
               {loading ? "Ingresando..." : "Ingresar"}
             </Button>
           </form>
+          </>
         )}
 
         <div className="mt-6 pt-6 border-t border-border text-center space-y-2">
