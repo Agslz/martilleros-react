@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Gavel } from "lucide-react"
+import Image from "next/image"
 import type { ContenidoResponse } from "@/lib/api"
 
 const quickLinks = [
@@ -35,9 +35,13 @@ export function Footer({ contenidoContacto }: FooterProps) {
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
-                <Gavel className="h-6 w-6 text-white" />
-              </div>
+              <Image
+                src="/images/logo-colegio-header.png"
+                alt="Colegio de Martilleros Públicos y Corredores de Comercio de Mendoza"
+                width={48}
+                height={48}
+                className="h-12 w-auto shrink-0 rounded-lg bg-white object-contain p-0.5"
+              />
               <div>
                 <p className="font-serif text-lg font-semibold leading-tight">
                   Colegio de Martilleros
