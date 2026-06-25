@@ -98,7 +98,12 @@ export interface SubastaResponse {
   imagenes: ImagenSubastaResponse[]
   edictoTexto?: string
   numeroEdicto?: string
+  /** @deprecated usar fechasPublicacionBoletin */
   fechaPublicacionBoletin?: string
+  fechasPublicacionBoletin?: string[]
+  cantidadPublicaciones?: number
+  telefonoMartillero?: string | null
+  modificablePorAdmin?: boolean
   esPublicacionExterna: boolean
 }
 
@@ -161,7 +166,7 @@ export interface CrearSubastaMatriculadoRequest {
   fechaFin: string
   edictoTexto?: string
   numeroEdicto?: string
-  fechaPublicacionBoletin?: string
+  fechasPublicacionBoletin: string[]
 }
 
 export interface FileUploadResponse {

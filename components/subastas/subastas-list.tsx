@@ -6,6 +6,7 @@ import { Calendar, MapPin, ArrowRight, Package } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { SubastaResponse } from "@/lib/api"
+import { getCantidadPublicaciones } from "@/lib/subasta-display"
 
 function formatFecha(isoDate: string) {
   try {
@@ -42,7 +43,7 @@ export function SubastasList({ subastas }: SubastasListProps) {
   if (subastas.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground rounded-xl border border-border bg-card">
-        No hay subastas para mostrar con el filtro seleccionado.
+        No hay edictos para mostrar con el filtro seleccionado.
       </div>
     )
   }
@@ -118,6 +119,16 @@ export function SubastasList({ subastas }: SubastasListProps) {
                           {formatPrecio(subasta.precioInicial)}
                         </span>
                       </div>
+                      {getCantidadPublicaciones(subasta) > 0 && (
+                        <div>
+                          <span className="text-muted-foreground">
+                            Publicaciones BO:{" "}
+                          </span>
+                          <span className="font-medium text-foreground">
+                            {getCantidadPublicaciones(subasta)}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">

@@ -25,7 +25,7 @@ import {
 
 const adminNav: DashboardNavItem[] = [
   { name: "Panel", href: "/admin", icon: LayoutDashboard, exact: true },
-  { name: "Subastas", href: "/admin/subastas", icon: Gavel },
+  { name: "Edictos", href: "/admin/subastas", icon: Gavel },
   { name: "Biblioteca", href: "/admin/biblioteca", icon: BookOpen },
   {
     name: "Verificación de credenciales",

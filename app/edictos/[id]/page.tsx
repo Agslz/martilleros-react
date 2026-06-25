@@ -22,6 +22,12 @@ import { Separator } from "@/components/ui/separator"
 import { getSubastaById, getMatriculadosPublicos } from "@/lib/api"
 import type { MatriculadoPublicResponse } from "@/lib/api"
 import { matriculaPuedeEjercer } from "@/lib/estado-fianza"
+import {
+  formatFechasBoletinLista,
+  getCantidadPublicaciones,
+  getFechasBoletin,
+} from "@/lib/subasta-display"
+import { displayTelefono } from "@/lib/telefono"
 
 interface SubastaDetailPageProps {
   params: Promise<{ id: string }>
@@ -90,6 +96,9 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
   const today = new Date().toISOString().slice(0, 10)
   const esProxima = subasta.fechaFin >= today
 
+  const fechasBoletin = getFechasBoletin(subasta)
+  const cantidadPublicaciones = getCantidadPublicaciones(subasta)
+
   const tieneEdictoTexto =
     typeof subasta.edictoTexto === "string" &&
     subasta.edictoTexto.trim().length > 0
@@ -143,8 +152,15 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                     </span>
                     <span className="text-xs font-normal text-muted-foreground">
                       Texto publicado en el Boletín Oficial de Mendoza
-                      {subasta.fechaPublicacionBoletin &&
-                        ` (${formatFecha(subasta.fechaPublicacionBoletin)})`}
+                      {fechasBoletin.length > 0 && (
+                        <>
+                          {" "}
+                          ({formatFechasBoletinLista(fechasBoletin)}
+                          {cantidadPublicaciones > 1 &&
+                            ` · ${cantidadPublicaciones} publicaciones`}
+                          )
+                        </>
+                      )}
                     </span>
                   </CardTitle>
                 </CardHeader>
@@ -237,7 +253,7 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
             <div className="space-y-6">
               <Card className="border-primary/20 bg-primary/5">
                 <CardContent className="pt-6">
-                  <p className="text-sm text-muted-foreground mb-1">Precio inicial</p>
+                  <p className="text-sm text-muted-foreground mb-1">Base</p>
                   <p className="text-3xl font-bold text-primary">
                     {formatPrecio(subasta.precioInicial)}
                   </p>
@@ -284,6 +300,11 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                       {subasta.cuitMartillero && (
                         <p className="text-sm text-muted-foreground">
                           CUIT: {subasta.cuitMartillero}
+                        </p>
+                      )}
+                      {subasta.telefonoMartillero && (
+                        <p className="text-sm text-muted-foreground">
+                          Teléfono: {displayTelefono(subasta.telefonoMartillero)}
                         </p>
                       )}
                     </div>

@@ -10,6 +10,7 @@ import {
   eliminarSubasta,
   type SubastaResponse,
 } from "@/lib/api"
+import { esModificablePorAdmin } from "@/lib/subasta-display"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,7 +67,7 @@ export default function AdminSubastasPage() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Subastas / Edictos</h1>
+        <h1 className="text-2xl font-bold text-foreground">Edictos</h1>
         <Button asChild>
           <Link href="/admin/subastas/nueva">
             <Plus className="h-4 w-4 mr-2" />
@@ -80,7 +81,7 @@ export default function AdminSubastasPage() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : subastas.length === 0 ? (
-        <p className="text-muted-foreground py-8">No hay subastas.</p>
+        <p className="text-muted-foreground py-8">No hay edictos.</p>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
           <table className="w-full">
@@ -89,12 +90,14 @@ export default function AdminSubastasPage() {
                 <th className="text-left p-4 font-semibold">Título</th>
                 <th className="text-left p-4 font-semibold">Origen</th>
                 <th className="text-left p-4 font-semibold">Fechas</th>
-                <th className="text-left p-4 font-semibold">Precio inicial</th>
+                <th className="text-left p-4 font-semibold">Base</th>
                 <th className="text-right p-4 font-semibold">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {subastas.map((s) => (
+              {subastas.map((s) => {
+                const modificable = esModificablePorAdmin(s)
+                return (
                 <tr key={s.id} className="border-t border-border hover:bg-muted/30">
                   <td className="p-4">
                     <Link
@@ -123,7 +126,7 @@ export default function AdminSubastasPage() {
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-2">
-                      {s.esPublicacionExterna ? (
+                      {modificable ? (
                         <Button variant="outline" size="sm" asChild>
                           <Link href={`/admin/subastas/${s.id}/editar`}>
                             <Pencil className="h-4 w-4 mr-1" />
@@ -135,25 +138,27 @@ export default function AdminSubastasPage() {
                           variant="outline"
                           size="sm"
                           disabled
-                          title="Solo se editan publicaciones externas"
+                          title="Los edictos de matriculados solo se pueden consultar"
                         >
                           <Pencil className="h-4 w-4 mr-1" />
                           Editar
                         </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:bg-destructive/10"
-                        onClick={() => setConfirmDelete(s.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Eliminar
-                      </Button>
+                      {modificable ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={() => setConfirmDelete(s.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Eliminar
+                        </Button>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
@@ -162,7 +167,7 @@ export default function AdminSubastasPage() {
       <AlertDialog open={confirmDelete !== null} onOpenChange={() => setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar subasta?</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar edicto?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta acción no se puede deshacer.
             </AlertDialogDescription>

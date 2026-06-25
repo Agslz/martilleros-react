@@ -10,16 +10,22 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
+  FechasBoletinCalendar,
+  validarFechasBoletin,
+} from "@/components/edictos/fechas-boletin-calendar"
+import {
   getCurrentUser,
   crearSubastaMatriculado,
   subirImagenSubastaMatriculado,
   type CrearSubastaMatriculadoRequest,
 } from "@/lib/api"
+import { displayCuit } from "@/lib/cuit"
+import { displayTelefono } from "@/lib/telefono"
 import { useToast } from "@/hooks/use-toast"
 
 const ACCEPT_IMAGES = "image/jpeg,image/png,image/webp,image/gif"
 
-export default function PanelNuevaSubastaPage() {
+export default function PanelNuevoEdictoPage() {
   const { toast } = useToast()
   const router = useRouter()
   const [userLoaded, setUserLoaded] = useState(false)
@@ -27,11 +33,14 @@ export default function PanelNuevaSubastaPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [imagenes, setImagenes] = useState<File[]>([])
+  const [fechasBoletin, setFechasBoletin] = useState<string[]>([])
   const [perfilMartillero, setPerfilMartillero] = useState({
     matricula: "",
     nombre: "",
+    cuit: "",
+    telefono: "",
   })
-  const [form, setForm] = useState<CrearSubastaMatriculadoRequest>({
+  const [form, setForm] = useState({
     titulo: "",
     descripcion: "",
     precioInicial: 0,
@@ -40,7 +49,6 @@ export default function PanelNuevaSubastaPage() {
     fechaFin: "",
     edictoTexto: "",
     numeroEdicto: "",
-    fechaPublicacionBoletin: "",
   })
 
   useEffect(() => {
@@ -49,27 +57,20 @@ export default function PanelNuevaSubastaPage() {
         setPerfilMartillero({
           matricula: user.matricula,
           nombre: [user.nombre, user.apellido].filter(Boolean).join(" "),
+          cuit: user.cuit ? displayCuit(user.cuit) : "—",
+          telefono: user.telefono ? displayTelefono(user.telefono) : "—",
         })
       }
       setUserLoaded(true)
     })
   }, [])
 
-  const setFechaInicio = (fechaInicio: string) => {
-    setForm((f) => ({
-      ...f,
-      fechaInicio,
-      fechaPublicacionBoletin: f.fechaPublicacionBoletin
-        ? fechaInicio
-        : f.fechaPublicacionBoletin,
-    }))
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setFieldErrors({})
-    const edictoTrim = (form.edictoTexto ?? "").trim()
+
+    const edictoTrim = form.edictoTexto.trim()
     if (!edictoTrim) {
       setError("El texto completo del edicto es obligatorio.")
       setFieldErrors((prev) => ({ ...prev, edictoTexto: "Requerido." }))
@@ -80,18 +81,17 @@ export default function PanelNuevaSubastaPage() {
       })
       return
     }
-    const fechaBoletin = (form.fechaPublicacionBoletin ?? "").trim()
-    if (fechaBoletin && fechaBoletin !== form.fechaInicio) {
-      setError(
-        "La fecha de publicación en el Boletín debe coincidir con la fecha de inicio."
-      )
+
+    const fechasError = validarFechasBoletin(fechasBoletin)
+    if (fechasError) {
+      setError(fechasError)
       setFieldErrors((prev) => ({
         ...prev,
-        fechaPublicacionBoletin: "Debe ser igual a la fecha de inicio.",
+        fechasPublicacionBoletin: fechasError,
       }))
       toast({
-        title: "Fechas inconsistentes",
-        description: "Ajustá la fecha del Boletín o la fecha de inicio.",
+        title: "Fechas del boletín",
+        description: fechasError,
         variant: "destructive",
       })
       return
@@ -107,23 +107,19 @@ export default function PanelNuevaSubastaPage() {
         fechaInicio: form.fechaInicio,
         fechaFin: form.fechaFin,
         edictoTexto: edictoTrim,
+        fechasPublicacionBoletin: fechasBoletin,
       }
-      if ((form.numeroEdicto ?? "").trim()) {
-        body.numeroEdicto = form.numeroEdicto!.trim()
-      }
-      if (fechaBoletin) {
-        body.fechaPublicacionBoletin = fechaBoletin
+      if (form.numeroEdicto.trim()) {
+        body.numeroEdicto = form.numeroEdicto.trim()
       }
 
-      // 1) Crear subasta
       const created = await crearSubastaMatriculado(body)
       if (!created) {
-        setError("No se pudo crear la subasta.")
+        setError("No se pudo crear el edicto.")
         setLoading(false)
         return
       }
 
-      // 2) Subir imágenes (endpoint 2: una petición por imagen)
       if (imagenes.length > 0) {
         let ok = 0
         let fail = 0
@@ -142,24 +138,22 @@ export default function PanelNuevaSubastaPage() {
         }
         if (fail > 0) {
           toast({
-            title: "Subasta creada",
-            description: `Se subieron ${ok} imagen(es). No se pudieron subir ${fail}. Podés agregar más desde el detalle de la subasta.`,
-            variant: "default",
+            title: "Edicto creado",
+            description: `Se subieron ${ok} imagen(es). No se pudieron subir ${fail}.`,
           })
         } else {
           toast({
             title: "Listo",
-            description: `Subasta creada con ${ok} imagen(es).`,
+            description: `Edicto creado con ${ok} imagen(es).`,
           })
         }
       } else {
         toast({
           title: "Listo",
-          description: "Subasta creada correctamente.",
+          description: "Edicto creado correctamente.",
         })
       }
       router.push("/panel/subastas")
-      return
     } catch (err: unknown) {
       const errObj = err as {
         status?: number
@@ -171,8 +165,8 @@ export default function PanelNuevaSubastaPage() {
       const isForbidden = errObj?.status === 403
       setError(
         isForbidden
-          ? "El backend aún no permite crear subastas desde el panel de matriculados. Contacte al Colegio."
-          : (msg as string) ?? "Error al crear la subasta."
+          ? "El backend aún no permite crear edictos desde el panel. Contacte al Colegio."
+          : (msg as string) ?? "Error al crear el edicto."
       )
       if (errors && typeof errors === "object") {
         setFieldErrors(errors)
@@ -181,7 +175,7 @@ export default function PanelNuevaSubastaPage() {
         title: "Error",
         description: isForbidden
           ? "Acción no disponible. Contacte al Colegio."
-          : (msg as string) ?? "Error al crear la subasta.",
+          : (msg as string) ?? "Error al crear el edicto.",
         variant: "destructive",
       })
     } finally {
@@ -204,9 +198,9 @@ export default function PanelNuevaSubastaPage() {
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
-        Volver a Mis subastas
+        Volver a Mis edictos
       </Link>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Nueva subasta</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6">Nuevo edicto</h1>
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm space-y-2">
@@ -239,9 +233,17 @@ export default function PanelNuevaSubastaPage() {
             <p className="text-muted-foreground">Nombre</p>
             <p className="font-medium">{perfilMartillero.nombre || "—"}</p>
           </div>
+          <div>
+            <p className="text-muted-foreground">CUIT</p>
+            <p className="font-medium">{perfilMartillero.cuit}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Celular</p>
+            <p className="font-medium">{perfilMartillero.telefono}</p>
+          </div>
           <p className="sm:col-span-2 text-xs text-muted-foreground">
-            El backend toma matrícula, nombre y CUIT de su sesión; no hace falta
-            enviarlos en el formulario.
+            Estos datos se toman de su sesión. No hace falta cargarlos en el
+            formulario.
           </p>
         </CardContent>
       </Card>
@@ -268,7 +270,7 @@ export default function PanelNuevaSubastaPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="precioInicial">Precio inicial</Label>
+            <Label htmlFor="precioInicial">Base</Label>
             <Input
               id="precioInicial"
               type="number"
@@ -281,7 +283,7 @@ export default function PanelNuevaSubastaPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="domicilio">Domicilio de la subasta</Label>
+            <Label htmlFor="domicilio">Domicilio del remate</Label>
             <Input
               id="domicilio"
               required
@@ -292,17 +294,17 @@ export default function PanelNuevaSubastaPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="fechaInicio">Fecha inicio (YYYY-MM-DD)</Label>
+            <Label htmlFor="fechaInicio">Fecha inicio</Label>
             <Input
               id="fechaInicio"
               type="date"
               required
               value={form.fechaInicio}
-              onChange={(e) => setFechaInicio(e.target.value)}
+              onChange={(e) => setForm({ ...form, fechaInicio: e.target.value })}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="fechaFin">Fecha fin (YYYY-MM-DD)</Label>
+            <Label htmlFor="fechaFin">Fecha fin</Label>
             <Input
               id="fechaFin"
               type="date"
@@ -320,9 +322,7 @@ export default function PanelNuevaSubastaPage() {
               Edicto
             </CardTitle>
             <p className="text-sm text-muted-foreground font-normal">
-              Texto del edicto publicado en el Boletín Oficial de Mendoza. El PDF
-              lo genera el boletín al publicarse; aquí solo cargás el texto y la
-              referencia. Se mostrará en la página pública de la subasta.
+              Texto del edicto publicado en el Boletín Oficial de Mendoza.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -333,39 +333,25 @@ export default function PanelNuevaSubastaPage() {
                 required
                 rows={6}
                 placeholder="Pegá aquí el texto del edicto tal como figura en el Boletín Oficial..."
-                value={form.edictoTexto ?? ""}
+                value={form.edictoTexto}
                 onChange={(e) => setForm({ ...form, edictoTexto: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="numeroEdicto">Número de edicto / referencia</Label>
-                <Input
-                  id="numeroEdicto"
-                  placeholder="Ej. Edicto N.º 12345 BO-2026-03-15"
-                  value={form.numeroEdicto ?? ""}
-                  onChange={(e) => setForm({ ...form, numeroEdicto: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="fechaPublicacionBoletin">
-                  Fecha publicación en Boletín (opcional)
-                </Label>
-                <Input
-                  id="fechaPublicacionBoletin"
-                  type="date"
-                  value={form.fechaPublicacionBoletin ?? ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      fechaPublicacionBoletin: e.target.value,
-                    })
-                  }
-                />
-                <p className="text-xs text-muted-foreground">
-                  Si la cargás, debe ser el mismo día que la fecha de inicio.
-                </p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="numeroEdicto">Número de edicto / referencia</Label>
+              <Input
+                id="numeroEdicto"
+                placeholder="Ej. Edicto N.º 12345 BO-2026-03-15"
+                value={form.numeroEdicto}
+                onChange={(e) => setForm({ ...form, numeroEdicto: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Fechas de publicación en el Boletín Oficial</Label>
+              <FechasBoletinCalendar
+                value={fechasBoletin}
+                onChange={setFechasBoletin}
+              />
             </div>
           </CardContent>
         </Card>
@@ -375,9 +361,6 @@ export default function PanelNuevaSubastaPage() {
             <ImagePlus className="h-4 w-4 text-primary" />
             Imágenes (opcional)
           </Label>
-          <p className="text-sm text-muted-foreground">
-            Podés subir fotos de la subasta. Se enviarán después de crear la subasta. Orden: según el orden en que las seleccionés.
-          </p>
           <Input
             id="imagenes"
             type="file"
@@ -398,10 +381,8 @@ export default function PanelNuevaSubastaPage() {
 
         <div className="flex gap-4">
           <Button type="submit" disabled={loading}>
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            Crear subasta
+            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Crear edicto
           </Button>
           <Button type="button" variant="outline" asChild>
             <Link href="/panel/subastas">Cancelar</Link>

@@ -50,7 +50,7 @@ export default function NuevaPublicacionExternaPage() {
     setError(null)
 
     if (form.precioInicial <= 0) {
-      setError("El precio inicial debe ser mayor a 0.")
+      setError("La base debe ser mayor a 0.")
       return
     }
     if (form.fechaFin < form.fechaInicio) {
@@ -92,7 +92,7 @@ export default function NuevaPublicacionExternaPage() {
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
-        Volver a subastas
+        Volver a edictos
       </Link>
       <h1 className="text-2xl font-bold text-foreground mb-2">
         Nueva publicación externa
@@ -130,7 +130,7 @@ export default function NuevaPublicacionExternaPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="precioInicial">Precio inicial</Label>
+            <Label htmlFor="precioInicial">Base</Label>
             <Input
               id="precioInicial"
               type="number"

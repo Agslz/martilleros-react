@@ -3,7 +3,7 @@ import { Gavel, BookOpen, Users, FileText, CreditCard } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const links = [
-  { href: "/admin/subastas", name: "Subastas", icon: Gavel },
+  { href: "/admin/subastas", name: "Edictos", icon: Gavel },
   { href: "/admin/biblioteca", name: "Biblioteca", icon: BookOpen },
   { href: "/admin/matriculados/nuevo", name: "Nuevo matriculado", icon: Users },
   { href: "/admin/contenidos", name: "Contenidos", icon: FileText },
@@ -15,7 +15,7 @@ export default function AdminDashboardPage() {
     <div>
       <h1 className="text-2xl font-bold text-foreground mb-2">Panel de administración</h1>
       <p className="text-muted-foreground mb-8">
-        Gestión de subastas, biblioteca, matriculados, contenidos y cuotas.
+        Gestión de edictos, biblioteca, matriculados, contenidos y cuotas.
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {links.map((item) => {

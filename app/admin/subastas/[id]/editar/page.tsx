@@ -15,6 +15,7 @@ import {
   type ActualizarSubastaExternaRequest,
   type SubastaResponse,
 } from "@/lib/api"
+import { esModificablePorAdmin } from "@/lib/subasta-display"
 
 function subastaToForm(s: SubastaResponse): ActualizarSubastaExternaRequest {
   return {
@@ -71,7 +72,7 @@ export default function EditarSubastaPage() {
     setError(null)
 
     if (form.precioInicial <= 0) {
-      setError("El precio inicial debe ser mayor a 0.")
+      setError("La base debe ser mayor a 0.")
       return
     }
     if (form.fechaFin < form.fechaInicio) {
@@ -96,9 +97,9 @@ export default function EditarSubastaPage() {
     } catch (err: unknown) {
       const errObj = err as { status?: number; data?: { message?: string } }
       const msg = errObj?.data?.message
-      if (errObj?.status === 400 && !subasta?.esPublicacionExterna) {
+      if (errObj?.status === 400 && subasta && !esModificablePorAdmin(subasta)) {
         setError(
-          "Solo se pueden editar publicaciones externas creadas por el admin."
+          "Los edictos publicados por matriculados solo pueden consultarse. No pueden modificarse ni eliminarse desde el panel admin."
         )
       } else {
         setError(msg ?? "Error al actualizar la publicación.")
@@ -119,15 +120,15 @@ export default function EditarSubastaPage() {
   if (!subasta || !form) {
     return (
       <div>
-        <p className="text-muted-foreground">Subasta no encontrada.</p>
+        <p className="text-muted-foreground">Edicto no encontrado.</p>
         <Button variant="link" asChild>
-          <Link href="/admin/subastas">Volver a subastas</Link>
+          <Link href="/admin/subastas">Volver a edictos</Link>
         </Button>
       </div>
     )
   }
 
-  if (!subasta.esPublicacionExterna) {
+  if (!esModificablePorAdmin(subasta)) {
     return (
       <div>
         <Link
@@ -135,18 +136,19 @@ export default function EditarSubastaPage() {
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Volver a subastas
+          Volver a edictos
         </Link>
         <h1 className="text-2xl font-bold text-foreground mb-4">
-          No editable
+          Solo lectura
         </h1>
         <p className="text-muted-foreground max-w-lg">
-          Esta subasta fue creada por un matriculado. El admin solo puede
-          modificar publicaciones externas (terceros no matriculados) mediante{" "}
-          <code className="text-sm">PUT /api/admin/subastas/&#123;id&#125;</code>
-          .
+          Este edicto fue publicado por un matriculado. Desde el panel admin
+          solo puede consultarse; no se puede editar ni eliminar.
         </p>
         <Button className="mt-6" variant="outline" asChild>
+          <Link href={`/edictos/${subasta.id}`}>Ver en el sitio</Link>
+        </Button>
+        <Button className="mt-6 ml-3" variant="outline" asChild>
           <Link href="/admin/subastas">Volver al listado</Link>
         </Button>
       </div>
@@ -160,7 +162,7 @@ export default function EditarSubastaPage() {
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
-        Volver a subastas
+        Volver a edictos
       </Link>
       <h1 className="text-2xl font-bold text-foreground mb-6">
         Editar publicación externa
@@ -194,7 +196,7 @@ export default function EditarSubastaPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="precioInicial">Precio inicial</Label>
+            <Label htmlFor="precioInicial">Base</Label>
             <Input
               id="precioInicial"
               type="number"

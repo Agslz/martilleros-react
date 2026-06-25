@@ -291,7 +291,7 @@ export function HeroSection({ intro }: HeroSectionProps) {
             </div>
             <div>
               <h2 className="font-semibold text-stone-900">Edictos</h2>
-              <p className="text-sm text-stone-500">Subastas publicadas</p>
+              <p className="text-sm text-stone-500">Edictos publicados</p>
             </div>
             <ArrowRight className="ml-auto h-5 w-5 text-stone-300 group-hover:text-stone-600 transition-colors" />
           </Link>

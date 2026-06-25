@@ -21,7 +21,7 @@ import {
 
 const panelNav: DashboardNavItem[] = [
   { name: "Mi estado", shortName: "Estado", href: "/panel", icon: User, exact: true },
-  { name: "Subastas", href: "/panel/subastas", icon: Gavel },
+  { name: "Edictos", href: "/panel/subastas", icon: Gavel },
   { name: "Credenciales", href: "/panel/credenciales", icon: Shield },
   { name: "Cuotas", href: "/panel/cuotas", icon: CreditCard },
   { name: "Biblioteca", href: "/panel/biblioteca", icon: BookOpen },

@@ -68,7 +68,7 @@ export function SubastasContent() {
       />
       {loading ? (
         <div className="py-12 text-center text-muted-foreground">
-          Cargando subastas...
+          Cargando edictos...
         </div>
       ) : (
         <SubastasList subastas={filtered} />
