@@ -91,19 +91,22 @@ export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPrevi
           </CardContent>
         </Card>
 
+        {draft.numeroEdicto && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground mb-1">Número de edicto</p>
+              <p className="text-xl font-semibold text-foreground break-words [overflow-wrap:anywhere]">
+                {draft.numeroEdicto}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Martillero a cargo</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {draft.numeroEdicto && (
-              <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
-                <p className="text-xs text-muted-foreground">Número de edicto</p>
-                <p className="text-sm font-medium break-words [overflow-wrap:anywhere]">
-                  {draft.numeroEdicto}
-                </p>
-              </div>
-            )}
             <div className="flex items-start gap-3">
               <User className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
