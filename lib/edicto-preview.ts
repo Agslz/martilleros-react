@@ -18,7 +18,16 @@ export type EdictoPreviewDraft = {
 
 export function guardarBorradorVistaPrevia(draft: EdictoPreviewDraft): void {
   if (typeof window === "undefined") return
-  localStorage.setItem(EDICTO_PREVIEW_STORAGE_KEY, JSON.stringify(draft))
+  try {
+    localStorage.setItem(EDICTO_PREVIEW_STORAGE_KEY, JSON.stringify(draft))
+  } catch {
+    // Sin imágenes si el borrador es demasiado grande para localStorage
+    const { imagenUrls: _omit, ...sinImagenes } = draft
+    localStorage.setItem(
+      EDICTO_PREVIEW_STORAGE_KEY,
+      JSON.stringify({ ...sinImagenes, imagenUrls: [] })
+    )
+  }
 }
 
 export function leerBorradorVistaPrevia(): EdictoPreviewDraft | null {

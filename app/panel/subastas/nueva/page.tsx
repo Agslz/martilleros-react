@@ -93,21 +93,45 @@ export default function PanelNuevoEdictoPage() {
     }
 
     const imagenUrls = await archivosADataUrls(imagenes)
-    guardarBorradorVistaPrevia({
-      titulo: form.titulo.trim(),
-      descripcion: form.descripcion.trim(),
-      precioInicial: form.precioInicial,
-      incrementos: form.incrementos > 0 ? form.incrementos : undefined,
-      domicilio: form.domicilio.trim(),
-      edictoTexto: form.edictoTexto.trim(),
-      numeroEdicto: form.numeroEdicto.trim() || undefined,
-      fechasPublicacionBoletin: fechasBoletin,
-      nombreMartillero: perfilMartillero.nombre,
-      martilleroACargo: perfilMartillero.matricula,
-      cuitMartillero: perfilMartillero.cuitRaw || undefined,
-      telefonoMartillero: perfilMartillero.telefonoRaw || undefined,
-      imagenUrls,
-    })
+    try {
+      guardarBorradorVistaPrevia({
+        titulo: form.titulo.trim(),
+        descripcion: form.descripcion.trim(),
+        precioInicial: form.precioInicial,
+        incrementos: form.incrementos > 0 ? form.incrementos : undefined,
+        domicilio: form.domicilio.trim(),
+        edictoTexto: form.edictoTexto.trim(),
+        numeroEdicto: form.numeroEdicto.trim() || undefined,
+        fechasPublicacionBoletin: fechasBoletin,
+        nombreMartillero: perfilMartillero.nombre,
+        martilleroACargo: perfilMartillero.matricula,
+        cuitMartillero: perfilMartillero.cuitRaw || undefined,
+        telefonoMartillero: perfilMartillero.telefonoRaw || undefined,
+        imagenUrls,
+      })
+    } catch {
+      toast({
+        title: "Vista previa",
+        description:
+          "No se pudieron incluir las imágenes en la vista previa. El resto del edicto se mostrará igual.",
+        variant: "destructive",
+      })
+      guardarBorradorVistaPrevia({
+        titulo: form.titulo.trim(),
+        descripcion: form.descripcion.trim(),
+        precioInicial: form.precioInicial,
+        incrementos: form.incrementos > 0 ? form.incrementos : undefined,
+        domicilio: form.domicilio.trim(),
+        edictoTexto: form.edictoTexto.trim(),
+        numeroEdicto: form.numeroEdicto.trim() || undefined,
+        fechasPublicacionBoletin: fechasBoletin,
+        nombreMartillero: perfilMartillero.nombre,
+        martilleroACargo: perfilMartillero.matricula,
+        cuitMartillero: perfilMartillero.cuitRaw || undefined,
+        telefonoMartillero: perfilMartillero.telefonoRaw || undefined,
+        imagenUrls: [],
+      })
+    }
     window.open("/edictos/vista-previa", "_blank", "noopener,noreferrer")
   }
 

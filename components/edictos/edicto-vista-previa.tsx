@@ -40,9 +40,9 @@ export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPrevi
           </p>
         </div>
 
-        {draft.imagenUrls.length > 0 && (
+        {(draft.imagenUrls?.length ?? 0) > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {draft.imagenUrls.map((url, i) => (
+            {draft.imagenUrls!.map((url, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={url + i}
