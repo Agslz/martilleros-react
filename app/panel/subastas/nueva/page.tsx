@@ -21,6 +21,7 @@ import {
 } from "@/lib/api"
 import { displayCuit } from "@/lib/cuit"
 import { displayTelefono } from "@/lib/telefono"
+import { guardarBorradorVistaPrevia } from "@/lib/edicto-preview"
 import { useToast } from "@/hooks/use-toast"
 
 const ACCEPT_IMAGES = "image/jpeg,image/png,image/webp,image/gif"
@@ -39,11 +40,14 @@ export default function PanelNuevoEdictoPage() {
     nombre: "",
     cuit: "",
     telefono: "",
+    cuitRaw: "",
+    telefonoRaw: "",
   })
   const [form, setForm] = useState({
     titulo: "",
     descripcion: "",
     precioInicial: 0,
+    incrementos: 0,
     domicilio: "",
     edictoTexto: "",
     numeroEdicto: "",
@@ -57,44 +61,82 @@ export default function PanelNuevoEdictoPage() {
           nombre: [user.nombre, user.apellido].filter(Boolean).join(" "),
           cuit: user.cuit ? displayCuit(user.cuit) : "—",
           telefono: user.telefono ? displayTelefono(user.telefono) : "—",
+          cuitRaw: user.cuit ?? "",
+          telefonoRaw: user.telefono ?? "",
         })
       }
       setUserLoaded(true)
     })
   }, [])
 
+  const validarFormulario = (): string | null => {
+    if (!form.titulo.trim()) return "El título es obligatorio."
+    if (!form.descripcion.trim()) return "La descripción es obligatoria."
+    if (form.precioInicial <= 0) return "La base debe ser mayor a 0."
+    if (!form.domicilio.trim()) return "El domicilio es obligatorio."
+    if (!form.edictoTexto.trim()) {
+      return "El texto completo del edicto es obligatorio."
+    }
+    return validarFechasBoletin(fechasBoletin)
+  }
+
+  const handleVistaPrevia = () => {
+    const validationError = validarFormulario()
+    if (validationError) {
+      setError(validationError)
+      toast({
+        title: "Complete el formulario",
+        description: validationError,
+        variant: "destructive",
+      })
+      return
+    }
+
+    const imagenUrls = imagenes.map((file) => URL.createObjectURL(file))
+    guardarBorradorVistaPrevia({
+      titulo: form.titulo.trim(),
+      descripcion: form.descripcion.trim(),
+      precioInicial: form.precioInicial,
+      incrementos: form.incrementos > 0 ? form.incrementos : undefined,
+      domicilio: form.domicilio.trim(),
+      edictoTexto: form.edictoTexto.trim(),
+      numeroEdicto: form.numeroEdicto.trim() || undefined,
+      fechasPublicacionBoletin: fechasBoletin,
+      nombreMartillero: perfilMartillero.nombre,
+      martilleroACargo: perfilMartillero.matricula,
+      cuitMartillero: perfilMartillero.cuitRaw || undefined,
+      telefonoMartillero: perfilMartillero.telefonoRaw || undefined,
+      imagenUrls,
+    })
+    window.open("/panel/subastas/vista-previa", "_blank", "noopener,noreferrer")
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setFieldErrors({})
 
+    const validationError = validarFormulario()
+    if (validationError) {
+      setError(validationError)
+      if (validationError.includes("edicto")) {
+        setFieldErrors((prev) => ({ ...prev, edictoTexto: "Requerido." }))
+      }
+      if (validationError.includes("boletín") || validationError.includes("fecha")) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          fechasPublicacionBoletin: validationError,
+        }))
+      }
+      toast({
+        title: "Revise el formulario",
+        description: validationError,
+        variant: "destructive",
+      })
+      return
+    }
+
     const edictoTrim = form.edictoTexto.trim()
-    if (!edictoTrim) {
-      setError("El texto completo del edicto es obligatorio.")
-      setFieldErrors((prev) => ({ ...prev, edictoTexto: "Requerido." }))
-      toast({
-        title: "Falta el edicto",
-        description: "Debe cargar el texto del edicto publicado en el Boletín Oficial.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const fechasError = validarFechasBoletin(fechasBoletin)
-    if (fechasError) {
-      setError(fechasError)
-      setFieldErrors((prev) => ({
-        ...prev,
-        fechasPublicacionBoletin: fechasError,
-      }))
-      toast({
-        title: "Fechas del boletín",
-        description: fechasError,
-        variant: "destructive",
-      })
-      return
-    }
-
     setLoading(true)
     try {
       const body: CrearSubastaMatriculadoRequest = {
@@ -107,6 +149,9 @@ export default function PanelNuevoEdictoPage() {
       }
       if (form.numeroEdicto.trim()) {
         body.numeroEdicto = form.numeroEdicto.trim()
+      }
+      if (form.incrementos > 0) {
+        body.incrementos = form.incrementos
       }
 
       const created = await crearSubastaMatriculado(body)
@@ -279,14 +324,26 @@ export default function PanelNuevoEdictoPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="domicilio">Domicilio del remate</Label>
+            <Label htmlFor="incrementos">Incrementos</Label>
             <Input
-              id="domicilio"
-              required
-              value={form.domicilio}
-              onChange={(e) => setForm({ ...form, domicilio: e.target.value })}
+              id="incrementos"
+              type="number"
+              min={0}
+              value={form.incrementos || ""}
+              onChange={(e) =>
+                setForm({ ...form, incrementos: Number(e.target.value) || 0 })
+              }
             />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="domicilio">Domicilio del remate</Label>
+          <Input
+            id="domicilio"
+            required
+            value={form.domicilio}
+            onChange={(e) => setForm({ ...form, domicilio: e.target.value })}
+          />
         </div>
 
         <Card className="border-primary/10">
@@ -353,10 +410,13 @@ export default function PanelNuevoEdictoPage() {
           )}
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
+          <Button type="button" variant="secondary" onClick={handleVistaPrevia}>
+            Vista previa
+          </Button>
           <Button type="submit" disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Crear edicto
+            Publicar edicto
           </Button>
           <Button type="button" variant="outline" asChild>
             <Link href="/panel/subastas">Cancelar</Link>

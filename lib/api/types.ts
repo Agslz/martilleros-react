@@ -85,6 +85,7 @@ export interface SubastaResponse {
   titulo: string
   descripcion: string
   precioInicial: number
+  incrementos?: number | null
   martilleroACargo: string
   nombreMartillero: string
   cuitMartillero: string
@@ -161,6 +162,7 @@ export interface CrearSubastaMatriculadoRequest {
   titulo: string
   descripcion: string
   precioInicial: number
+  incrementos?: number
   domicilio: string
   edictoTexto?: string
   numeroEdicto?: string

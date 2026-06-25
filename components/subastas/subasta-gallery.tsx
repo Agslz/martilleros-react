@@ -33,11 +33,7 @@ export function SubastaGallery({ imagenes, titulo }: SubastaGalleryProps) {
   }
 
   if (imagenes.length === 0) {
-    return (
-      <div className="aspect-video bg-muted rounded-xl flex items-center justify-center">
-        <p className="text-muted-foreground">No hay imágenes disponibles</p>
-      </div>
-    )
+    return null
   }
 
   return (

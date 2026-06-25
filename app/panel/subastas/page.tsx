@@ -9,6 +9,7 @@ import type { SubastaResponse } from "@/lib/api"
 import {
   formatFechasEdictoListado,
   getCantidadPublicaciones,
+  edictoVisibleEnSitioHoy,
 } from "@/lib/subasta-display"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
@@ -120,7 +121,7 @@ export default function PanelEdictosPage() {
                     {formatFechasEdictoListado(s)}
                   </td>
                   <td className="p-4 hidden md:table-cell">
-                    {s.visiblePublico ? (
+                    {edictoVisibleEnSitioHoy(s) ? (
                       <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
                         Sí
                       </Badge>
@@ -134,15 +135,15 @@ export default function PanelEdictosPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      asChild={s.visiblePublico}
-                      disabled={!s.visiblePublico}
+                      asChild={s.visiblePublico && edictoVisibleEnSitioHoy(s)}
+                      disabled={!s.visiblePublico || !edictoVisibleEnSitioHoy(s)}
                       title={
-                        s.visiblePublico
+                        s.visiblePublico && edictoVisibleEnSitioHoy(s)
                           ? "Ver en el sitio público"
                           : "Solo visible en el sitio los días de publicación elegidos"
                       }
                     >
-                      {s.visiblePublico ? (
+                      {s.visiblePublico && edictoVisibleEnSitioHoy(s) ? (
                         <Link
                           href={`/edictos/${s.id}`}
                           target="_blank"

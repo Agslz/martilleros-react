@@ -4,7 +4,10 @@ import { useEffect, useState, useMemo } from "react"
 import type { SubastaResponse, MatriculadoPublicResponse } from "@/lib/api"
 import { getSubastasPublicas, getMatriculadosPublicos } from "@/lib/api"
 import { matriculaPuedeEjercer } from "@/lib/estado-fianza"
-import { edictoTienePublicacionesPendientes } from "@/lib/subasta-display"
+import {
+  edictoTienePublicacionesPendientes,
+  edictoVisibleEnSitioHoy,
+} from "@/lib/subasta-display"
 import { SubastasFilter } from "./subastas-filter"
 import { SubastasList } from "./subastas-list"
 
@@ -31,8 +34,9 @@ export function SubastasContent() {
         )
 
         const filtradas = subastasApi.filter((s) => {
+          if (!edictoVisibleEnSitioHoy(s)) return false
           const m = estadoMap.get(s.martilleroACargo.toUpperCase())
-          if (!m) return true // si no lo encontramos, no filtramos
+          if (!m) return true
           return matriculaPuedeEjercer(m)
         })
 
