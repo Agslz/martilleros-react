@@ -16,6 +16,9 @@ function formatPrecio(n: number) {
   }).format(n)
 }
 
+const compactHighlightCard =
+  "border-primary/20 bg-primary/5 gap-0 py-0 shadow-sm"
+
 type EdictoVistaPreviaProps = {
   draft: EdictoPreviewDraft
   esPreview?: boolean
@@ -23,125 +26,129 @@ type EdictoVistaPreviaProps = {
 
 export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPreviaProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 space-y-6 min-w-0">
-        {esPreview && (
-          <Badge variant="secondary" className="mb-2">
-            Vista previa — aún no publicado
-          </Badge>
-        )}
+    <div className="space-y-6">
+      {esPreview && (
+        <Badge variant="secondary">Vista previa — aún no publicado</Badge>
+      )}
 
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 break-words">
-            {draft.titulo || "Sin título"}
-          </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
-            {draft.descripcion || "Sin descripción"}
-          </p>
-        </div>
-
-        {(draft.imagenUrls?.length ?? 0) > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {draft.imagenUrls!.map((url, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={url + i}
-                src={url}
-                alt={`Vista previa ${i + 1}`}
-                className="rounded-lg border border-border aspect-video object-cover w-full"
-              />
-            ))}
-          </div>
-        )}
-
-        <Card className="border-primary/20 bg-primary/5 min-w-0 overflow-hidden">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="h-5 w-5 text-primary shrink-0" />
-              Edicto
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="min-w-0">
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
-              {draft.edictoTexto || "Sin texto de edicto."}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 break-words">
+          {draft.titulo || "Sin título"}
+        </h1>
+        <p className="text-lg text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
+          {draft.descripcion || "Sin descripción"}
+        </p>
       </div>
 
-      <div className="space-y-6 min-w-0">
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-6 space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Base</p>
-              <p className="text-3xl font-bold text-primary">
-                {draft.precioInicial > 0
-                  ? formatPrecio(draft.precioInicial)
-                  : "—"}
-              </p>
-            </div>
-            {draft.incrementos != null && draft.incrementos > 0 && (
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Incrementos</p>
-                <p className="text-xl font-semibold text-foreground">
-                  {formatPrecio(draft.incrementos)}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      {(draft.imagenUrls?.length ?? 0) > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {draft.imagenUrls!.map((url, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={url + i}
+              src={url}
+              alt={`Vista previa ${i + 1}`}
+              className="rounded-lg border border-border aspect-video object-cover w-full"
+            />
+          ))}
+        </div>
+      )}
 
-        {draft.numeroEdicto && (
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground mb-1">Número de edicto</p>
-              <p className="text-xl font-semibold text-foreground break-words [overflow-wrap:anywhere]">
-                {draft.numeroEdicto}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-2 min-w-0">
+          <Card className="border-primary/20 bg-primary/5 min-w-0 overflow-hidden gap-4 py-4">
+            <CardHeader className="px-4 pb-0">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <FileText className="h-5 w-5 text-primary shrink-0" />
+                Edicto
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 min-w-0">
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                {draft.edictoTexto || "Sin texto de edicto."}
               </p>
             </CardContent>
           </Card>
-        )}
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Martillero a cargo</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3">
-              <User className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+        <div className="space-y-4 min-w-0">
+          <Card className={compactHighlightCard}>
+            <CardContent className="p-4 space-y-3">
               <div>
-                <p className="font-medium">{draft.nombreMartillero}</p>
-                <p className="text-sm text-muted-foreground">
-                  Matrícula: {draft.martilleroACargo}
+                <p className="text-sm text-muted-foreground mb-0.5">Base</p>
+                <p className="text-3xl font-bold text-primary leading-tight">
+                  {draft.precioInicial > 0
+                    ? formatPrecio(draft.precioInicial)
+                    : "—"}
                 </p>
-                {draft.cuitMartillero && (
-                  <p className="text-sm text-muted-foreground">
-                    CUIT: {displayCuit(draft.cuitMartillero)}
-                  </p>
-                )}
-                {draft.telefonoMartillero && (
-                  <p className="text-sm text-muted-foreground">
-                    Teléfono: {displayTelefono(draft.telefonoMartillero)}
-                  </p>
-                )}
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              {draft.incrementos != null && draft.incrementos > 0 && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-0.5">
+                    Incrementos
+                  </p>
+                  <p className="text-xl font-semibold text-foreground leading-tight">
+                    {formatPrecio(draft.incrementos)}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Ubicación</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-              <p className="font-medium break-words [overflow-wrap:anywhere]">
-                {draft.domicilio || "—"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          {draft.numeroEdicto && (
+            <Card className={compactHighlightCard}>
+              <CardContent className="p-4">
+                <p className="text-sm text-muted-foreground mb-0.5">
+                  Número de edicto
+                </p>
+                <p className="text-xl font-semibold text-foreground break-words [overflow-wrap:anywhere] leading-tight">
+                  {draft.numeroEdicto}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="gap-4 py-4">
+            <CardHeader className="px-4 pb-0">
+              <CardTitle className="text-base">Martillero a cargo</CardTitle>
+            </CardHeader>
+            <CardContent className="px-4">
+              <div className="flex items-start gap-3">
+                <User className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium">{draft.nombreMartillero}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Matrícula: {draft.martilleroACargo}
+                  </p>
+                  {draft.cuitMartillero && (
+                    <p className="text-sm text-muted-foreground">
+                      CUIT: {displayCuit(draft.cuitMartillero)}
+                    </p>
+                  )}
+                  {draft.telefonoMartillero && (
+                    <p className="text-sm text-muted-foreground">
+                      Teléfono: {displayTelefono(draft.telefonoMartillero)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="gap-4 py-4">
+            <CardHeader className="px-4 pb-0">
+              <CardTitle className="text-base">Ubicación</CardTitle>
+            </CardHeader>
+            <CardContent className="px-4">
+              <div className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                <p className="font-medium break-words [overflow-wrap:anywhere]">
+                  {draft.domicilio || "—"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

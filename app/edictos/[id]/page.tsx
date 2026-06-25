@@ -121,42 +121,42 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
       </div>
 
       <section className="py-8 lg:py-12 bg-background">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6 min-w-0">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  {esVigenteHoy ? (
-                    <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                      Publicado hoy
-                    </Badge>
-                  ) : tienePendientes ? (
-                    <Badge className="bg-amber-100 text-amber-900 hover:bg-amber-100">
-                      Próximo a publicarse
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-muted-foreground">
-                      Finalizado
-                    </Badge>
-                  )}
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 break-words">
-                  {subasta.titulo}
-                </h1>
-                <p className="text-lg text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
-                  {subasta.descripcion}
-                </p>
-              </div>
-
-              {imagenesParaGaleria.length > 0 && (
-                <SubastaGallery
-                  imagenes={imagenesParaGaleria}
-                  titulo={subasta.titulo}
-                />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              {esVigenteHoy ? (
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                  Publicado hoy
+                </Badge>
+              ) : tienePendientes ? (
+                <Badge className="bg-amber-100 text-amber-900 hover:bg-amber-100">
+                  Próximo a publicarse
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground">
+                  Finalizado
+                </Badge>
               )}
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 break-words">
+              {subasta.titulo}
+            </h1>
+            <p className="text-lg text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
+              {subasta.descripcion}
+            </p>
+          </div>
 
-              <Card className="border-primary/20 bg-primary/5 min-w-0 overflow-hidden">
-                <CardHeader>
+          {imagenesParaGaleria.length > 0 && (
+            <SubastaGallery
+              imagenes={imagenesParaGaleria}
+              titulo={subasta.titulo}
+            />
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-2 min-w-0">
+              <Card className="border-primary/20 bg-primary/5 min-w-0 overflow-hidden gap-4 py-4">
+                <CardHeader className="px-4 pb-0">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <FileText className="h-5 w-5 text-primary shrink-0" />
                     Edicto
@@ -165,7 +165,7 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                     Texto publicado en el Boletín Oficial de Mendoza
                   </p>
                 </CardHeader>
-                <CardContent className="space-y-4 min-w-0">
+                <CardContent className="space-y-4 min-w-0 px-4">
                   {tieneEdictoTexto ? (
                     <>
                       <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
@@ -207,21 +207,21 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
               </Card>
             </div>
 
-            <div className="space-y-6 min-w-0">
-              <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="pt-6 space-y-4">
+            <div className="space-y-4 min-w-0">
+              <Card className="border-primary/20 bg-primary/5 gap-0 py-0 shadow-sm">
+                <CardContent className="p-4 space-y-3">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Base</p>
-                    <p className="text-3xl font-bold text-primary">
+                    <p className="text-sm text-muted-foreground mb-0.5">Base</p>
+                    <p className="text-3xl font-bold text-primary leading-tight">
                       {formatPrecio(subasta.precioInicial)}
                     </p>
                   </div>
                   {subasta.incrementos != null && subasta.incrementos > 0 && (
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">
+                      <p className="text-sm text-muted-foreground mb-0.5">
                         Incrementos
                       </p>
-                      <p className="text-xl font-semibold text-foreground">
+                      <p className="text-xl font-semibold text-foreground leading-tight">
                         {formatPrecio(subasta.incrementos)}
                       </p>
                     </div>
@@ -230,23 +230,23 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
               </Card>
 
               {subasta.numeroEdicto && (
-                <Card className="border-primary/20 bg-primary/5">
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground mb-1">
+                <Card className="border-primary/20 bg-primary/5 gap-0 py-0 shadow-sm">
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground mb-0.5">
                       Número de edicto
                     </p>
-                    <p className="text-xl font-semibold text-foreground break-words [overflow-wrap:anywhere]">
+                    <p className="text-xl font-semibold text-foreground break-words [overflow-wrap:anywhere] leading-tight">
                       {subasta.numeroEdicto}
                     </p>
                   </CardContent>
                 </Card>
               )}
 
-              <Card>
-                <CardHeader>
+              <Card className="gap-4 py-4">
+                <CardHeader className="px-4 pb-0">
                   <CardTitle className="text-base">Martillero a cargo</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="px-4">
                   <div className="flex items-start gap-3">
                     <User className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
@@ -269,11 +269,11 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
+              <Card className="gap-4 py-4">
+                <CardHeader className="px-4 pb-0">
                   <CardTitle className="text-base">Ubicación</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-4">
                   <div className="flex items-start gap-3">
                     <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
