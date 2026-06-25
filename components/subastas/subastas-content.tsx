@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react"
 import type { SubastaResponse, MatriculadoPublicResponse } from "@/lib/api"
 import { getSubastasPublicas, getMatriculadosPublicos } from "@/lib/api"
 import { matriculaPuedeEjercer } from "@/lib/estado-fianza"
+import { edictoTienePublicacionesPendientes } from "@/lib/subasta-display"
 import { SubastasFilter } from "./subastas-filter"
 import { SubastasList } from "./subastas-list"
 
@@ -52,11 +53,10 @@ export function SubastasContent() {
 
   const filtered = useMemo(() => {
     if (filterEstado === "todas") return subastas
-    const today = new Date().toISOString().slice(0, 10)
     if (filterEstado === "proximas") {
-      return subastas.filter((s) => s.fechaFin >= today)
+      return subastas.filter((s) => edictoTienePublicacionesPendientes(s))
     }
-    return subastas.filter((s) => s.fechaFin < today)
+    return subastas.filter((s) => !edictoTienePublicacionesPendientes(s))
   }, [subastas, filterEstado])
 
   return (

@@ -6,13 +6,10 @@ import type {
 } from "./types"
 
 /**
- * Subastas públicas (sin auth).
+ * Edictos públicos visibles hoy (sin auth).
  *
- * Regla de visibilidad (backend):
- * - Una subasta aparece aquí desde que se crea hasta el día de fechaFin inclusive.
- * - A partir del día siguiente a fechaFin, el backend pone visiblePublico = false
- *   y ya no la devuelve en este endpoint.
- * - Sigue existiendo en el sistema y el matriculado la ve en /api/private/subastas (su historial).
+ * Matriculados: hoy ∈ fechasPublicacionBoletin.
+ * Externas: hoy dentro del rango fechaInicio–fechaFin.
  */
 export async function getSubastasPublicas(): Promise<SubastaResponse[]> {
   try {
@@ -88,8 +85,8 @@ export async function subirImagenSubastaMatriculado(
 }
 
 /**
- * Obtiene una subasta por id desde la lista pública.
- * Si la subasta ya venció (fechaFin pasada), no está en /api/public/subastas y devuelve null → 404 en /edictos/[id].
+ * Obtiene un edicto por id desde la lista pública (solo visible hoy).
+ * Si no está publicado hoy, no figura en /api/public/subastas → null → 404 en /edictos/[id].
  */
 export async function getSubastaById(
   id: number

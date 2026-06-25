@@ -1,5 +1,9 @@
 import type { SubastaResponse } from "@/lib/api/types"
 
+export function hoyIso(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
 /** Fechas de publicación en boletín (compat con campo legacy). */
 export function getFechasBoletin(subasta: SubastaResponse): string[] {
   if (
@@ -42,4 +46,37 @@ export function formatFechasBoletinLista(fechas: string[]): string {
       }
     })
     .join(", ")
+}
+
+/** Externas: fechaFin >= hoy. Matriculados: alguna fecha de boletín >= hoy. */
+export function edictoTienePublicacionesPendientes(
+  subasta: SubastaResponse,
+  today = hoyIso()
+): boolean {
+  if (subasta.esPublicacionExterna) {
+    return (subasta.fechaFin ?? "") >= today
+  }
+  return getFechasBoletin(subasta).some((f) => f >= today)
+}
+
+/** Texto de fechas para listados (matriculados: días BO; externas: rango). */
+export function formatFechasEdictoListado(subasta: SubastaResponse): string {
+  if (subasta.esPublicacionExterna && subasta.fechaInicio && subasta.fechaFin) {
+    return `${formatFechaCorta(subasta.fechaInicio)} – ${formatFechaCorta(subasta.fechaFin)}`
+  }
+  const fechas = getFechasBoletin(subasta)
+  if (fechas.length === 0) return "—"
+  return formatFechasBoletinLista(fechas)
+}
+
+function formatFechaCorta(iso: string): string {
+  try {
+    return new Date(iso + "T12:00:00").toLocaleDateString("es-AR", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
+  } catch {
+    return iso
+  }
 }

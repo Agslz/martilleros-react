@@ -89,8 +89,8 @@ export interface SubastaResponse {
   nombreMartillero: string
   cuitMartillero: string
   domicilio: string
-  fechaInicio: string
-  fechaFin: string
+  fechaInicio: string | null
+  fechaFin: string | null
   edictoUrl: string
   fechaPublicacion: string
   visiblePublico: boolean
@@ -162,8 +162,6 @@ export interface CrearSubastaMatriculadoRequest {
   descripcion: string
   precioInicial: number
   domicilio: string
-  fechaInicio: string
-  fechaFin: string
   edictoTexto?: string
   numeroEdicto?: string
   fechasPublicacionBoletin: string[]

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 import { getSubastasPublicas } from "@/lib/api/subastas"
+import { getFechasBoletin } from "@/lib/subasta-display"
 import { getSiteUrl } from "@/lib/site"
 
 export const revalidate = 3600
@@ -27,13 +28,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const subastas = await getSubastasPublicas()
     for (const s of subastas) {
+      const fechasBo = getFechasBoletin(s)
+      const lastBo = fechasBo.length > 0 ? fechasBo[fechasBo.length - 1] : null
       entries.push({
         url: `${base}/edictos/${s.id}`,
         lastModified: s.fechaPublicacion
           ? new Date(s.fechaPublicacion)
-          : s.fechaInicio
-            ? new Date(s.fechaInicio)
-            : now,
+          : lastBo
+            ? new Date(lastBo)
+            : s.fechaInicio
+              ? new Date(s.fechaInicio)
+              : now,
         changeFrequency: "weekly",
         priority: 0.8,
       })

@@ -26,6 +26,7 @@ import {
   formatFechasBoletinLista,
   getCantidadPublicaciones,
   getFechasBoletin,
+  edictoTienePublicacionesPendientes,
 } from "@/lib/subasta-display"
 import { displayTelefono } from "@/lib/telefono"
 
@@ -93,11 +94,10 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
 
   if (!subasta) notFound()
 
-  const today = new Date().toISOString().slice(0, 10)
-  const esProxima = subasta.fechaFin >= today
-
   const fechasBoletin = getFechasBoletin(subasta)
   const cantidadPublicaciones = getCantidadPublicaciones(subasta)
+  const esVigenteHoy = subasta.visiblePublico
+  const tienePendientes = edictoTienePublicacionesPendientes(subasta)
 
   const tieneEdictoTexto =
     typeof subasta.edictoTexto === "string" &&
@@ -214,13 +214,17 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
 
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                  {esProxima ? (
+                  {esVigenteHoy ? (
                     <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                      Próxima Subasta
+                      Publicado hoy
+                    </Badge>
+                  ) : tienePendientes ? (
+                    <Badge className="bg-amber-100 text-amber-900 hover:bg-amber-100">
+                      Próximo a publicarse
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-muted-foreground">
-                      Subasta Realizada
+                      Finalizado
                     </Badge>
                   )}
                 </div>
@@ -268,10 +272,36 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                   <div className="flex items-start gap-3">
                     <Calendar className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <p className="font-medium">Inicio: {formatFecha(subasta.fechaInicio)}</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Cierre: {formatFecha(subasta.fechaFin)}
-                      </p>
+                      {subasta.esPublicacionExterna &&
+                      subasta.fechaInicio &&
+                      subasta.fechaFin ? (
+                        <>
+                          <p className="font-medium">
+                            Inicio: {formatFecha(subasta.fechaInicio)}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Cierre: {formatFecha(subasta.fechaFin)}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-medium">
+                            Días de publicación en el sitio
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {fechasBoletin.length > 0
+                              ? formatFechasBoletinLista(fechasBoletin)
+                              : "—"}
+                          </p>
+                          {cantidadPublicaciones > 0 && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {cantidadPublicaciones} publicación
+                              {cantidadPublicaciones !== 1 ? "es" : ""} en el
+                              Boletín Oficial
+                            </p>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                   <Separator />

@@ -6,20 +6,12 @@ import { Gavel, Loader2, Plus, ExternalLink, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getSubastasPrivadas, getCurrentUser } from "@/lib/api"
 import type { SubastaResponse } from "@/lib/api"
-import { getCantidadPublicaciones } from "@/lib/subasta-display"
+import {
+  formatFechasEdictoListado,
+  getCantidadPublicaciones,
+} from "@/lib/subasta-display"
+import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-
-function formatFecha(s: string) {
-  try {
-    return new Date(s + "T12:00:00").toLocaleDateString("es-AR", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    })
-  } catch {
-    return s
-  }
-}
 
 export default function PanelEdictosPage() {
   const { toast } = useToast()
@@ -102,7 +94,10 @@ export default function PanelEdictosPage() {
                   Publicaciones BO
                 </th>
                 <th className="text-left p-4 font-semibold hidden lg:table-cell">
-                  Fechas
+                  Días de publicación
+                </th>
+                <th className="text-left p-4 font-semibold hidden md:table-cell">
+                  En sitio hoy
                 </th>
                 <th className="text-right p-4 font-semibold">Acción</th>
               </tr>
@@ -122,18 +117,46 @@ export default function PanelEdictosPage() {
                     {getCantidadPublicaciones(s)}
                   </td>
                   <td className="p-4 text-muted-foreground text-sm hidden lg:table-cell">
-                    {formatFecha(s.fechaInicio)} – {formatFecha(s.fechaFin)}
+                    {formatFechasEdictoListado(s)}
+                  </td>
+                  <td className="p-4 hidden md:table-cell">
+                    {s.visiblePublico ? (
+                      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                        Sí
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        No
+                      </Badge>
+                    )}
                   </td>
                   <td className="p-4 text-right">
-                    <Button size="sm" variant="outline" asChild>
-                      <Link
-                        href={`/edictos/${s.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="h-4 w-4 mr-1" />
-                        Ver en sitio
-                      </Link>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      asChild={s.visiblePublico}
+                      disabled={!s.visiblePublico}
+                      title={
+                        s.visiblePublico
+                          ? "Ver en el sitio público"
+                          : "Solo visible en el sitio los días de publicación elegidos"
+                      }
+                    >
+                      {s.visiblePublico ? (
+                        <Link
+                          href={`/edictos/${s.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-1" />
+                          Ver en sitio
+                        </Link>
+                      ) : (
+                        <span>
+                          <ExternalLink className="h-4 w-4 mr-1 inline" />
+                          Ver en sitio
+                        </span>
+                      )}
                     </Button>
                   </td>
                 </tr>

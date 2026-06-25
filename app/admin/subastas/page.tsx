@@ -10,7 +10,7 @@ import {
   eliminarSubasta,
   type SubastaResponse,
 } from "@/lib/api"
-import { esModificablePorAdmin } from "@/lib/subasta-display"
+import { esModificablePorAdmin, formatFechasEdictoListado } from "@/lib/subasta-display"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,18 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-
-function formatFecha(s: string) {
-  try {
-    return new Date(s + "T12:00:00").toLocaleDateString("es-AR", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    })
-  } catch {
-    return s
-  }
-}
 
 export default function AdminSubastasPage() {
   const [subastas, setSubastas] = useState<SubastaResponse[]>([])
@@ -115,7 +103,7 @@ export default function AdminSubastasPage() {
                     )}
                   </td>
                   <td className="p-4 text-muted-foreground text-sm">
-                    {formatFecha(s.fechaInicio)} – {formatFecha(s.fechaFin)}
+                    {formatFechasEdictoListado(s)}
                   </td>
                   <td className="p-4">
                     {new Intl.NumberFormat("es-AR", {

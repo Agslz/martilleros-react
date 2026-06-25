@@ -26,12 +26,12 @@ function subastaToForm(s: SubastaResponse): ActualizarSubastaExternaRequest {
     nombreMartillero: s.nombreMartillero,
     cuitMartillero: s.cuitMartillero,
     domicilio: s.domicilio,
-    fechaInicio: s.fechaInicio,
-    fechaFin: s.fechaFin,
+    fechaInicio: s.fechaInicio ?? "",
+    fechaFin: s.fechaFin ?? "",
     edictoTexto: s.edictoTexto ?? "",
     numeroEdicto: s.numeroEdicto ?? "",
     fechaPublicacionBoletin:
-      s.fechaPublicacionBoletin ?? s.fechaInicio,
+      s.fechaPublicacionBoletin ?? s.fechaInicio ?? "",
   }
 }
 

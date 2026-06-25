@@ -45,8 +45,6 @@ export default function PanelNuevoEdictoPage() {
     descripcion: "",
     precioInicial: 0,
     domicilio: "",
-    fechaInicio: "",
-    fechaFin: "",
     edictoTexto: "",
     numeroEdicto: "",
   })
@@ -104,8 +102,6 @@ export default function PanelNuevoEdictoPage() {
         descripcion: form.descripcion,
         precioInicial: form.precioInicial,
         domicilio: form.domicilio,
-        fechaInicio: form.fechaInicio,
-        fechaFin: form.fechaFin,
         edictoTexto: edictoTrim,
         fechasPublicacionBoletin: fechasBoletin,
       }
@@ -289,28 +285,6 @@ export default function PanelNuevoEdictoPage() {
               required
               value={form.domicilio}
               onChange={(e) => setForm({ ...form, domicilio: e.target.value })}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="fechaInicio">Fecha inicio</Label>
-            <Input
-              id="fechaInicio"
-              type="date"
-              required
-              value={form.fechaInicio}
-              onChange={(e) => setForm({ ...form, fechaInicio: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="fechaFin">Fecha fin</Label>
-            <Input
-              id="fechaFin"
-              type="date"
-              required
-              value={form.fechaFin}
-              onChange={(e) => setForm({ ...form, fechaFin: e.target.value })}
             />
           </div>
         </div>

@@ -6,20 +6,11 @@ import { Calendar, MapPin, ArrowRight, Package } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { SubastaResponse } from "@/lib/api"
-import { getCantidadPublicaciones } from "@/lib/subasta-display"
-
-function formatFecha(isoDate: string) {
-  try {
-    const d = new Date(isoDate + "T12:00:00")
-    return d.toLocaleDateString("es-AR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
-  } catch {
-    return isoDate
-  }
-}
+import {
+  edictoTienePublicacionesPendientes,
+  formatFechasEdictoListado,
+  getCantidadPublicaciones,
+} from "@/lib/subasta-display"
 
 function formatPrecio(n: number) {
   return new Intl.NumberFormat("es-AR", {
@@ -31,8 +22,8 @@ function formatPrecio(n: number) {
 }
 
 function getEstado(subasta: SubastaResponse) {
-  const today = new Date().toISOString().slice(0, 10)
-  return subasta.fechaFin >= today ? "proxima" : "realizada"
+  if (subasta.visiblePublico) return "vigente"
+  return edictoTienePublicacionesPendientes(subasta) ? "proxima" : "finalizada"
 }
 
 interface SubastasListProps {
@@ -86,13 +77,17 @@ export function SubastasList({ subastas }: SubastasListProps) {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      {estado === "proxima" ? (
+                      {estado === "vigente" ? (
                         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                          Próxima
+                          Publicado hoy
+                        </Badge>
+                      ) : estado === "proxima" ? (
+                        <Badge className="bg-amber-100 text-amber-900 hover:bg-amber-100">
+                          Próximo
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-muted-foreground">
-                          Realizada
+                          Finalizado
                         </Badge>
                       )}
                     </div>
@@ -105,9 +100,11 @@ export function SubastasList({ subastas }: SubastasListProps) {
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>{formatFecha(subasta.fechaInicio)}</span>
+                      <div className="flex items-center gap-2 sm:col-span-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm">
+                          {formatFechasEdictoListado(subasta)}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
