@@ -34,7 +34,7 @@ import {
 import { displayCuit } from "@/lib/cuit"
 import { displayTelefono } from "@/lib/telefono"
 import { getFechasBoletin } from "@/lib/subasta-display"
-import { guardarBorradorVistaPrevia } from "@/lib/edicto-preview"
+import { guardarBorradorVistaPrevia, archivosADataUrls } from "@/lib/edicto-preview"
 import { useToast } from "@/hooks/use-toast"
 
 const ACCEPT_IMAGES = "image/jpeg,image/png,image/webp,image/gif"
@@ -127,7 +127,7 @@ export default function PanelEditarEdictoPage() {
     return validarFechasBoletin(fechasBoletin)
   }
 
-  const handleVistaPrevia = () => {
+  const handleVistaPrevia = async () => {
     const validationError = validarFormulario()
     if (validationError) {
       setError(validationError)
@@ -140,7 +140,7 @@ export default function PanelEditarEdictoPage() {
     }
 
     const urlsExistentes = imagenesExistentes.map((i) => i.fileUrl)
-    const urlsNuevas = imagenesNuevas.map((f) => URL.createObjectURL(f))
+    const urlsNuevas = await archivosADataUrls(imagenesNuevas)
     guardarBorradorVistaPrevia({
       titulo: form.titulo.trim(),
       descripcion: form.descripcion.trim(),
@@ -156,7 +156,7 @@ export default function PanelEditarEdictoPage() {
       telefonoMartillero: perfilMartillero.telefonoRaw || undefined,
       imagenUrls: [...urlsExistentes, ...urlsNuevas],
     })
-    window.open("/panel/subastas/vista-previa", "_blank", "noopener,noreferrer")
+    window.open("/edictos/vista-previa", "_blank", "noopener,noreferrer")
   }
 
   const handleEliminarImagen = async (imagenId: number) => {

@@ -17,12 +17,13 @@ export type EdictoPreviewDraft = {
 }
 
 export function guardarBorradorVistaPrevia(draft: EdictoPreviewDraft): void {
-  sessionStorage.setItem(EDICTO_PREVIEW_STORAGE_KEY, JSON.stringify(draft))
+  if (typeof window === "undefined") return
+  localStorage.setItem(EDICTO_PREVIEW_STORAGE_KEY, JSON.stringify(draft))
 }
 
 export function leerBorradorVistaPrevia(): EdictoPreviewDraft | null {
   if (typeof window === "undefined") return null
-  const raw = sessionStorage.getItem(EDICTO_PREVIEW_STORAGE_KEY)
+  const raw = localStorage.getItem(EDICTO_PREVIEW_STORAGE_KEY)
   if (!raw) return null
   try {
     return JSON.parse(raw) as EdictoPreviewDraft
@@ -32,5 +33,21 @@ export function leerBorradorVistaPrevia(): EdictoPreviewDraft | null {
 }
 
 export function limpiarBorradorVistaPrevia(): void {
-  sessionStorage.removeItem(EDICTO_PREVIEW_STORAGE_KEY)
+  if (typeof window === "undefined") return
+  localStorage.removeItem(EDICTO_PREVIEW_STORAGE_KEY)
+}
+
+/** Convierte archivos a data URLs para que la vista previa funcione en otra pestaña. */
+export function archivosADataUrls(files: File[]): Promise<string[]> {
+  return Promise.all(
+    files.map(
+      (file) =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = () => reject(reader.error)
+          reader.readAsDataURL(file)
+        })
+    )
+  )
 }

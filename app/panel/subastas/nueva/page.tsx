@@ -21,7 +21,7 @@ import {
 } from "@/lib/api"
 import { displayCuit } from "@/lib/cuit"
 import { displayTelefono } from "@/lib/telefono"
-import { guardarBorradorVistaPrevia } from "@/lib/edicto-preview"
+import { guardarBorradorVistaPrevia, archivosADataUrls } from "@/lib/edicto-preview"
 import { useToast } from "@/hooks/use-toast"
 
 const ACCEPT_IMAGES = "image/jpeg,image/png,image/webp,image/gif"
@@ -80,7 +80,7 @@ export default function PanelNuevoEdictoPage() {
     return validarFechasBoletin(fechasBoletin)
   }
 
-  const handleVistaPrevia = () => {
+  const handleVistaPrevia = async () => {
     const validationError = validarFormulario()
     if (validationError) {
       setError(validationError)
@@ -92,7 +92,7 @@ export default function PanelNuevoEdictoPage() {
       return
     }
 
-    const imagenUrls = imagenes.map((file) => URL.createObjectURL(file))
+    const imagenUrls = await archivosADataUrls(imagenes)
     guardarBorradorVistaPrevia({
       titulo: form.titulo.trim(),
       descripcion: form.descripcion.trim(),
@@ -108,7 +108,7 @@ export default function PanelNuevoEdictoPage() {
       telefonoMartillero: perfilMartillero.telefonoRaw || undefined,
       imagenUrls,
     })
-    window.open("/panel/subastas/vista-previa", "_blank", "noopener,noreferrer")
+    window.open("/edictos/vista-previa", "_blank", "noopener,noreferrer")
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
