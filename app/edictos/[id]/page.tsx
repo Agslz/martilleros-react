@@ -123,8 +123,8 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
       <section className="py-8 lg:py-12 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <div>
+            <div className="lg:col-span-2 space-y-6 min-w-0">
+              <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   {esVigenteHoy ? (
                     <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
@@ -140,10 +140,10 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                     </Badge>
                   )}
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 text-balance">
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 break-words">
                   {subasta.titulo}
                 </h1>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
                   {subasta.descripcion}
                 </p>
               </div>
@@ -155,20 +155,20 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                 />
               )}
 
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-primary/20 bg-primary/5 min-w-0 overflow-hidden">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <FileText className="h-5 w-5 text-primary" />
+                    <FileText className="h-5 w-5 text-primary shrink-0" />
                     Edicto
                   </CardTitle>
                   <p className="text-sm text-muted-foreground font-normal">
                     Texto publicado en el Boletín Oficial de Mendoza
                   </p>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 min-w-0">
                   {tieneEdictoTexto ? (
                     <>
-                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                         {subasta.edictoTexto}
                       </p>
                       {tieneEdictoPdf && (
@@ -207,7 +207,7 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
               </Card>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 min-w-0">
               <Card className="border-primary/20 bg-primary/5">
                 <CardContent className="pt-6 space-y-4">
                   <div>
@@ -239,7 +239,9 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                       <p className="text-xs text-muted-foreground">
                         Número de edicto
                       </p>
-                      <p className="text-sm font-medium">{subasta.numeroEdicto}</p>
+                      <p className="text-sm font-medium break-words [overflow-wrap:anywhere]">
+                        {subasta.numeroEdicto}
+                      </p>
                     </div>
                   )}
                   <div className="flex items-start gap-3">
@@ -272,7 +274,9 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                   <div className="flex items-start gap-3">
                     <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
-                      <p className="font-medium">{subasta.domicilio}</p>
+                      <p className="font-medium break-words [overflow-wrap:anywhere]">
+                        {subasta.domicilio}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         Domicilio del remate
                       </p>

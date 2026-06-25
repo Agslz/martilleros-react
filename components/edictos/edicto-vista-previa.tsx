@@ -24,18 +24,18 @@ type EdictoVistaPreviaProps = {
 export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPreviaProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 space-y-6">
+      <div className="lg:col-span-2 space-y-6 min-w-0">
         {esPreview && (
           <Badge variant="secondary" className="mb-2">
             Vista previa — aún no publicado
           </Badge>
         )}
 
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 break-words">
             {draft.titulo || "Sin título"}
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          <p className="text-lg text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
             {draft.descripcion || "Sin descripción"}
           </p>
         </div>
@@ -54,22 +54,22 @@ export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPrevi
           </div>
         )}
 
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/20 bg-primary/5 min-w-0 overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="h-5 w-5 text-primary" />
+              <FileText className="h-5 w-5 text-primary shrink-0" />
               Edicto
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+          <CardContent className="min-w-0">
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
               {draft.edictoTexto || "Sin texto de edicto."}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 min-w-0">
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="pt-6 space-y-4">
             <div>
@@ -99,7 +99,9 @@ export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPrevi
             {draft.numeroEdicto && (
               <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
                 <p className="text-xs text-muted-foreground">Número de edicto</p>
-                <p className="text-sm font-medium">{draft.numeroEdicto}</p>
+                <p className="text-sm font-medium break-words [overflow-wrap:anywhere]">
+                  {draft.numeroEdicto}
+                </p>
               </div>
             )}
             <div className="flex items-start gap-3">
@@ -131,7 +133,9 @@ export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPrevi
           <CardContent>
             <div className="flex items-start gap-3">
               <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-              <p className="font-medium">{draft.domicilio || "—"}</p>
+              <p className="font-medium break-words [overflow-wrap:anywhere]">
+                {draft.domicilio || "—"}
+              </p>
             </div>
           </CardContent>
         </Card>
