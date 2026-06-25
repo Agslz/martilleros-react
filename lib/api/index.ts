@@ -14,6 +14,7 @@ export type {
   CrearSubastaExternaRequest,
   ActualizarSubastaExternaRequest,
   CrearSubastaMatriculadoRequest,
+  ActualizarSubastaMatriculadoRequest,
   ImagenSubastaResponse,
   FileUploadResponse,
   ContenidoKey,
@@ -52,8 +53,11 @@ export {
   getSubastasPublicas,
   getSubastasPrivadas,
   getSubastaById,
+  getSubastaPrivadaById,
   crearSubastaMatriculado,
+  actualizarSubastaMatriculado,
   subirImagenSubastaMatriculado,
+  eliminarImagenSubastaMatriculado,
 } from "./subastas"
 export {
   crearPublicacionExterna,

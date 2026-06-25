@@ -169,6 +169,8 @@ export interface CrearSubastaMatriculadoRequest {
   fechasPublicacionBoletin: string[]
 }
 
+export type ActualizarSubastaMatriculadoRequest = CrearSubastaMatriculadoRequest
+
 export interface FileUploadResponse {
   fileName: string
   fileUrl: string

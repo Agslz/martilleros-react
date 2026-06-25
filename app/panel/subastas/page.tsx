@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Gavel, Loader2, Plus, ExternalLink, FileText } from "lucide-react"
+import { Gavel, Loader2, Plus, ExternalLink, FileText, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getSubastasPrivadas, getCurrentUser } from "@/lib/api"
 import type { SubastaResponse } from "@/lib/api"
@@ -132,33 +132,41 @@ export default function PanelEdictosPage() {
                     )}
                   </td>
                   <td className="p-4 text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      asChild={s.visiblePublico && edictoVisibleEnSitioHoy(s)}
-                      disabled={!s.visiblePublico || !edictoVisibleEnSitioHoy(s)}
-                      title={
-                        s.visiblePublico && edictoVisibleEnSitioHoy(s)
-                          ? "Ver en el sitio público"
-                          : "Solo visible en el sitio los días de publicación elegidos"
-                      }
-                    >
-                      {s.visiblePublico && edictoVisibleEnSitioHoy(s) ? (
-                        <Link
-                          href={`/edictos/${s.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-1" />
-                          Ver en sitio
+                    <div className="flex justify-end gap-2 flex-wrap">
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href={`/panel/subastas/${s.id}/editar`}>
+                          <Pencil className="h-4 w-4 mr-1" />
+                          Editar
                         </Link>
-                      ) : (
-                        <span>
-                          <ExternalLink className="h-4 w-4 mr-1 inline" />
-                          Ver en sitio
-                        </span>
-                      )}
-                    </Button>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        asChild={edictoVisibleEnSitioHoy(s)}
+                        disabled={!edictoVisibleEnSitioHoy(s)}
+                        title={
+                          edictoVisibleEnSitioHoy(s)
+                            ? "Ver en el sitio público"
+                            : "Solo visible en el sitio los días de publicación elegidos"
+                        }
+                      >
+                        {edictoVisibleEnSitioHoy(s) ? (
+                          <Link
+                            href={`/edictos/${s.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-1" />
+                            Ver en sitio
+                          </Link>
+                        ) : (
+                          <span>
+                            <ExternalLink className="h-4 w-4 mr-1 inline" />
+                            Ver en sitio
+                          </span>
+                        )}
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

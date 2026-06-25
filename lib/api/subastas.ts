@@ -1,5 +1,6 @@
 import { apiRequest, apiRequestFormData } from "./client"
 import type {
+  ActualizarSubastaMatriculadoRequest,
   CrearSubastaMatriculadoRequest,
   SubastaResponse,
   FileUploadResponse,
@@ -80,6 +81,55 @@ export async function subirImagenSubastaMatriculado(
     return null
   } catch (e) {
     console.error("Error al subir imagen subasta (matriculado):", e)
+    throw e
+  }
+}
+
+/**
+ * Obtiene un edicto del panel privado por id (incluye no visibles hoy).
+ */
+export async function getSubastaPrivadaById(
+  id: number
+): Promise<SubastaResponse | null> {
+  const list = await getSubastasPrivadas()
+  return list.find((s) => s.id === id) ?? null
+}
+
+/**
+ * Actualizar edicto propio (matriculado). PUT /api/private/subastas/{id}
+ */
+export async function actualizarSubastaMatriculado(
+  id: number,
+  body: ActualizarSubastaMatriculadoRequest
+): Promise<SubastaResponse | null> {
+  try {
+    const res = await apiRequest<SubastaResponse>(`/private/subastas/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    })
+    if (res.success && res.data) return res.data
+    return null
+  } catch (e) {
+    console.error("Error al actualizar subasta (matriculado):", e)
+    throw e
+  }
+}
+
+/**
+ * Eliminar imagen de edicto propio. DELETE /api/private/subastas/{id}/imagenes/{imagenId}
+ */
+export async function eliminarImagenSubastaMatriculado(
+  subastaId: number,
+  imagenId: number
+): Promise<boolean> {
+  try {
+    const res = await apiRequest<void>(
+      `/private/subastas/${subastaId}/imagenes/${imagenId}`,
+      { method: "DELETE" }
+    )
+    return res.success
+  } catch (e) {
+    console.error("Error al eliminar imagen subasta (matriculado):", e)
     throw e
   }
 }
