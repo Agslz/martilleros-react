@@ -20,50 +20,42 @@ const HERO_SLIDES = [
     src: "/images/carousel/comision-directiva-2024-2026.png",
     alt: "Comisión directiva 2024-2026 del Colegio de Martilleros Públicos de Mendoza",
     caption: "Comisión directiva 2024 - 2026",
-    imageClass: "object-cover object-center",
   },
   {
     src: "/images/carousel/dia-del-martillero.png",
     alt: "Día del Martillero — Colegio de Martilleros de Mendoza",
     caption: "Día del Martillero",
-    imageClass: "object-cover object-center",
   },
   {
     src: "/images/carousel/cena-dia-del-martillero.png",
     alt: "Cena Día del Martillero — Colegio de Martilleros de Mendoza",
     caption: "Cena Día del Martillero",
-    imageClass: "object-cover object-center",
   },
   {
     src: "/images/carousel/festejo-dia-del-martillero-1.png",
     alt: "Festejo del día del Martillero — Colegio de Martilleros de Mendoza",
     caption: "Festejo del día del Martillero",
-    imageClass: "object-cover object-center",
   },
   {
     src: "/images/carousel/festejo-dia-del-martillero-2.png",
     alt: "Festejo del día del Martillero — Colegio de Martilleros de Mendoza",
     caption: "Festejo del día del Martillero",
-    imageClass: "object-cover object-center",
   },
   {
     src: "/images/carousel/festejo-dia-del-martillero-3.png",
     alt: "Festejo del día del Martillero — Colegio de Martilleros de Mendoza",
     caption: "Festejo del día del Martillero",
-    imageClass: "object-cover object-center",
   },
   {
     src: "/images/carousel/subasta-publica.png",
     alt: "Subasta pública — Colegio de Martilleros de Mendoza",
     caption: "Subasta pública",
-    imageClass: "object-cover object-[50%_25%]",
   },
   {
     src: "/images/carousel/presidente-vicepresidente-medidas-judiciales.png",
     alt: "Presidente y Vicepresidente con la Jefa de la oficina de medidas judiciales",
     caption:
       "Presidente y Vicepresidente con la Jefa de la oficina de medidas judiciales",
-    imageClass: "object-cover object-center",
   },
 ] as const
 
@@ -165,7 +157,7 @@ export function HeroSection({ intro }: HeroSectionProps) {
         <div
           className={cn(
             "relative w-full overflow-hidden bg-stone-900",
-            "min-h-[min(48vh,480px)] h-[min(48vh,480px)] sm:min-h-[min(65vh,720px)] sm:h-[min(65vh,720px)] lg:min-h-[min(70vh,880px)] lg:h-[min(70vh,880px)]",
+            "h-[min(44vh,440px)] sm:h-[min(56vh,600px)] lg:h-[min(60vh,660px)]",
             !slideTransitionEnabled && !reduceMotion && "hero-initial-fade",
           )}
           role="region"
@@ -199,14 +191,14 @@ export function HeroSection({ intro }: HeroSectionProps) {
                   fill
                   priority={index === 0}
                   sizes="100vw"
-                  className={slide.imageClass}
+                  className="object-contain object-center"
                 />
               </div>
             ))}
           </div>
 
           <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[45%] bg-gradient-to-t from-black/80 via-black/45 to-transparent"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[38%] bg-gradient-to-t from-black/80 via-black/40 to-transparent"
             aria-hidden
           />
           <div className="absolute inset-x-0 bottom-0 z-30 mx-auto max-w-7xl px-4 pb-8 pt-16 sm:px-6 sm:pb-10 lg:px-8">
