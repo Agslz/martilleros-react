@@ -157,7 +157,7 @@ export function HeroSection({ intro }: HeroSectionProps) {
         <div
           className={cn(
             "relative w-full overflow-hidden bg-stone-900",
-            "h-[min(44vh,440px)] sm:h-[min(56vh,600px)] lg:h-[min(60vh,660px)]",
+            "min-h-[min(48vh,480px)] h-[min(48vh,480px)] sm:min-h-[min(65vh,720px)] sm:h-[min(65vh,720px)] lg:min-h-[min(70vh,880px)] lg:h-[min(70vh,880px)]",
             !slideTransitionEnabled && !reduceMotion && "hero-initial-fade",
           )}
           role="region"
@@ -191,14 +191,14 @@ export function HeroSection({ intro }: HeroSectionProps) {
                   fill
                   priority={index === 0}
                   sizes="100vw"
-                  className="object-contain object-center"
+                  className="object-cover object-center"
                 />
               </div>
             ))}
           </div>
 
           <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[38%] bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[45%] bg-gradient-to-t from-black/80 via-black/45 to-transparent"
             aria-hidden
           />
           <div className="absolute inset-x-0 bottom-0 z-30 mx-auto max-w-7xl px-4 pb-8 pt-16 sm:px-6 sm:pb-10 lg:px-8">
