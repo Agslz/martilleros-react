@@ -8,7 +8,10 @@ import {
 import { endClientSession } from "@/lib/auth-session"
 import { useToast } from "@/hooks/use-toast"
 
-const WARN_BEFORE_MS = 5 * 60 * 1000
+/** Aviso al usuario antes del corte; se acota al 40% del timeout para timeouts cortos. */
+function warnBeforeMs(totalMs: number): number {
+  return Math.min(60_000, Math.floor(totalMs * 0.4))
+}
 
 export function AdminInactivityMonitor() {
   const { toast } = useToast()
@@ -37,7 +40,9 @@ export function AdminInactivityMonitor() {
     warnShownRef.current = false
 
     const totalMs = getAdminInactivityTimeoutMinutes() * 60 * 1000
-    const warnMs = Math.max(0, totalMs - WARN_BEFORE_MS)
+    const warnLeadMs = warnBeforeMs(totalMs)
+    const warnMs = Math.max(0, totalMs - warnLeadMs)
+    const warnSeconds = Math.max(1, Math.round(warnLeadMs / 1000))
 
     warnTimeoutRef.current = setTimeout(() => {
       if (warnShownRef.current) return
@@ -45,7 +50,9 @@ export function AdminInactivityMonitor() {
       toast({
         title: "Sesión por vencer",
         description:
-          "Por inactividad, el panel se cerrará en unos 5 minutos. Mueva el mouse o use el panel para mantener la sesión.",
+          warnSeconds >= 60
+            ? "Por inactividad, el panel se cerrará en unos minutos. Use el panel para mantener la sesión."
+            : `Por inactividad, el panel se cerrará en unos ${warnSeconds} segundos. Use el panel para mantener la sesión.`,
         duration: 12000,
       })
     }, warnMs)
@@ -57,14 +64,12 @@ export function AdminInactivityMonitor() {
 
   useEffect(() => {
     const onActivity = () => scheduleTimers()
-    const events = ["mousedown", "keydown", "scroll", "touchstart"] as const
-
-    events.forEach((name) => window.addEventListener(name, onActivity))
+    // Solo actividad real del panel (requests API), no mouse/teclado:
+    // mover el mouse no renueva el lock en backend y dejaba la sesión “viva” en cliente.
     window.addEventListener("admin-session-activity", onActivity)
     scheduleTimers()
 
     return () => {
-      events.forEach((name) => window.removeEventListener(name, onActivity))
       window.removeEventListener("admin-session-activity", onActivity)
       clearTimers()
     }

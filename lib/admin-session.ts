@@ -5,7 +5,7 @@ const ADMIN_EXPIRES_KEY = "adminSessionExpiresAt"
 const SESSION_ROLE_KEY = "sessionRole"
 const ADMIN_LOGOUT_MSG_KEY = "adminLogoutMessage"
 
-const DEFAULT_INACTIVITY_MINUTES = 30
+const DEFAULT_INACTIVITY_MINUTES = 5
 
 export function saveAdminLoginSession(data: LoginResponse): void {
   if (typeof window === "undefined" || data.role !== "ADMIN") return
