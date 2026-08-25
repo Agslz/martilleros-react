@@ -58,6 +58,7 @@ export {
   actualizarSubastaMatriculado,
   subirImagenSubastaMatriculado,
   eliminarImagenSubastaMatriculado,
+  eliminarSubastaMatriculado,
 } from "./subastas"
 export {
   crearPublicacionExterna,
@@ -73,12 +74,16 @@ export { getMatriculadosPublicos } from "./matriculados"
 export {
   crearMatriculado,
   getMatriculadosAdmin,
+  getMatriculadoAdmin,
+  actualizarMatriculado,
   updateMatriculadoHabilitado,
   eliminarMatriculado,
 } from "./admin-matriculados"
 export type {
   AdminMatriculadosFiltros,
   CrearMatriculadoResponse,
+  MatriculadoAdminResponse,
+  ActualizarMatriculadoRequest,
 } from "./admin-matriculados"
 export { getEstadoMatriculado } from "./private-matriculados"
 export {

@@ -82,16 +82,86 @@ export async function getMatriculadosAdmin(
 
 /**
  * Actualiza el estado habilitado de un matriculado.
- * Requiere PUT /api/admin/matriculados/{id} en el backend con body { habilitado: boolean }.
+ * PUT /api/admin/matriculados/{id}/habilitado
  */
 export async function updateMatriculadoHabilitado(
   id: number,
   habilitado: boolean
 ): Promise<void> {
-  await apiRequest(`/admin/matriculados/${id}`, {
+  await apiRequest(`/admin/matriculados/${id}/habilitado`, {
     method: "PUT",
     body: JSON.stringify({ habilitado }),
   })
+}
+
+/** Detalle admin (incluye DNI/CUIT) para edición. */
+export interface MatriculadoAdminResponse {
+  id: number
+  nombre: string
+  apellido: string
+  dni: string
+  matricula: string
+  email: string | null
+  cuit: string | null
+  telefono?: string | null
+  fotoCarnetUrl: string | null
+  habilitado: boolean
+  primeraVezLogin: boolean
+  estadoFianza: EstadoFianza
+}
+
+export type ActualizarMatriculadoRequest = CrearMatriculadoRequest
+
+export async function getMatriculadoAdmin(
+  id: number
+): Promise<MatriculadoAdminResponse | null> {
+  const res = await apiRequest<MatriculadoAdminResponse>(
+    `/admin/matriculados/${id}`,
+    { method: "GET" }
+  )
+  if (res.success && res.data) return res.data
+  return null
+}
+
+/**
+ * Actualiza datos del matriculado (y foto opcional).
+ * PUT /api/admin/matriculados/{id} (JSON o multipart)
+ */
+export async function actualizarMatriculado(
+  id: number,
+  body: ActualizarMatriculadoRequest,
+  foto?: File | null
+): Promise<MatriculadoAdminResponse | null> {
+  try {
+    const res = foto
+      ? await (() => {
+          const formData = new FormData()
+          formData.append("nombre", body.nombre)
+          formData.append("apellido", body.apellido)
+          formData.append("dni", body.dni)
+          formData.append("matricula", body.matricula)
+          formData.append("email", body.email ?? "")
+          formData.append("cuit", body.cuit ?? "")
+          if (body.telefono?.trim()) {
+            formData.append("telefono", body.telefono.trim())
+          }
+          formData.append("foto", foto)
+          return apiRequestFormData<MatriculadoAdminResponse>(
+            `/admin/matriculados/${id}`,
+            formData,
+            { method: "PUT" }
+          )
+        })()
+      : await apiRequest<MatriculadoAdminResponse>(`/admin/matriculados/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(body),
+        })
+    if (res.success && res.data) return res.data
+    return null
+  } catch (e) {
+    console.error("Error al actualizar matriculado:", e)
+    throw e
+  }
 }
 
 /**

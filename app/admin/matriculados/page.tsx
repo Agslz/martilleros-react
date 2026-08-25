@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { Plus, Loader2, CheckCircle2, XCircle, AlertTriangle, Search, Trash2 } from "lucide-react"
+import { Plus, Loader2, CheckCircle2, XCircle, AlertTriangle, Search, Trash2, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -131,7 +131,7 @@ export default function AdminMatriculadosPage() {
       toast({
         title: "Error",
         description: es404
-          ? "El backend aún no expone PUT /api/admin/matriculados/{id}."
+          ? "El backend aún no expone PUT /api/admin/matriculados/{id}/habilitado."
           : msg,
         variant: "destructive",
       })
@@ -292,6 +292,12 @@ export default function AdminMatriculadosPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/admin/matriculados/${m.id}/editar`}>
+                          <Pencil className="h-4 w-4 mr-1" />
+                          Editar
+                        </Link>
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"

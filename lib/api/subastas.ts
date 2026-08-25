@@ -87,12 +87,19 @@ export async function subirImagenSubastaMatriculado(
 
 /**
  * Obtiene un edicto del panel privado por id (incluye no visibles hoy).
+ * GET /api/private/subastas/{id}
  */
 export async function getSubastaPrivadaById(
   id: number
 ): Promise<SubastaResponse | null> {
-  const list = await getSubastasPrivadas()
-  return list.find((s) => s.id === id) ?? null
+  try {
+    const res = await apiRequest<SubastaResponse>(`/private/subastas/${id}`)
+    if (res.success && res.data) return res.data
+    return null
+  } catch (e) {
+    console.error("Error al obtener subasta privada:", e)
+    return null
+  }
 }
 
 /**
@@ -111,6 +118,21 @@ export async function actualizarSubastaMatriculado(
     return null
   } catch (e) {
     console.error("Error al actualizar subasta (matriculado):", e)
+    throw e
+  }
+}
+
+/**
+ * Eliminar edicto propio. DELETE /api/private/subastas/{id}
+ */
+export async function eliminarSubastaMatriculado(id: number): Promise<boolean> {
+  try {
+    const res = await apiRequest<void>(`/private/subastas/${id}`, {
+      method: "DELETE",
+    })
+    return res.success
+  } catch (e) {
+    console.error("Error al eliminar subasta (matriculado):", e)
     throw e
   }
 }

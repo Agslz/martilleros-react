@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  getSubastasPrivadas,
+  getSubastaPrivadaById,
   actualizarPublicacionExterna,
   type ActualizarSubastaExternaRequest,
   type SubastaResponse,
@@ -46,8 +46,7 @@ export default function EditarSubastaPage() {
   const [form, setForm] = useState<ActualizarSubastaExternaRequest | null>(null)
 
   useEffect(() => {
-    getSubastasPrivadas().then((list) => {
-      const s = list.find((x) => x.id === id) ?? null
+    getSubastaPrivadaById(id).then((s) => {
       setSubasta(s)
       if (s) setForm(subastaToForm(s))
       setLoadingData(false)
@@ -138,17 +137,84 @@ export default function EditarSubastaPage() {
           <ArrowLeft className="h-4 w-4" />
           Volver a edictos
         </Link>
-        <h1 className="text-2xl font-bold text-foreground mb-4">
-          Solo lectura
+        <h1 className="text-2xl font-bold text-foreground mb-2">
+          {subasta.titulo}
         </h1>
-        <p className="text-muted-foreground max-w-lg">
-          Este edicto fue publicado por un matriculado. Desde el panel admin
-          solo puede consultarse; no se puede editar ni eliminar.
+        <p className="text-muted-foreground max-w-lg mb-6">
+          Edicto de matriculado (solo lectura). Podés ver los datos e imágenes
+          cargadas; no se puede editar ni eliminar desde el panel admin.
         </p>
-        <Button className="mt-6" variant="outline" asChild>
-          <Link href={`/edictos/${subasta.id}`}>Ver en el sitio</Link>
-        </Button>
-        <Button className="mt-6 ml-3" variant="outline" asChild>
+
+        <Card className="max-w-3xl mb-6">
+          <CardHeader>
+            <CardTitle className="text-base">Datos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p>
+              <span className="text-muted-foreground">Martillero: </span>
+              {subasta.nombreMartillero} ({subasta.martilleroACargo})
+            </p>
+            <p>
+              <span className="text-muted-foreground">Base: </span>
+              {new Intl.NumberFormat("es-AR", {
+                style: "currency",
+                currency: "ARS",
+                minimumFractionDigits: 0,
+              }).format(subasta.precioInicial)}
+            </p>
+            {subasta.incrementos != null && subasta.incrementos > 0 && (
+              <p>
+                <span className="text-muted-foreground">Incrementos: </span>
+                {new Intl.NumberFormat("es-AR", {
+                  style: "currency",
+                  currency: "ARS",
+                  minimumFractionDigits: 0,
+                }).format(subasta.incrementos)}
+              </p>
+            )}
+            <p>
+              <span className="text-muted-foreground">Domicilio: </span>
+              {subasta.domicilio}
+            </p>
+            <p>
+              <span className="text-muted-foreground">Descripción: </span>
+              {subasta.descripcion}
+            </p>
+          </CardContent>
+        </Card>
+
+        {subasta.imagenes && subasta.imagenes.length > 0 ? (
+          <div className="max-w-3xl mb-6">
+            <h2 className="font-semibold mb-3">Imágenes</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {subasta.imagenes
+                .slice()
+                .sort((a, b) => a.orden - b.orden)
+                .map((img) => (
+                  <a
+                    key={img.id}
+                    href={img.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-muted"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.fileUrl}
+                      alt={img.fileName}
+                      className="h-full w-full object-cover"
+                    />
+                  </a>
+                ))}
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground mb-6">
+            Este edicto no tiene imágenes cargadas.
+          </p>
+        )}
+
+        <Button className="mt-2" variant="outline" asChild>
           <Link href="/admin/subastas">Volver al listado</Link>
         </Button>
       </div>

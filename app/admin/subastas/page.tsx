@@ -122,14 +122,10 @@ export default function AdminSubastasPage() {
                           </Link>
                         </Button>
                       ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          title="Los edictos de matriculados solo se pueden consultar"
-                        >
-                          <Pencil className="h-4 w-4 mr-1" />
-                          Editar
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/admin/subastas/${s.id}/editar`}>
+                            Ver
+                          </Link>
                         </Button>
                       )}
                       {modificable ? (

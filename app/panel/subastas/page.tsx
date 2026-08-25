@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Gavel, Loader2, Plus, ExternalLink, FileText, Pencil } from "lucide-react"
+import { Gavel, Loader2, Plus, ExternalLink, FileText, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getSubastasPrivadas, getCurrentUser } from "@/lib/api"
+import {
+  getSubastasPrivadas,
+  getCurrentUser,
+  eliminarSubastaMatriculado,
+} from "@/lib/api"
 import type { SubastaResponse } from "@/lib/api"
 import {
   formatFechasEdictoListado,
@@ -13,14 +17,26 @@ import {
 } from "@/lib/subasta-display"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function PanelEdictosPage() {
   const { toast } = useToast()
   const [allSubastas, setAllSubastas] = useState<SubastaResponse[]>([])
   const [matricula, setMatricula] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
 
-  useEffect(() => {
+  const load = () =>
     Promise.all([getSubastasPrivadas(), getCurrentUser()])
       .then(([subastas, user]) => {
         setAllSubastas(subastas)
@@ -33,7 +49,9 @@ export default function PanelEdictosPage() {
           variant: "destructive",
         })
       })
-      .finally(() => setLoading(false))
+
+  useEffect(() => {
+    load().finally(() => setLoading(false))
   }, [toast])
 
   const misEdictos =
@@ -42,6 +60,28 @@ export default function PanelEdictosPage() {
           (s) => s.martilleroACargo.toUpperCase() === matricula.toUpperCase()
         )
       : []
+
+  const handleDelete = async (id: number) => {
+    setDeletingId(id)
+    try {
+      await eliminarSubastaMatriculado(id)
+      toast({
+        title: "Edicto eliminado",
+        description: "El edicto y sus imágenes se eliminaron correctamente.",
+      })
+      setConfirmDelete(null)
+      await load()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "No se pudo eliminar el edicto."
+      toast({
+        title: "Error",
+        description: msg,
+        variant: "destructive",
+      })
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div>
@@ -142,6 +182,22 @@ export default function PanelEdictosPage() {
                       <Button
                         size="sm"
                         variant="outline"
+                        className="text-destructive hover:bg-destructive/10"
+                        onClick={() => setConfirmDelete(s.id)}
+                        disabled={deletingId === s.id}
+                      >
+                        {deletingId === s.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Eliminar
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
                         asChild={edictoVisibleEnSitioHoy(s)}
                         disabled={!edictoVisibleEnSitioHoy(s)}
                         title={
@@ -174,6 +230,37 @@ export default function PanelEdictosPage() {
           </table>
         </div>
       )}
+
+      <AlertDialog
+        open={confirmDelete !== null}
+        onOpenChange={() => setConfirmDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar edicto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminará el edicto y sus imágenes. Esta acción no se puede
+              deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() =>
+                confirmDelete !== null && handleDelete(confirmDelete)
+              }
+              disabled={deletingId !== null}
+            >
+              {deletingId !== null ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Eliminar"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
