@@ -24,6 +24,7 @@ import {
   edictoTienePublicacionesPendientes,
   edictoVisibleEnSitioHoy,
 } from "@/lib/subasta-display"
+import { BasesDisplay } from "@/components/subastas/bases-display"
 import { displayTelefono } from "@/lib/telefono"
 
 interface SubastaDetailPageProps {
@@ -210,12 +211,10 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
             <div className="space-y-4 min-w-0">
               <Card className="border-primary/20 bg-primary/5 gap-0 py-0 shadow-sm">
                 <CardContent className="p-4 space-y-3">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-0.5">Base</p>
-                    <p className="text-3xl font-bold text-primary leading-tight">
-                      {formatPrecio(subasta.precioInicial)}
-                    </p>
-                  </div>
+                  <BasesDisplay
+                    bienes={subasta.bienes}
+                    precioInicial={subasta.precioInicial}
+                  />
                   {subasta.incrementos != null && subasta.incrementos > 0 && (
                     <div>
                       <p className="text-sm text-muted-foreground mb-0.5">

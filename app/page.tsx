@@ -1,13 +1,14 @@
 import type { Metadata } from "next"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { HeroSection } from "@/components/home/hero-section"
+import { NoticiasHomeSection } from "@/components/home/noticias-home-section"
 import { ServicesSection } from "@/components/home/services-section"
 import { AboutSection } from "@/components/home/about-section"
 import { CommissionSection } from "@/components/home/commission-section"
 import { CTASection } from "@/components/home/cta-section"
 import { WhatsAppFab } from "@/components/home/whatsapp-fab"
 import { getSiteUrl } from "@/lib/site"
-import { getContenido } from "@/lib/api"
+import { getContenido, getNoticiasPublicas } from "@/lib/api"
 import { parseHomeContenido } from "@/lib/contenidos"
 
 const desc =
@@ -39,12 +40,16 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const contenidoHome = await getContenido("HOME")
+  const [contenidoHome, noticias] = await Promise.all([
+    getContenido("HOME"),
+    getNoticiasPublicas(3),
+  ])
   const home = parseHomeContenido(contenidoHome)
 
   return (
     <PublicLayout>
       <HeroSection intro={home.intro} />
+      <NoticiasHomeSection noticias={noticias} />
       <ServicesSection />
       <AboutSection sobre={home.sobre} />
       <CommissionSection />

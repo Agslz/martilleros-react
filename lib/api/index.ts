@@ -17,6 +17,12 @@ export type {
   ActualizarSubastaMatriculadoRequest,
   ImagenSubastaResponse,
   FileUploadResponse,
+  BienSubastaRequest,
+  BienSubastaResponse,
+  NoticiaResponse,
+  NoticiaImagenResponse,
+  CrearNoticiaRequest,
+  ActualizarNoticiaRequest,
   ContenidoKey,
   ContenidoResponse,
   ContenidoRequest,
@@ -68,6 +74,19 @@ export {
   eliminarImagenSubasta,
 } from "./admin-subastas"
 export type { PublicacionExternaArchivos } from "./admin-subastas"
+export {
+  getNoticiasPublicas,
+  getNoticiaPublicaById,
+  getNoticiasAdmin,
+  getNoticiaAdminById,
+  crearNoticia,
+  actualizarNoticia,
+  publicarNoticia,
+  despublicarNoticia,
+  eliminarNoticia,
+  subirImagenNoticia,
+  eliminarImagenNoticia,
+} from "./noticias"
 export { getContenido } from "./contenidos"
 export { actualizarContenido } from "./admin-contenidos"
 export { getMatriculadosPublicos } from "./matriculados"

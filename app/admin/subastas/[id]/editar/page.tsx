@@ -12,27 +12,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   getSubastaPrivadaById,
   actualizarPublicacionExterna,
-  type ActualizarSubastaExternaRequest,
+  type BienSubastaRequest,
   type SubastaResponse,
 } from "@/lib/api"
 import { esModificablePorAdmin } from "@/lib/subasta-display"
+import {
+  BienesFormFields,
+  validateBienes,
+} from "@/components/subastas/bienes-form-fields"
+import { BasesDisplay } from "@/components/subastas/bases-display"
 
-function subastaToForm(s: SubastaResponse): ActualizarSubastaExternaRequest {
-  return {
-    titulo: s.titulo,
-    descripcion: s.descripcion,
-    precioInicial: s.precioInicial,
-    martilleroACargo: s.martilleroACargo,
-    nombreMartillero: s.nombreMartillero,
-    cuitMartillero: s.cuitMartillero,
-    domicilio: s.domicilio,
-    fechaInicio: s.fechaInicio ?? "",
-    fechaFin: s.fechaFin ?? "",
-    edictoTexto: s.edictoTexto ?? "",
-    numeroEdicto: s.numeroEdicto ?? "",
-    fechaPublicacionBoletin:
-      s.fechaPublicacionBoletin ?? s.fechaInicio ?? "",
+function bienesFromSubasta(s: SubastaResponse): BienSubastaRequest[] {
+  if (s.bienes && s.bienes.length > 0) {
+    return s.bienes.map((b) => ({
+      titulo: b.titulo,
+      precioBase: b.precioBase,
+    }))
   }
+  return [{ titulo: "Bien", precioBase: s.precioInicial }]
 }
 
 export default function EditarSubastaPage() {
@@ -43,12 +40,46 @@ export default function EditarSubastaPage() {
   const [loadingData, setLoadingData] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [subasta, setSubasta] = useState<SubastaResponse | null>(null)
-  const [form, setForm] = useState<ActualizarSubastaExternaRequest | null>(null)
+  const [cantidadBienes, setCantidadBienes] = useState(1)
+  const [bienes, setBienes] = useState<BienSubastaRequest[]>([
+    { titulo: "Bien", precioBase: 0 },
+  ])
+  const [form, setForm] = useState<{
+    titulo: string
+    descripcion: string
+    martilleroACargo: string
+    nombreMartillero: string
+    cuitMartillero: string
+    domicilio: string
+    fechaInicio: string
+    fechaFin: string
+    edictoTexto: string
+    numeroEdicto: string
+    fechaPublicacionBoletin: string
+  } | null>(null)
 
   useEffect(() => {
     getSubastaPrivadaById(id).then((s) => {
       setSubasta(s)
-      if (s) setForm(subastaToForm(s))
+      if (s) {
+        const b = bienesFromSubasta(s)
+        setBienes(b)
+        setCantidadBienes(b.length)
+        setForm({
+          titulo: s.titulo,
+          descripcion: s.descripcion,
+          martilleroACargo: s.martilleroACargo,
+          nombreMartillero: s.nombreMartillero,
+          cuitMartillero: s.cuitMartillero,
+          domicilio: s.domicilio,
+          fechaInicio: s.fechaInicio ?? "",
+          fechaFin: s.fechaFin ?? "",
+          edictoTexto: s.edictoTexto ?? "",
+          numeroEdicto: s.numeroEdicto ?? "",
+          fechaPublicacionBoletin:
+            s.fechaPublicacionBoletin ?? s.fechaInicio ?? "",
+        })
+      }
       setLoadingData(false)
     })
   }, [id])
@@ -70,8 +101,9 @@ export default function EditarSubastaPage() {
     if (!form) return
     setError(null)
 
-    if (form.precioInicial <= 0) {
-      setError("La base debe ser mayor a 0.")
+    const errBienes = validateBienes(bienes)
+    if (errBienes) {
+      setError(errBienes)
       return
     }
     if (form.fechaFin < form.fechaInicio) {
@@ -87,7 +119,14 @@ export default function EditarSubastaPage() {
 
     setLoading(true)
     try {
-      const updated = await actualizarPublicacionExterna(id, form)
+      const updated = await actualizarPublicacionExterna(id, {
+        ...form,
+        bienes: bienes.map((b) => ({
+          titulo: b.titulo.trim() || "Bien",
+          precioBase: b.precioBase,
+        })),
+        precioInicial: bienes[0]?.precioBase,
+      })
       if (updated) {
         router.push("/admin/subastas")
         return
@@ -149,19 +188,16 @@ export default function EditarSubastaPage() {
           <CardHeader>
             <CardTitle className="text-base">Datos</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm">
+          <CardContent className="space-y-4 text-sm">
             <p>
               <span className="text-muted-foreground">Martillero: </span>
               {subasta.nombreMartillero} ({subasta.martilleroACargo})
             </p>
-            <p>
-              <span className="text-muted-foreground">Base: </span>
-              {new Intl.NumberFormat("es-AR", {
-                style: "currency",
-                currency: "ARS",
-                minimumFractionDigits: 0,
-              }).format(subasta.precioInicial)}
-            </p>
+            <BasesDisplay
+              bienes={subasta.bienes}
+              precioInicial={subasta.precioInicial}
+              priceClassName="text-xl font-bold text-primary leading-tight"
+            />
             {subasta.incrementos != null && subasta.incrementos > 0 && (
               <p>
                 <span className="text-muted-foreground">Incrementos: </span>
@@ -260,32 +296,22 @@ export default function EditarSubastaPage() {
             onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="precioInicial">Base</Label>
-            <Input
-              id="precioInicial"
-              type="number"
-              min={1}
-              required
-              value={form.precioInicial || ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  precioInicial: Number(e.target.value) || 0,
-                })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="domicilio">Domicilio</Label>
-            <Input
-              id="domicilio"
-              required
-              value={form.domicilio}
-              onChange={(e) => setForm({ ...form, domicilio: e.target.value })}
-            />
-          </div>
+
+        <BienesFormFields
+          cantidad={cantidadBienes}
+          onCantidadChange={setCantidadBienes}
+          bienes={bienes}
+          onBienesChange={setBienes}
+        />
+
+        <div className="space-y-2">
+          <Label htmlFor="domicilio">Domicilio</Label>
+          <Input
+            id="domicilio"
+            required
+            value={form.domicilio}
+            onChange={(e) => setForm({ ...form, domicilio: e.target.value })}
+          />
         </div>
 
         <Card className="border-primary/10">

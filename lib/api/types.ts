@@ -86,6 +86,8 @@ export interface SubastaResponse {
   descripcion: string
   precioInicial: number
   incrementos?: number | null
+  bienes?: BienSubastaResponse[]
+  cantidadBienes?: number
   martilleroACargo: string
   nombreMartillero: string
   cuitMartillero: string
@@ -106,6 +108,18 @@ export interface SubastaResponse {
   telefonoMartillero?: string | null
   modificablePorAdmin?: boolean
   esPublicacionExterna: boolean
+}
+
+export interface BienSubastaResponse {
+  id?: number
+  titulo: string
+  precioBase: number
+  orden: number
+}
+
+export interface BienSubastaRequest {
+  titulo: string
+  precioBase: number
 }
 
 // --- Contenidos ---
@@ -143,7 +157,8 @@ export interface MatriculadoPublicResponse {
 export interface CrearSubastaExternaRequest {
   titulo: string
   descripcion: string
-  precioInicial: number
+  precioInicial?: number
+  bienes?: BienSubastaRequest[]
   martilleroACargo: string
   nombreMartillero: string
   cuitMartillero: string
@@ -161,7 +176,8 @@ export type ActualizarSubastaExternaRequest = CrearSubastaExternaRequest
 export interface CrearSubastaMatriculadoRequest {
   titulo: string
   descripcion: string
-  precioInicial: number
+  precioInicial?: number
+  bienes?: BienSubastaRequest[]
   incrementos?: number
   domicilio: string
   edictoTexto?: string
@@ -170,6 +186,34 @@ export interface CrearSubastaMatriculadoRequest {
 }
 
 export type ActualizarSubastaMatriculadoRequest = CrearSubastaMatriculadoRequest
+
+// --- Noticias ---
+export interface NoticiaImagenResponse {
+  id: number
+  fileName: string
+  fileUrl: string
+  orden: number
+}
+
+export interface NoticiaResponse {
+  id: number
+  titulo: string
+  subtitulo: string
+  descripcion: string
+  publicado: boolean
+  fechaPublicacion?: string | null
+  createdAt: string
+  imagenPortadaUrl?: string | null
+  imagenes: NoticiaImagenResponse[]
+}
+
+export interface CrearNoticiaRequest {
+  titulo: string
+  subtitulo: string
+  descripcion: string
+}
+
+export type ActualizarNoticiaRequest = CrearNoticiaRequest
 
 export interface FileUploadResponse {
   fileName: string

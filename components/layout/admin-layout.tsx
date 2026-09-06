@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   UserPlus,
+  Newspaper,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AdminInactivityMonitor } from "@/components/auth/admin-inactivity-monitor"
@@ -26,6 +27,7 @@ import {
 const adminNav: DashboardNavItem[] = [
   { name: "Panel", href: "/admin", icon: LayoutDashboard, exact: true },
   { name: "Edictos", href: "/admin/subastas", icon: Gavel },
+  { name: "Noticias", href: "/admin/noticias", icon: Newspaper },
   { name: "Biblioteca", href: "/admin/biblioteca", icon: BookOpen },
   {
     name: "Verificación de credenciales",
