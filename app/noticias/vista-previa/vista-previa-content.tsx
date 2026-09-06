@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
-import { NoticiaCarousel } from "@/components/noticias/noticia-carousel"
+import { NoticiaArticleLayout } from "@/components/noticias/noticia-article-layout"
 import {
   leerBorradorNoticiaVistaPrevia,
   type NoticiaPreviewDraft,
@@ -30,24 +30,18 @@ export default function NoticiaVistaPreviaContent() {
   }))
 
   return (
-    <article className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
-      <Badge variant="secondary">Vista previa — aún no publicada</Badge>
-      <header className="space-y-3">
-        <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-foreground leading-tight">
-          {draft.titulo || "Sin título"}
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          {draft.subtitulo || "Sin subtítulo"}
+    <NoticiaArticleLayout
+      titulo={draft.titulo || "Sin título"}
+      subtitulo={draft.subtitulo || "Sin subtítulo"}
+      descripcion={draft.descripcion || "Sin descripción"}
+      imagenes={imagenes}
+      topSlot={<Badge variant="secondary">Vista previa — aún no publicada</Badge>}
+      bottomSlot={
+        <p className="text-sm text-muted-foreground border-t border-border pt-4">
+          Si te gusta cómo se ve, cerrá esta pestaña y publicá la noticia desde el
+          panel admin.
         </p>
-      </header>
-      {imagenes.length > 0 && <NoticiaCarousel images={imagenes} />}
-      <p className="whitespace-pre-wrap text-foreground leading-relaxed">
-        {draft.descripcion || "Sin descripción"}
-      </p>
-      <p className="text-sm text-muted-foreground border-t border-border pt-4">
-        Si te gusta cómo se ve, cerrá esta pestaña y publicá la noticia desde el
-        panel admin.
-      </p>
-    </article>
+      }
+    />
   )
 }

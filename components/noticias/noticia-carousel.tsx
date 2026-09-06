@@ -24,7 +24,7 @@ export function NoticiaCarousel({ images }: NoticiaCarouselProps) {
       <img
         src={current.url}
         alt={current.alt ?? `Imagen ${index + 1}`}
-        className="aspect-[16/10] w-full object-cover"
+        className="aspect-[4/3] w-full object-cover"
       />
       {images.length > 1 && (
         <>

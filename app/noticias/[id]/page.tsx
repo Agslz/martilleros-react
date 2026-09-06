@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { PublicLayout } from "@/components/layout/public-layout"
-import { NoticiaCarousel } from "@/components/noticias/noticia-carousel"
+import { NoticiaArticleLayout } from "@/components/noticias/noticia-article-layout"
 import { getNoticiaPublicaById, getNoticiasPublicas } from "@/lib/api"
 import { getSiteUrl } from "@/lib/site"
 
@@ -58,22 +58,12 @@ export default async function NoticiaDetailPage({ params }: NoticiaDetailProps) 
         </div>
       </div>
 
-      <article className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
-        <header className="space-y-3">
-          <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-foreground leading-tight">
-            {noticia.titulo}
-          </h1>
-          <p className="text-lg text-muted-foreground">{noticia.subtitulo}</p>
-        </header>
-
-        {imagenes.length > 0 && <NoticiaCarousel images={imagenes} />}
-
-        <div className="prose prose-neutral dark:prose-invert max-w-none">
-          <p className="whitespace-pre-wrap text-foreground leading-relaxed">
-            {noticia.descripcion}
-          </p>
-        </div>
-      </article>
+      <NoticiaArticleLayout
+        titulo={noticia.titulo}
+        subtitulo={noticia.subtitulo}
+        descripcion={noticia.descripcion}
+        imagenes={imagenes}
+      />
     </PublicLayout>
   )
 }
