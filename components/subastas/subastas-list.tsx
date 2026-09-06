@@ -10,6 +10,7 @@ import {
   edictoTienePublicacionesPendientes,
   edictoVisibleEnSitioHoy,
 } from "@/lib/subasta-display"
+import { BasesDisplay } from "@/components/subastas/bases-display"
 
 function formatPrecio(n: number) {
   return new Intl.NumberFormat("es-AR", {
@@ -103,10 +104,12 @@ export function SubastasList({ subastas }: SubastasListProps) {
                 </div>
 
                 <div className="sm:text-right sm:pl-4 sm:border-l border-border shrink-0 flex flex-col justify-center">
-                  <p className="text-xs text-muted-foreground mb-0.5">Base</p>
-                  <p className="text-2xl font-bold text-primary whitespace-nowrap">
-                    {formatPrecio(subasta.precioInicial)}
-                  </p>
+                  <BasesDisplay
+                    bienes={subasta.bienes}
+                    precioInicial={subasta.precioInicial}
+                    titleClassName="text-xs text-muted-foreground mb-0.5"
+                    priceClassName="text-2xl font-bold text-primary whitespace-nowrap"
+                  />
                   {subasta.incrementos != null && subasta.incrementos > 0 && (
                     <>
                       <p className="text-xs text-muted-foreground mt-2 mb-0.5">

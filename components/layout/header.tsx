@@ -10,6 +10,7 @@ const navigation = [
   { name: "Inicio", href: "/" },
   { name: "Padrón de asociados", href: "/buscar" },
   { name: "Edictos", href: "/edictos" },
+  { name: "Noticias", href: "/noticias" },
   { name: "Contacto", href: "/contacto" },
 ]
 

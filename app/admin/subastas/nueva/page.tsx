@@ -11,31 +11,37 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   crearPublicacionExterna,
-  type CrearSubastaExternaRequest,
+  type BienSubastaRequest,
 } from "@/lib/api"
+import {
+  BienesFormFields,
+  validateBienes,
+} from "@/components/subastas/bienes-form-fields"
 
 const ACCEPT_IMAGES = "image/jpeg,image/png,image/webp,image/gif"
-const EMPTY_FORM: CrearSubastaExternaRequest = {
-  titulo: "",
-  descripcion: "",
-  precioInicial: 0,
-  martilleroACargo: "",
-  nombreMartillero: "",
-  cuitMartillero: "",
-  domicilio: "",
-  fechaInicio: "",
-  fechaFin: "",
-  edictoTexto: "",
-  numeroEdicto: "",
-  fechaPublicacionBoletin: "",
-}
 
 export default function NuevaPublicacionExternaPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [form, setForm] = useState<CrearSubastaExternaRequest>(EMPTY_FORM)
   const [imagenes, setImagenes] = useState<File[]>([])
+  const [cantidadBienes, setCantidadBienes] = useState(1)
+  const [bienes, setBienes] = useState<BienSubastaRequest[]>([
+    { titulo: "Bien", precioBase: 0 },
+  ])
+  const [form, setForm] = useState({
+    titulo: "",
+    descripcion: "",
+    martilleroACargo: "",
+    nombreMartillero: "",
+    cuitMartillero: "",
+    domicilio: "",
+    fechaInicio: "",
+    fechaFin: "",
+    edictoTexto: "",
+    numeroEdicto: "",
+    fechaPublicacionBoletin: "",
+  })
 
   const setFechaInicio = (fechaInicio: string) => {
     setForm((f) => ({
@@ -49,8 +55,9 @@ export default function NuevaPublicacionExternaPage() {
     e.preventDefault()
     setError(null)
 
-    if (form.precioInicial <= 0) {
-      setError("La base debe ser mayor a 0.")
+    const errBienes = validateBienes(bienes)
+    if (errBienes) {
+      setError(errBienes)
       return
     }
     if (form.fechaFin < form.fechaInicio) {
@@ -66,9 +73,19 @@ export default function NuevaPublicacionExternaPage() {
 
     setLoading(true)
     try {
-      const created = await crearPublicacionExterna(form, {
-        imagenes: imagenes.length > 0 ? imagenes : undefined,
-      })
+      const created = await crearPublicacionExterna(
+        {
+          ...form,
+          bienes: bienes.map((b) => ({
+            titulo: b.titulo.trim() || "Bien",
+            precioBase: b.precioBase,
+          })),
+          precioInicial: bienes[0]?.precioBase,
+        },
+        {
+          imagenes: imagenes.length > 0 ? imagenes : undefined,
+        }
+      )
       if (created) {
         router.push("/admin/subastas")
         return
@@ -128,32 +145,22 @@ export default function NuevaPublicacionExternaPage() {
             onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="precioInicial">Base</Label>
-            <Input
-              id="precioInicial"
-              type="number"
-              min={1}
-              required
-              value={form.precioInicial || ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  precioInicial: Number(e.target.value) || 0,
-                })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="domicilio">Domicilio</Label>
-            <Input
-              id="domicilio"
-              required
-              value={form.domicilio}
-              onChange={(e) => setForm({ ...form, domicilio: e.target.value })}
-            />
-          </div>
+
+        <BienesFormFields
+          cantidad={cantidadBienes}
+          onCantidadChange={setCantidadBienes}
+          bienes={bienes}
+          onBienesChange={setBienes}
+        />
+
+        <div className="space-y-2">
+          <Label htmlFor="domicilio">Domicilio</Label>
+          <Input
+            id="domicilio"
+            required
+            value={form.domicilio}
+            onChange={(e) => setForm({ ...form, domicilio: e.target.value })}
+          />
         </div>
 
         <Card className="border-primary/10">

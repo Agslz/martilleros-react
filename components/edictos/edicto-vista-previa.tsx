@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { EdictoPreviewDraft } from "@/lib/edicto-preview"
 import { displayCuit } from "@/lib/cuit"
 import { displayTelefono } from "@/lib/telefono"
+import { BasesDisplay } from "@/components/subastas/bases-display"
 
 function formatPrecio(n: number) {
   return new Intl.NumberFormat("es-AR", {
@@ -74,14 +75,10 @@ export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPrevi
         <div className="space-y-4 min-w-0">
           <Card className={compactHighlightCard}>
             <CardContent className="p-4 space-y-3">
-              <div>
-                <p className="text-sm text-muted-foreground mb-0.5">Base</p>
-                <p className="text-3xl font-bold text-primary leading-tight">
-                  {draft.precioInicial > 0
-                    ? formatPrecio(draft.precioInicial)
-                    : "—"}
-                </p>
-              </div>
+              <BasesDisplay
+                bienes={draft.bienes}
+                precioInicial={draft.precioInicial}
+              />
               {draft.incrementos != null && draft.incrementos > 0 && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-0.5">

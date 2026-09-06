@@ -1,9 +1,10 @@
 import Link from "next/link"
-import { Gavel, BookOpen, Users, FileText, CreditCard } from "lucide-react"
+import { Gavel, BookOpen, Users, FileText, CreditCard, Newspaper } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const links = [
   { href: "/admin/subastas", name: "Edictos", icon: Gavel },
+  { href: "/admin/noticias", name: "Noticias", icon: Newspaper },
   { href: "/admin/biblioteca", name: "Biblioteca", icon: BookOpen },
   { href: "/admin/matriculados/nuevo", name: "Nuevo matriculado", icon: Users },
   { href: "/admin/contenidos", name: "Contenidos", icon: FileText },

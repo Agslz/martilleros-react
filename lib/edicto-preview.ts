@@ -4,6 +4,7 @@ export type EdictoPreviewDraft = {
   titulo: string
   descripcion: string
   precioInicial: number
+  bienes?: { titulo: string; precioBase: number }[]
   incrementos?: number
   domicilio: string
   edictoTexto: string

@@ -18,10 +18,15 @@ import {
   crearSubastaMatriculado,
   subirImagenSubastaMatriculado,
   type CrearSubastaMatriculadoRequest,
+  type BienSubastaRequest,
 } from "@/lib/api"
 import { displayCuit } from "@/lib/cuit"
 import { displayTelefono } from "@/lib/telefono"
 import { guardarBorradorVistaPrevia, archivosADataUrls } from "@/lib/edicto-preview"
+import {
+  BienesFormFields,
+  validateBienes,
+} from "@/components/subastas/bienes-form-fields"
 import { useToast } from "@/hooks/use-toast"
 
 const ACCEPT_IMAGES = "image/jpeg,image/png,image/webp,image/gif"
@@ -46,12 +51,15 @@ export default function PanelNuevoEdictoPage() {
   const [form, setForm] = useState({
     titulo: "",
     descripcion: "",
-    precioInicial: 0,
     incrementos: 0,
     domicilio: "",
     edictoTexto: "",
     numeroEdicto: "",
   })
+  const [cantidadBienes, setCantidadBienes] = useState(1)
+  const [bienes, setBienes] = useState<BienSubastaRequest[]>([
+    { titulo: "Bien", precioBase: 0 },
+  ])
 
   useEffect(() => {
     getCurrentUser().then((user) => {
@@ -72,7 +80,8 @@ export default function PanelNuevoEdictoPage() {
   const validarFormulario = (): string | null => {
     if (!form.titulo.trim()) return "El título es obligatorio."
     if (!form.descripcion.trim()) return "La descripción es obligatoria."
-    if (form.precioInicial <= 0) return "La base debe ser mayor a 0."
+    const errBienes = validateBienes(bienes)
+    if (errBienes) return errBienes
     if (!form.domicilio.trim()) return "El domicilio es obligatorio."
     if (!form.edictoTexto.trim()) {
       return "El texto completo del edicto es obligatorio."
@@ -93,22 +102,26 @@ export default function PanelNuevoEdictoPage() {
     }
 
     const imagenUrls = await archivosADataUrls(imagenes)
+    const draftBase = {
+      titulo: form.titulo.trim(),
+      descripcion: form.descripcion.trim(),
+      precioInicial: bienes[0]?.precioBase ?? 0,
+      bienes: bienes.map((b) => ({
+        titulo: b.titulo.trim() || "Bien",
+        precioBase: b.precioBase,
+      })),
+      incrementos: form.incrementos > 0 ? form.incrementos : undefined,
+      domicilio: form.domicilio.trim(),
+      edictoTexto: form.edictoTexto.trim(),
+      numeroEdicto: form.numeroEdicto.trim() || undefined,
+      fechasPublicacionBoletin: fechasBoletin,
+      nombreMartillero: perfilMartillero.nombre,
+      martilleroACargo: perfilMartillero.matricula,
+      cuitMartillero: perfilMartillero.cuitRaw || undefined,
+      telefonoMartillero: perfilMartillero.telefonoRaw || undefined,
+    }
     try {
-      guardarBorradorVistaPrevia({
-        titulo: form.titulo.trim(),
-        descripcion: form.descripcion.trim(),
-        precioInicial: form.precioInicial,
-        incrementos: form.incrementos > 0 ? form.incrementos : undefined,
-        domicilio: form.domicilio.trim(),
-        edictoTexto: form.edictoTexto.trim(),
-        numeroEdicto: form.numeroEdicto.trim() || undefined,
-        fechasPublicacionBoletin: fechasBoletin,
-        nombreMartillero: perfilMartillero.nombre,
-        martilleroACargo: perfilMartillero.matricula,
-        cuitMartillero: perfilMartillero.cuitRaw || undefined,
-        telefonoMartillero: perfilMartillero.telefonoRaw || undefined,
-        imagenUrls,
-      })
+      guardarBorradorVistaPrevia({ ...draftBase, imagenUrls })
     } catch {
       toast({
         title: "Vista previa",
@@ -116,21 +129,7 @@ export default function PanelNuevoEdictoPage() {
           "No se pudieron incluir las imágenes en la vista previa. El resto del edicto se mostrará igual.",
         variant: "destructive",
       })
-      guardarBorradorVistaPrevia({
-        titulo: form.titulo.trim(),
-        descripcion: form.descripcion.trim(),
-        precioInicial: form.precioInicial,
-        incrementos: form.incrementos > 0 ? form.incrementos : undefined,
-        domicilio: form.domicilio.trim(),
-        edictoTexto: form.edictoTexto.trim(),
-        numeroEdicto: form.numeroEdicto.trim() || undefined,
-        fechasPublicacionBoletin: fechasBoletin,
-        nombreMartillero: perfilMartillero.nombre,
-        martilleroACargo: perfilMartillero.matricula,
-        cuitMartillero: perfilMartillero.cuitRaw || undefined,
-        telefonoMartillero: perfilMartillero.telefonoRaw || undefined,
-        imagenUrls: [],
-      })
+      guardarBorradorVistaPrevia({ ...draftBase, imagenUrls: [] })
     }
     window.open("/edictos/vista-previa", "_blank", "noopener,noreferrer")
   }
@@ -166,7 +165,11 @@ export default function PanelNuevoEdictoPage() {
       const body: CrearSubastaMatriculadoRequest = {
         titulo: form.titulo,
         descripcion: form.descripcion,
-        precioInicial: form.precioInicial,
+        bienes: bienes.map((b) => ({
+          titulo: b.titulo.trim() || "Bien",
+          precioBase: b.precioBase,
+        })),
+        precioInicial: bienes[0]?.precioBase,
         domicilio: form.domicilio,
         edictoTexto: edictoTrim,
         fechasPublicacionBoletin: fechasBoletin,
@@ -333,32 +336,23 @@ export default function PanelNuevoEdictoPage() {
             onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="precioInicial">Base</Label>
-            <Input
-              id="precioInicial"
-              type="number"
-              min={1}
-              required
-              value={form.precioInicial || ""}
-              onChange={(e) =>
-                setForm({ ...form, precioInicial: Number(e.target.value) || 0 })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="incrementos">Incrementos</Label>
-            <Input
-              id="incrementos"
-              type="number"
-              min={0}
-              value={form.incrementos || ""}
-              onChange={(e) =>
-                setForm({ ...form, incrementos: Number(e.target.value) || 0 })
-              }
-            />
-          </div>
+        <BienesFormFields
+          cantidad={cantidadBienes}
+          onCantidadChange={setCantidadBienes}
+          bienes={bienes}
+          onBienesChange={setBienes}
+        />
+        <div className="space-y-2 max-w-sm">
+          <Label htmlFor="incrementos">Incrementos</Label>
+          <Input
+            id="incrementos"
+            type="number"
+            min={0}
+            value={form.incrementos || ""}
+            onChange={(e) =>
+              setForm({ ...form, incrementos: Number(e.target.value) || 0 })
+            }
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="domicilio">Domicilio del remate</Label>

@@ -8,6 +8,7 @@ const quickLinks = [
   { name: "Inicio", href: "/" },
   { name: "Padrón de asociados", href: "/buscar" },
   { name: "Edictos", href: "/edictos" },
+  { name: "Noticias", href: "/noticias" },
 ]
 
 const legalLinks = [
