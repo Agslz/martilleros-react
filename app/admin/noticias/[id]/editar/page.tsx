@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { NoticiaImagenesPicker } from "@/components/noticias/noticia-imagenes-picker"
 import {
   getNoticiaAdminById,
   actualizarNoticia,
@@ -19,8 +20,6 @@ import {
 import { archivosADataUrls } from "@/lib/edicto-preview"
 import { guardarBorradorNoticiaVistaPrevia } from "@/lib/noticia-preview"
 import { useToast } from "@/hooks/use-toast"
-
-const ALLOWED = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]
 
 export default function EditarNoticiaPage() {
   const params = useParams()
@@ -226,18 +225,10 @@ export default function EditarNoticiaPage() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="nuevas">Agregar imágenes</Label>
-          <Input
-            id="nuevas"
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-            multiple
-            onChange={(e) => {
-              const selected = Array.from(e.target.files ?? []).filter((f) =>
-                ALLOWED.includes(f.type)
-              )
-              setFiles(selected)
-            }}
+          <NoticiaImagenesPicker
+            label="Agregar imágenes"
+            files={files}
+            onChange={setFiles}
           />
         </div>
 

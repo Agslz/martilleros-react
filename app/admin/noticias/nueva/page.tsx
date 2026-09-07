@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Loader2, Eye } from "lucide-react"
@@ -8,17 +8,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { NoticiaImagenesPicker } from "@/components/noticias/noticia-imagenes-picker"
 import {
   crearNoticia,
-  actualizarNoticia,
   publicarNoticia,
   subirImagenNoticia,
 } from "@/lib/api"
 import { archivosADataUrls } from "@/lib/edicto-preview"
 import { guardarBorradorNoticiaVistaPrevia } from "@/lib/noticia-preview"
 import { useToast } from "@/hooks/use-toast"
-
-const ALLOWED = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]
 
 export default function NuevaNoticiaPage() {
   const router = useRouter()
@@ -29,21 +27,6 @@ export default function NuevaNoticiaPage() {
   const [subtitulo, setSubtitulo] = useState("")
   const [descripcion, setDescripcion] = useState("")
   const [files, setFiles] = useState<File[]>([])
-  const [previews, setPreviews] = useState<string[]>([])
-
-  useEffect(() => {
-    if (!files.length) {
-      setPreviews([])
-      return
-    }
-    let cancelled = false
-    archivosADataUrls(files).then((urls) => {
-      if (!cancelled) setPreviews(urls)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [files])
 
   const validate = () => {
     if (!titulo.trim() || !subtitulo.trim() || !descripcion.trim()) {
@@ -164,39 +147,8 @@ export default function NuevaNoticiaPage() {
             required
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="imagenes">Imágenes</Label>
-          <Input
-            id="imagenes"
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-            multiple
-            onChange={(e) => {
-              const selected = Array.from(e.target.files ?? [])
-              const valid = selected.filter((f) => ALLOWED.includes(f.type))
-              if (valid.length !== selected.length) {
-                toast({
-                  title: "Algunos archivos no son imágenes válidas",
-                  variant: "destructive",
-                })
-              }
-              setFiles(valid)
-            }}
-          />
-          {previews.length > 0 && (
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              {previews.map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={i}
-                  src={url}
-                  alt={`Preview ${i + 1}`}
-                  className="aspect-video object-cover rounded border"
-                />
-              ))}
-            </div>
-          )}
-        </div>
+
+        <NoticiaImagenesPicker files={files} onChange={setFiles} />
 
         <div className="flex flex-wrap gap-3">
           <Button type="button" variant="outline" onClick={handleVistaPrevia}>
