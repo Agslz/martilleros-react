@@ -37,24 +37,26 @@ export function NoticiaArticleLayout({
         }
       >
         {tieneImagenes && (
-          <div className="order-1 lg:sticky lg:top-24">
+          <div className="order-1 min-w-0 lg:sticky lg:top-24">
             <NoticiaCarousel images={imagenes} />
           </div>
         )}
 
         <div
-          className={`space-y-5 ${tieneImagenes ? "order-2" : ""}`}
+          className={`min-w-0 space-y-5 overflow-hidden ${tieneImagenes ? "order-2" : ""}`}
         >
           <header className="space-y-3">
-            <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-foreground leading-tight">
+            <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-foreground leading-tight break-words [overflow-wrap:anywhere]">
               {titulo}
             </h1>
             {subtitulo ? (
-              <p className="text-lg text-muted-foreground">{subtitulo}</p>
+              <p className="text-lg text-muted-foreground break-words [overflow-wrap:anywhere]">
+                {subtitulo}
+              </p>
             ) : null}
           </header>
-          <div className="prose prose-neutral dark:prose-invert max-w-none">
-            <p className="whitespace-pre-wrap text-foreground leading-relaxed">
+          <div className="prose prose-neutral dark:prose-invert max-w-none min-w-0">
+            <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-foreground leading-relaxed">
               {descripcion}
             </p>
           </div>
