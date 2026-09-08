@@ -11,6 +11,7 @@ const navigation = [
   { name: "Padrón de asociados", href: "/buscar" },
   { name: "Edictos", href: "/edictos" },
   { name: "Noticias", href: "/noticias" },
+  { name: "Comisión Directiva", href: "/comision-directiva" },
   { name: "Contacto", href: "/contacto" },
 ]
 

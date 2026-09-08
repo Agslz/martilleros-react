@@ -114,12 +114,14 @@ export interface BienSubastaResponse {
   id?: number
   titulo: string
   precioBase: number
+  incremento?: number | null
   orden: number
 }
 
 export interface BienSubastaRequest {
   titulo: string
   precioBase: number
+  incremento?: number
 }
 
 // --- Contenidos ---

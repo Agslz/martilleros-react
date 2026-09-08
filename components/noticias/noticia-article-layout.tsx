@@ -5,10 +5,23 @@ type NoticiaArticleLayoutProps = {
   subtitulo: string
   descripcion: string
   imagenes: { url: string; alt?: string }[]
+  fechaPublicacion?: string | null
   /** Contenido extra arriba del layout (ej. badge vista previa) */
   topSlot?: React.ReactNode
   /** Contenido extra abajo */
   bottomSlot?: React.ReactNode
+}
+
+function formatFechaPublicacion(iso?: string | null) {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "America/Argentina/Mendoza",
+  }).format(d)
 }
 
 /**
@@ -20,10 +33,12 @@ export function NoticiaArticleLayout({
   subtitulo,
   descripcion,
   imagenes,
+  fechaPublicacion,
   topSlot,
   bottomSlot,
 }: NoticiaArticleLayoutProps) {
   const tieneImagenes = imagenes.length > 0
+  const fecha = formatFechaPublicacion(fechaPublicacion)
 
   return (
     <article className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
@@ -46,6 +61,14 @@ export function NoticiaArticleLayout({
           className={`min-w-0 space-y-5 overflow-hidden ${tieneImagenes ? "order-2" : ""}`}
         >
           <header className="space-y-3">
+            {fecha && (
+              <time
+                dateTime={fechaPublicacion ?? undefined}
+                className="text-sm font-medium text-muted-foreground"
+              >
+                {fecha}
+              </time>
+            )}
             <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-foreground leading-tight break-words [overflow-wrap:anywhere]">
               {titulo}
             </h1>

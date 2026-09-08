@@ -7,15 +7,7 @@ import type { EdictoPreviewDraft } from "@/lib/edicto-preview"
 import { displayCuit } from "@/lib/cuit"
 import { displayTelefono } from "@/lib/telefono"
 import { BasesDisplay } from "@/components/subastas/bases-display"
-
-function formatPrecio(n: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(n)
-}
+import { SubastaGallery } from "@/components/subastas/subasta-gallery"
 
 const compactHighlightCard =
   "border-primary/20 bg-primary/5 gap-0 py-0 shadow-sm"
@@ -42,17 +34,14 @@ export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPrevi
       </div>
 
       {(draft.imagenUrls?.length ?? 0) > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {draft.imagenUrls!.map((url, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={url + i}
-              src={url}
-              alt={`Vista previa ${i + 1}`}
-              className="rounded-lg border border-border aspect-video object-cover w-full"
-            />
-          ))}
-        </div>
+        <SubastaGallery
+          titulo={draft.titulo || "Vista previa"}
+          imagenes={draft.imagenUrls!.map((url, i) => ({
+            id: i,
+            url,
+            alt: `Vista previa ${i + 1}`,
+          }))}
+        />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -78,17 +67,8 @@ export function EdictoVistaPrevia({ draft, esPreview = false }: EdictoVistaPrevi
               <BasesDisplay
                 bienes={draft.bienes}
                 precioInicial={draft.precioInicial}
+                incrementos={draft.incrementos}
               />
-              {draft.incrementos != null && draft.incrementos > 0 && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-0.5">
-                    Incrementos
-                  </p>
-                  <p className="text-xl font-semibold text-foreground leading-tight">
-                    {formatPrecio(draft.incrementos)}
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
 

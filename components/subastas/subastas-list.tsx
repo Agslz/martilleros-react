@@ -12,15 +12,6 @@ import {
 } from "@/lib/subasta-display"
 import { BasesDisplay } from "@/components/subastas/bases-display"
 
-function formatPrecio(n: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(n)
-}
-
 function getEstado(subasta: SubastaResponse) {
   if (edictoVisibleEnSitioHoy(subasta)) return "vigente"
   return edictoTienePublicacionesPendientes(subasta) ? "proxima" : "finalizada"
@@ -107,19 +98,10 @@ export function SubastasList({ subastas }: SubastasListProps) {
                   <BasesDisplay
                     bienes={subasta.bienes}
                     precioInicial={subasta.precioInicial}
+                    incrementos={subasta.incrementos}
                     titleClassName="text-xs text-muted-foreground mb-0.5"
                     priceClassName="text-2xl font-bold text-primary whitespace-nowrap"
                   />
-                  {subasta.incrementos != null && subasta.incrementos > 0 && (
-                    <>
-                      <p className="text-xs text-muted-foreground mt-2 mb-0.5">
-                        Incrementos
-                      </p>
-                      <p className="text-base font-semibold text-foreground whitespace-nowrap">
-                        {formatPrecio(subasta.incrementos)}
-                      </p>
-                    </>
-                  )}
                 </div>
               </div>
             </div>

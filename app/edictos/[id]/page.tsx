@@ -31,15 +31,6 @@ interface SubastaDetailPageProps {
   params: Promise<{ id: string }>
 }
 
-function formatPrecio(n: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(n)
-}
-
 export async function generateMetadata({
   params,
 }: SubastaDetailPageProps): Promise<Metadata> {
@@ -214,17 +205,8 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                   <BasesDisplay
                     bienes={subasta.bienes}
                     precioInicial={subasta.precioInicial}
+                    incrementos={subasta.incrementos}
                   />
-                  {subasta.incrementos != null && subasta.incrementos > 0 && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-0.5">
-                        Incrementos
-                      </p>
-                      <p className="text-xl font-semibold text-foreground leading-tight">
-                        {formatPrecio(subasta.incrementos)}
-                      </p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 

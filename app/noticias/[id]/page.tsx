@@ -63,6 +63,7 @@ export default async function NoticiaDetailPage({ params }: NoticiaDetailProps) 
         subtitulo={noticia.subtitulo}
         descripcion={noticia.descripcion}
         imagenes={imagenes}
+        fechaPublicacion={noticia.fechaPublicacion}
       />
     </PublicLayout>
   )

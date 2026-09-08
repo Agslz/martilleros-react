@@ -57,9 +57,13 @@ function subastaToForm(s: SubastaResponse) {
 
 function subastaToBienes(s: SubastaResponse): BienSubastaRequest[] {
   if (s.bienes && s.bienes.length > 0) {
+    const multi = s.bienes.length > 1
     return s.bienes.map((b) => ({
       titulo: b.titulo,
       precioBase: b.precioBase,
+      incremento: multi
+        ? b.incremento ?? 0
+        : undefined,
     }))
   }
   return [{ titulo: "Bien", precioBase: s.precioInicial }]
@@ -169,8 +173,12 @@ export default function PanelEditarEdictoPage() {
       bienes: bienes.map((b) => ({
         titulo: b.titulo.trim() || "Bien",
         precioBase: b.precioBase,
+        incremento: bienes.length > 1 ? b.incremento : undefined,
       })),
-      incrementos: form.incrementos > 0 ? form.incrementos : undefined,
+      incrementos:
+        bienes.length === 1 && form.incrementos > 0
+          ? form.incrementos
+          : undefined,
       domicilio: form.domicilio.trim(),
       edictoTexto: form.edictoTexto.trim(),
       numeroEdicto: form.numeroEdicto.trim() || undefined,
@@ -226,6 +234,9 @@ export default function PanelEditarEdictoPage() {
         bienes: bienes.map((b) => ({
           titulo: b.titulo.trim() || "Bien",
           precioBase: b.precioBase,
+          ...(bienes.length > 1 && b.incremento
+            ? { incremento: b.incremento }
+            : {}),
         })),
         precioInicial: bienes[0]?.precioBase,
         domicilio: form.domicilio.trim(),
@@ -235,7 +246,7 @@ export default function PanelEditarEdictoPage() {
       if (form.numeroEdicto.trim()) {
         body.numeroEdicto = form.numeroEdicto.trim()
       }
-      if (form.incrementos > 0) {
+      if (bienes.length === 1 && form.incrementos > 0) {
         body.incrementos = form.incrementos
       }
 
@@ -380,18 +391,20 @@ export default function PanelEditarEdictoPage() {
           bienes={bienes}
           onBienesChange={setBienes}
         />
-        <div className="space-y-2 max-w-sm">
-          <Label htmlFor="incrementos">Incrementos</Label>
-          <Input
-            id="incrementos"
-            type="number"
-            min={0}
-            value={form.incrementos || ""}
-            onChange={(e) =>
-              setForm({ ...form, incrementos: Number(e.target.value) || 0 })
-            }
-          />
-        </div>
+        {cantidadBienes === 1 && (
+          <div className="space-y-2 max-w-sm">
+            <Label htmlFor="incrementos">Incrementos</Label>
+            <Input
+              id="incrementos"
+              type="number"
+              min={0}
+              value={form.incrementos || ""}
+              onChange={(e) =>
+                setForm({ ...form, incrementos: Number(e.target.value) || 0 })
+              }
+            />
+          </div>
+        )}
         <div className="space-y-2">
           <Label htmlFor="domicilio">Domicilio del remate</Label>
           <Input

@@ -8,7 +8,7 @@ const features = [
   "Defensa de los intereses de la profesión",
   "Actualización y capacitación continua",
   "Asesoramiento legal y técnico",
-  "Mediación en conflictos profesionales",
+  "Asesoramiento en Subastas",
 ]
 
 type AboutSectionProps = {

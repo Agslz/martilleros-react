@@ -4,7 +4,6 @@ import { HeroSection } from "@/components/home/hero-section"
 import { NoticiasHomeSection } from "@/components/home/noticias-home-section"
 import { ServicesSection } from "@/components/home/services-section"
 import { AboutSection } from "@/components/home/about-section"
-import { CommissionSection } from "@/components/home/commission-section"
 import { CTASection } from "@/components/home/cta-section"
 import { WhatsAppFab } from "@/components/home/whatsapp-fab"
 import { getSiteUrl } from "@/lib/site"
@@ -52,7 +51,6 @@ export default async function HomePage() {
       <NoticiasHomeSection noticias={noticias} />
       <ServicesSection />
       <AboutSection sobre={home.sobre} />
-      <CommissionSection />
       <CTASection />
       <WhatsAppFab />
     </PublicLayout>

@@ -79,6 +79,9 @@ export default function NuevaPublicacionExternaPage() {
           bienes: bienes.map((b) => ({
             titulo: b.titulo.trim() || "Bien",
             precioBase: b.precioBase,
+            ...(bienes.length > 1 && b.incremento
+              ? { incremento: b.incremento }
+              : {}),
           })),
           precioInicial: bienes[0]?.precioBase,
         },

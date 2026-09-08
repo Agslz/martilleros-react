@@ -24,9 +24,11 @@ import { BasesDisplay } from "@/components/subastas/bases-display"
 
 function bienesFromSubasta(s: SubastaResponse): BienSubastaRequest[] {
   if (s.bienes && s.bienes.length > 0) {
+    const multi = s.bienes.length > 1
     return s.bienes.map((b) => ({
       titulo: b.titulo,
       precioBase: b.precioBase,
+      incremento: multi ? b.incremento ?? 0 : undefined,
     }))
   }
   return [{ titulo: "Bien", precioBase: s.precioInicial }]
@@ -124,6 +126,9 @@ export default function EditarSubastaPage() {
         bienes: bienes.map((b) => ({
           titulo: b.titulo.trim() || "Bien",
           precioBase: b.precioBase,
+          ...(bienes.length > 1 && b.incremento
+            ? { incremento: b.incremento }
+            : {}),
         })),
         precioInicial: bienes[0]?.precioBase,
       })
@@ -196,18 +201,9 @@ export default function EditarSubastaPage() {
             <BasesDisplay
               bienes={subasta.bienes}
               precioInicial={subasta.precioInicial}
+              incrementos={subasta.incrementos}
               priceClassName="text-xl font-bold text-primary leading-tight"
             />
-            {subasta.incrementos != null && subasta.incrementos > 0 && (
-              <p>
-                <span className="text-muted-foreground">Incrementos: </span>
-                {new Intl.NumberFormat("es-AR", {
-                  style: "currency",
-                  currency: "ARS",
-                  minimumFractionDigits: 0,
-                }).format(subasta.incrementos)}
-              </p>
-            )}
             <p>
               <span className="text-muted-foreground">Domicilio: </span>
               {subasta.domicilio}
