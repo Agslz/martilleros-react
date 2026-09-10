@@ -276,7 +276,7 @@ export default function AdminMatriculadosPage() {
                     ) : !m.habilitado ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300 px-3 py-1 text-xs font-medium">
                         <XCircle className="h-3 w-3" />
-                        No habilitado
+                        Trámite pendiente
                       </span>
                     ) : m.estadoFianza === "RECHAZADA" ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300 px-3 py-1 text-xs font-medium">

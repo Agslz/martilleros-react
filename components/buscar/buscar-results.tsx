@@ -128,7 +128,7 @@ export function BuscarResults({
                   <XCircle className="h-6 w-6 text-red-600" />
                   <div>
                     <p className="font-semibold text-red-800">
-                      No habilitado para ejercer
+                      TRÁMITE PENDIENTE
                     </p>
                   </div>
                 </>

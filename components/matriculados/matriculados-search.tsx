@@ -59,7 +59,7 @@ export function MatriculadosSearch({
           <SelectContent>
             <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="habilitado">Habilitados</SelectItem>
-            <SelectItem value="suspendido">No habilitados</SelectItem>
+            <SelectItem value="suspendido">Trámite pendiente</SelectItem>
           </SelectContent>
         </Select>
         <Button type="submit" disabled={loading}>

@@ -92,7 +92,7 @@ export function MatriculadosList({
                 ) : !matriculado.habilitado ? (
                   <div className="inline-flex items-center gap-1 rounded-full bg-red-50 text-red-700 px-3 py-1 text-xs font-medium">
                     <XCircle className="h-3 w-3" />
-                    <span>No habilitado</span>
+                    <span>Trámite pendiente</span>
                   </div>
                 ) : (
                   <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 px-3 py-1 text-xs font-medium">

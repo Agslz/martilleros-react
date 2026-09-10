@@ -287,7 +287,7 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                   <XCircle className="h-6 w-6 text-red-600 shrink-0" />
                   <div>
                     <p className="font-medium text-red-800 text-sm">
-                      Martillero no habilitado para ejercer
+                      TRÁMITE PENDIENTE
                     </p>
                     <p className="text-xs text-red-600">
                       Estado según el padrón público.
