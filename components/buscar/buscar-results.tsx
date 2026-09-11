@@ -119,7 +119,7 @@ export function BuscarResults({
                   <CheckCircle2 className="h-6 w-6 text-green-600" />
                   <div>
                     <p className="font-semibold text-green-800">
-                      Martillero habilitado para ejercer
+                      SOCIO HABILITADO
                     </p>
                   </div>
                 </>

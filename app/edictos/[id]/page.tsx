@@ -274,7 +274,7 @@ export default async function SubastaDetailPage({ params }: SubastaDetailPagePro
                   <CheckCircle className="h-6 w-6 text-green-600 shrink-0" />
                   <div>
                     <p className="font-medium text-green-800 text-sm">
-                      Martillero habilitado para ejercer
+                      SOCIO HABILITADO
                     </p>
                     <p className="text-xs text-green-600">
                       Matriculado con credencial activa según el padrón público.
