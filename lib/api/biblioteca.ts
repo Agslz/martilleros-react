@@ -74,7 +74,10 @@ export async function eliminarDocumentoBiblioteca(id: number): Promise<boolean> 
 export async function subirPdfBiblioteca(
   file: File
 ): Promise<FileUploadResponse | null> {
-  if (file.type !== "application/pdf") {
+  const isPdf =
+    file.type === "application/pdf" ||
+    file.name.toLowerCase().endsWith(".pdf")
+  if (!isPdf) {
     throw new Error("Solo se permiten archivos PDF")
   }
   const formData = new FormData()

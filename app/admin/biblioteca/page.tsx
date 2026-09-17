@@ -83,14 +83,24 @@ export default function AdminBibliotecaPage() {
                 <tr key={d.id} className="border-t border-border hover:bg-muted/30">
                   <td className="p-4 font-medium">{d.titulo}</td>
                   <td className="p-4">
+                    <span className="text-sm text-muted-foreground mr-3">
+                      {d.fileName}
+                    </span>
                     <a
                       href={d.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary hover:underline inline-flex items-center gap-1"
                     >
-                      {d.fileName}
+                      Ver
                       <ExternalLink className="h-3 w-3" />
+                    </a>
+                    <a
+                      href={d.fileUrl}
+                      download={d.fileName || "documento.pdf"}
+                      className="ml-3 text-sm text-muted-foreground hover:text-foreground hover:underline"
+                    >
+                      Descargar
                     </a>
                   </td>
                   <td className="p-4 text-right">

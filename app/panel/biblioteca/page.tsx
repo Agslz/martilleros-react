@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BookOpen, Loader2, ExternalLink, FileText } from "lucide-react"
+import { BookOpen, Loader2, ExternalLink, FileText, Download } from "lucide-react"
 import { getDocumentosBiblioteca } from "@/lib/api"
 import type { DocumentoBibliotecaResponse } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { Button } from "@/components/ui/button"
 
 function formatFecha(s: string) {
   try {
@@ -61,41 +62,58 @@ export default function PanelBibliotecaPage() {
           <p>No hay documentos disponibles en este momento.</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="text-left p-4 font-semibold">Documento</th>
-                <th className="text-left p-4 font-semibold hidden sm:table-cell">Descripción</th>
-                <th className="text-left p-4 font-semibold hidden md:table-cell">Fecha</th>
-                <th className="text-right p-4 font-semibold">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((doc) => (
-                <tr key={doc.id} className="border-t border-border">
-                  <td className="p-4 font-medium">{doc.titulo}</td>
-                  <td className="p-4 text-muted-foreground text-sm hidden sm:table-cell max-w-xs truncate">
-                    {doc.descripcion || "—"}
-                  </td>
-                  <td className="p-4 text-muted-foreground text-sm hidden md:table-cell">
+        <div className="space-y-6">
+          {list.map((doc) => (
+            <div
+              key={doc.id}
+              className="rounded-xl border border-border overflow-hidden bg-card"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-b border-border">
+                <div className="min-w-0">
+                  <h2 className="font-semibold text-foreground truncate">
+                    {doc.titulo}
+                  </h2>
+                  {doc.descripcion ? (
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
+                      {doc.descripcion}
+                    </p>
+                  ) : null}
+                  <p className="text-xs text-muted-foreground mt-1">
                     {formatFecha(doc.createdAt)}
-                  </td>
-                  <td className="p-4 text-right">
+                    {doc.fileName ? ` · ${doc.fileName}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button variant="outline" size="sm" asChild>
                     <a
                       href={doc.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium"
                     >
                       Ver PDF
-                      <ExternalLink className="h-4 w-4" />
+                      <ExternalLink className="h-4 w-4 ml-1" />
                     </a>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </Button>
+                  <Button variant="secondary" size="sm" asChild>
+                    <a
+                      href={doc.fileUrl}
+                      download={doc.fileName || "documento.pdf"}
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Descargar
+                    </a>
+                  </Button>
+                </div>
+              </div>
+              {doc.fileUrl ? (
+                <iframe
+                  src={doc.fileUrl}
+                  title={doc.titulo}
+                  className="w-full h-[28rem] bg-white"
+                />
+              ) : null}
+            </div>
+          ))}
         </div>
       )}
     </div>

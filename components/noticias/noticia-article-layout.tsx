@@ -1,14 +1,12 @@
-import { NoticiaCarousel } from "@/components/noticias/noticia-carousel"
+import { NoticiaMediaViewer, type NoticiaMediaItem } from "@/components/noticias/noticia-media-viewer"
 
 type NoticiaArticleLayoutProps = {
   titulo: string
   subtitulo: string
   descripcion: string
-  imagenes: { url: string; alt?: string }[]
+  media: NoticiaMediaItem[]
   fechaPublicacion?: string | null
-  /** Contenido extra arriba del layout (ej. badge vista previa) */
   topSlot?: React.ReactNode
-  /** Contenido extra abajo */
   bottomSlot?: React.ReactNode
 }
 
@@ -24,20 +22,16 @@ function formatFechaPublicacion(iso?: string | null) {
   }).format(d)
 }
 
-/**
- * Layout editorial: imagen a la izquierda, título + texto a la derecha (desktop).
- * En mobile se apila imagen → textos.
- */
 export function NoticiaArticleLayout({
   titulo,
   subtitulo,
   descripcion,
-  imagenes,
+  media,
   fechaPublicacion,
   topSlot,
   bottomSlot,
 }: NoticiaArticleLayoutProps) {
-  const tieneImagenes = imagenes.length > 0
+  const tieneMedia = media.length > 0
   const fecha = formatFechaPublicacion(fechaPublicacion)
 
   return (
@@ -46,19 +40,19 @@ export function NoticiaArticleLayout({
 
       <div
         className={
-          tieneImagenes
+          tieneMedia
             ? "grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 lg:items-start"
             : "max-w-3xl"
         }
       >
-        {tieneImagenes && (
+        {tieneMedia && (
           <div className="order-1 min-w-0 lg:sticky lg:top-24">
-            <NoticiaCarousel images={imagenes} />
+            <NoticiaMediaViewer items={media} />
           </div>
         )}
 
         <div
-          className={`min-w-0 space-y-5 overflow-hidden ${tieneImagenes ? "order-2" : ""}`}
+          className={`min-w-0 space-y-5 overflow-hidden ${tieneMedia ? "order-2" : ""}`}
         >
           <header className="space-y-3">
             {fecha && (

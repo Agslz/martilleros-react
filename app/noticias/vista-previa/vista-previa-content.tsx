@@ -24,17 +24,26 @@ export default function NoticiaVistaPreviaContent() {
     )
   }
 
-  const imagenes = (draft.imagenUrls ?? []).map((url, i) => ({
-    url,
-    alt: `Vista previa ${i + 1}`,
-  }))
+  const media =
+    draft.media?.length
+      ? draft.media.map((m) => ({
+          url: m.url,
+          contentType: m.contentType,
+          fileName: m.fileName,
+          alt: m.fileName,
+        }))
+      : (draft.imagenUrls ?? []).map((url, i) => ({
+          url,
+          alt: `Vista previa ${i + 1}`,
+          contentType: "image/jpeg",
+        }))
 
   return (
     <NoticiaArticleLayout
       titulo={draft.titulo || "Sin título"}
       subtitulo={draft.subtitulo || "Sin subtítulo"}
       descripcion={draft.descripcion || "Sin descripción"}
-      imagenes={imagenes}
+      media={media}
       topSlot={<Badge variant="secondary">Vista previa — aún no publicada</Badge>}
       bottomSlot={
         <p className="text-sm text-muted-foreground border-t border-border pt-4">

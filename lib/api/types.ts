@@ -194,6 +194,7 @@ export interface NoticiaImagenResponse {
   id: number
   fileName: string
   fileUrl: string
+  contentType?: string | null
   orden: number
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Loader2, Eye, Trash2 } from "lucide-react"
+import { ArrowLeft, Loader2, Eye, Trash2, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,8 +17,10 @@ import {
   eliminarImagenNoticia,
   type NoticiaResponse,
 } from "@/lib/api"
-import { archivosADataUrls } from "@/lib/edicto-preview"
-import { guardarBorradorNoticiaVistaPrevia } from "@/lib/noticia-preview"
+import {
+  archivosAMediaPreview,
+  guardarBorradorNoticiaVistaPrevia,
+} from "@/lib/noticia-preview"
 import { useToast } from "@/hooks/use-toast"
 
 export default function EditarNoticiaPage() {
@@ -70,16 +72,20 @@ export default function EditarNoticiaPage() {
   const handleVistaPrevia = async () => {
     setError(null)
     if (!validate()) return
-    const nuevas = files.length ? await archivosADataUrls(files) : []
+    const nuevas = files.length ? await archivosAMediaPreview(files) : []
     const existentes = (noticia?.imagenes ?? [])
       .slice()
       .sort((a, b) => a.orden - b.orden)
-      .map((i) => i.fileUrl)
+      .map((i) => ({
+        url: i.fileUrl,
+        contentType: i.contentType || "image/jpeg",
+        fileName: i.fileName,
+      }))
     guardarBorradorNoticiaVistaPrevia({
       titulo: titulo.trim(),
       subtitulo: subtitulo.trim(),
       descripcion: descripcion.trim(),
-      imagenUrls: [...existentes, ...nuevas],
+      media: [...existentes, ...nuevas],
     })
     window.open("/noticias/vista-previa", "_blank", "noopener,noreferrer")
   }
@@ -196,37 +202,51 @@ export default function EditarNoticiaPage() {
 
         {(noticia.imagenes?.length ?? 0) > 0 && (
           <div className="space-y-2">
-            <Label>Imágenes actuales</Label>
+            <Label>Archivos actuales</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {noticia.imagenes
                 .slice()
                 .sort((a, b) => a.orden - b.orden)
-                .map((img) => (
-                  <div key={img.id} className="relative group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img.fileUrl}
-                      alt={img.fileName}
-                      className="aspect-video w-full object-cover rounded border"
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="destructive"
-                      className="absolute top-2 right-2 h-8 w-8 opacity-90"
-                      onClick={() => handleEliminarImagen(img.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                .map((img) => {
+                  const isPdf =
+                    (img.contentType ?? "").includes("pdf") ||
+                    img.fileName.toLowerCase().endsWith(".pdf")
+                  return (
+                    <div key={img.id} className="relative group">
+                      {isPdf ? (
+                        <div className="aspect-video w-full rounded border bg-muted flex flex-col items-center justify-center gap-1 p-2">
+                          <FileText className="h-8 w-8 text-primary" />
+                          <span className="text-[10px] text-center line-clamp-2 px-1">
+                            {img.fileName}
+                          </span>
+                        </div>
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={img.fileUrl}
+                          alt={img.fileName}
+                          className="aspect-video w-full object-cover rounded border"
+                        />
+                      )}
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        className="absolute top-2 right-2 h-8 w-8 opacity-90"
+                        onClick={() => handleEliminarImagen(img.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )
+                })}
             </div>
           </div>
         )}
 
         <div className="space-y-2">
           <NoticiaImagenesPicker
-            label="Agregar imágenes"
+            label="Agregar archivos"
             files={files}
             onChange={setFiles}
           />

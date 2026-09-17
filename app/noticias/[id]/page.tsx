@@ -38,10 +38,12 @@ export default async function NoticiaDetailPage({ params }: NoticiaDetailProps) 
   const noticia = await getNoticiaPublicaById(Number(id))
   if (!noticia) notFound()
 
-  const imagenes =
+  const media =
     noticia.imagenes?.map((img) => ({
       url: img.fileUrl,
       alt: img.fileName || noticia.titulo,
+      contentType: img.contentType,
+      fileName: img.fileName,
     })) ?? []
 
   return (
@@ -62,7 +64,7 @@ export default async function NoticiaDetailPage({ params }: NoticiaDetailProps) 
         titulo={noticia.titulo}
         subtitulo={noticia.subtitulo}
         descripcion={noticia.descripcion}
-        imagenes={imagenes}
+        media={media}
         fechaPublicacion={noticia.fechaPublicacion}
       />
     </PublicLayout>

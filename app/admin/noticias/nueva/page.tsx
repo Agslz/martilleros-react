@@ -14,8 +14,10 @@ import {
   publicarNoticia,
   subirImagenNoticia,
 } from "@/lib/api"
-import { archivosADataUrls } from "@/lib/edicto-preview"
-import { guardarBorradorNoticiaVistaPrevia } from "@/lib/noticia-preview"
+import {
+  archivosAMediaPreview,
+  guardarBorradorNoticiaVistaPrevia,
+} from "@/lib/noticia-preview"
 import { useToast } from "@/hooks/use-toast"
 
 export default function NuevaNoticiaPage() {
@@ -39,12 +41,12 @@ export default function NuevaNoticiaPage() {
   const handleVistaPrevia = async () => {
     setError(null)
     if (!validate()) return
-    const imagenUrls = files.length ? await archivosADataUrls(files) : []
+    const media = files.length ? await archivosAMediaPreview(files) : []
     guardarBorradorNoticiaVistaPrevia({
       titulo: titulo.trim(),
       subtitulo: subtitulo.trim(),
       descripcion: descripcion.trim(),
-      imagenUrls,
+      media,
     })
     window.open("/noticias/vista-previa", "_blank", "noopener,noreferrer")
   }
