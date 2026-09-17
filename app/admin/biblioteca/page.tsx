@@ -5,7 +5,7 @@ import Link from "next/link"
 import { FileText, ExternalLink, Trash2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
-  getDocumentosBiblioteca,
+  getDocumentosBibliotecaAdmin,
   eliminarDocumentoBiblioteca,
   type DocumentoBibliotecaResponse,
 } from "@/lib/api"
@@ -19,8 +19,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AdminBibliotecaPage() {
+  const { toast } = useToast()
   const [docs, setDocs] = useState<DocumentoBibliotecaResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -28,8 +30,15 @@ export default function AdminBibliotecaPage() {
 
   const load = () => {
     setLoading(true)
-    getDocumentosBiblioteca()
+    getDocumentosBibliotecaAdmin()
       .then(setDocs)
+      .catch(() => {
+        toast({
+          title: "Error",
+          description: "No se pudo cargar la biblioteca.",
+          variant: "destructive",
+        })
+      })
       .finally(() => setLoading(false))
   }
 
@@ -41,10 +50,18 @@ export default function AdminBibliotecaPage() {
     setDeletingId(id)
     try {
       await eliminarDocumentoBiblioteca(id)
-      load()
+      toast({
+        title: "Documento eliminado",
+        description: "Se borró el registro y el PDF del almacenamiento.",
+      })
       setConfirmDelete(null)
+      load()
     } catch {
-      // error manejado en api
+      toast({
+        title: "Error al eliminar",
+        description: "No se pudo eliminar el documento. Intentá de nuevo.",
+        variant: "destructive",
+      })
     } finally {
       setDeletingId(null)
     }
@@ -121,19 +138,25 @@ export default function AdminBibliotecaPage() {
         </div>
       )}
 
-      <AlertDialog open={confirmDelete !== null} onOpenChange={() => setConfirmDelete(null)}>
+      <AlertDialog
+        open={confirmDelete !== null}
+        onOpenChange={() => setConfirmDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar documento?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer.
+              Se eliminará de la biblioteca de matriculados y también el PDF del
+              almacenamiento. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => confirmDelete !== null && handleDelete(confirmDelete)}
+              onClick={() =>
+                confirmDelete !== null && handleDelete(confirmDelete)
+              }
               disabled={deletingId !== null}
             >
               {deletingId !== null ? (

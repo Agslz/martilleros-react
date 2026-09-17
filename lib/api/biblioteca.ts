@@ -20,6 +20,17 @@ export async function getDocumentosBiblioteca(): Promise<
   }
 }
 
+/** Listado completo para admin (incluye no visibles a matriculados). */
+export async function getDocumentosBibliotecaAdmin(): Promise<
+  DocumentoBibliotecaResponse[]
+> {
+  const res = await apiRequest<DocumentoBibliotecaResponse[]>(
+    "/admin/biblioteca"
+  )
+  if (res.success && Array.isArray(res.data)) return res.data
+  return []
+}
+
 export async function crearDocumentoBiblioteca(
   body: DocumentoBibliotecaRequest
 ): Promise<DocumentoBibliotecaResponse | null> {

@@ -107,6 +107,7 @@ export type {
 export { getEstadoMatriculado } from "./private-matriculados"
 export {
   getDocumentosBiblioteca,
+  getDocumentosBibliotecaAdmin,
   crearDocumentoBiblioteca,
   actualizarDocumentoBiblioteca,
   eliminarDocumentoBiblioteca,
