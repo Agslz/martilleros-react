@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { FileText } from "lucide-react"
 import type { NoticiaResponse } from "@/lib/api"
 
 type NoticiaCardProps = {
@@ -17,8 +18,17 @@ function formatFechaPublicacion(iso?: string | null) {
   }).format(d)
 }
 
+function tienePdf(noticia: NoticiaResponse) {
+  return (noticia.imagenes ?? []).some((a) => {
+    const ct = (a.contentType ?? "").toLowerCase()
+    if (ct.includes("pdf")) return true
+    return (a.fileName ?? "").toLowerCase().endsWith(".pdf")
+  })
+}
+
 export function NoticiaCard({ noticia }: NoticiaCardProps) {
   const fecha = formatFechaPublicacion(noticia.fechaPublicacion)
+  const soloPdf = !noticia.imagenPortadaUrl && tienePdf(noticia)
 
   return (
     <Link
@@ -33,6 +43,16 @@ export function NoticiaCard({ noticia }: NoticiaCardProps) {
             alt={noticia.titulo}
             className="h-full w-full object-contain transition-transform group-hover:scale-[1.02]"
           />
+        ) : soloPdf ? (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-primary">
+            <FileText
+              className="h-14 w-14 transition-transform group-hover:scale-105"
+              strokeWidth={1.5}
+            />
+            <span className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+              PDF
+            </span>
+          </div>
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
             Sin imagen
