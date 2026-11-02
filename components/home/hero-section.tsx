@@ -1,6 +1,13 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type TransitionEvent,
+} from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -57,7 +64,23 @@ const HERO_SLIDES = [
     caption:
       "Presidente y Vicepresidente con la Jefa de la oficina de medidas judiciales",
   },
+  {
+    src: "/images/carousel/cena-martilleros-2026-1.jpg",
+    alt: "Cena de Martilleros 2026 — Colegio de Martilleros de Mendoza",
+    caption: "Cena de Martilleros 2026",
+  },
+  {
+    src: "/images/carousel/cena-martilleros-2026-2.jpg",
+    alt: "Cena de Martilleros 2026 — Colegio de Martilleros de Mendoza",
+    caption: "Cena de Martilleros 2026",
+  },
 ] as const
+
+const SLIDE_COUNT = HERO_SLIDES.length
+/** Track con clones: [última, ...slides, primera] → índice real empieza en 1 */
+const TRACK_FIRST = 1
+const TRACK_LAST = SLIDE_COUNT
+const TRACK_CLONE_FIRST = SLIDE_COUNT + 1
 
 const SLIDE_INTERVAL_MS = 5000
 const SLIDE_TRANSITION_MS = 700
@@ -72,10 +95,34 @@ type HeroSectionProps = {
   intro: HomeBloque
 }
 
+function realIndexFromTrack(trackIndex: number): number {
+  if (trackIndex === 0) return SLIDE_COUNT - 1
+  if (trackIndex === TRACK_CLONE_FIRST) return 0
+  return trackIndex - 1
+}
+
 export function HeroSection({ intro }: HeroSectionProps) {
-  const [activeIndex, setActiveIndex] = useState(0)
+  // Índice en el track clonado (1 = primera slide real)
+  const [trackIndex, setTrackIndex] = useState(TRACK_FIRST)
   const [reduceMotion, setReduceMotion] = useState(false)
   const [slideTransitionEnabled, setSlideTransitionEnabled] = useState(false)
+  const animatingRef = useRef(false)
+  const trackIndexRef = useRef(TRACK_FIRST)
+
+  const trackSlides = useMemo(
+    () => [
+      HERO_SLIDES[SLIDE_COUNT - 1],
+      ...HERO_SLIDES,
+      HERO_SLIDES[0],
+    ],
+    []
+  )
+
+  const activeIndex = realIndexFromTrack(trackIndex)
+
+  useEffect(() => {
+    trackIndexRef.current = trackIndex
+  }, [trackIndex])
 
   useEffect(() => {
     setReduceMotion(
@@ -100,34 +147,84 @@ export function HeroSection({ intro }: HeroSectionProps) {
     return () => window.clearTimeout(id)
   }, [reduceMotion])
 
+  const moveTo = useCallback(
+    (nextTrackIndex: number) => {
+      if (animatingRef.current && !reduceMotion) return
+      enableSlideTransition()
+      animatingRef.current = true
+      setTrackIndex(nextTrackIndex)
+    },
+    [enableSlideTransition, reduceMotion]
+  )
+
   const goToSlide = useCallback(
     (index: number) => {
-      enableSlideTransition()
-      setActiveIndex((index + HERO_SLIDES.length) % HERO_SLIDES.length)
+      const next = ((index % SLIDE_COUNT) + SLIDE_COUNT) % SLIDE_COUNT
+      moveTo(next + 1)
     },
-    [enableSlideTransition]
+    [moveTo]
   )
 
   const goNext = useCallback(() => {
-    enableSlideTransition()
-    setActiveIndex((i) => (i + 1) % HERO_SLIDES.length)
-  }, [enableSlideTransition])
+    moveTo(trackIndexRef.current + 1)
+  }, [moveTo])
 
   const goPrev = useCallback(() => {
-    enableSlideTransition()
-    setActiveIndex(
-      (i) => (i - 1 + HERO_SLIDES.length) % HERO_SLIDES.length
-    )
-  }, [enableSlideTransition])
+    moveTo(trackIndexRef.current - 1)
+  }, [moveTo])
 
   useEffect(() => {
     if (reduceMotion) return
     const id = window.setInterval(() => {
-      enableSlideTransition()
-      setActiveIndex((i) => (i + 1) % HERO_SLIDES.length)
+      moveTo(trackIndexRef.current + 1)
     }, SLIDE_INTERVAL_MS)
     return () => window.clearInterval(id)
-  }, [reduceMotion, enableSlideTransition])
+  }, [reduceMotion, moveTo])
+
+  const jumpWithoutAnimation = useCallback(
+    (to: number) => {
+      setSlideTransitionEnabled(false)
+      setTrackIndex(to)
+      trackIndexRef.current = to
+      animatingRef.current = false
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (!reduceMotion) setSlideTransitionEnabled(true)
+        })
+      })
+    },
+    [reduceMotion]
+  )
+
+  const handleTransitionEnd = useCallback(
+    (e: TransitionEvent<HTMLDivElement>) => {
+      if (e.target !== e.currentTarget) return
+      if (e.propertyName !== "transform") return
+
+      const idx = trackIndexRef.current
+      if (idx === TRACK_CLONE_FIRST) {
+        jumpWithoutAnimation(TRACK_FIRST)
+        return
+      }
+      if (idx === 0) {
+        jumpWithoutAnimation(TRACK_LAST)
+        return
+      }
+      animatingRef.current = false
+    },
+    [jumpWithoutAnimation]
+  )
+
+  // Con reduce-motion: wrap modulo sin clones visuales
+  useEffect(() => {
+    if (!reduceMotion) return
+    if (trackIndex < TRACK_FIRST || trackIndex > TRACK_LAST) {
+      const real = realIndexFromTrack(trackIndex) + 1
+      setTrackIndex(real)
+      trackIndexRef.current = real
+      animatingRef.current = false
+    }
+  }, [trackIndex, reduceMotion])
 
   return (
     <section className="relative overflow-hidden bg-stone-100">
@@ -172,24 +269,25 @@ export function HeroSection({ intro }: HeroSectionProps) {
                 "transition-transform ease-in-out",
             )}
             style={{
-              transform: `translateX(-${activeIndex * 100}%)`,
+              transform: `translateX(-${trackIndex * 100}%)`,
               transitionDuration:
                 slideTransitionEnabled && !reduceMotion
                   ? `${SLIDE_TRANSITION_MS}ms`
                   : undefined,
             }}
+            onTransitionEnd={handleTransitionEnd}
           >
-            {HERO_SLIDES.map((slide, index) => (
+            {trackSlides.map((slide, index) => (
               <div
-                key={slide.src}
+                key={`${slide.src}-${index}`}
                 className="relative h-full min-w-full shrink-0"
-                aria-hidden={index !== activeIndex}
+                aria-hidden={realIndexFromTrack(index) !== activeIndex}
               >
                 <Image
                   src={slide.src}
                   alt={slide.alt}
                   fill
-                  priority={index === 0}
+                  priority={index === TRACK_FIRST}
                   sizes="100vw"
                   className="object-cover object-center"
                 />
@@ -219,7 +317,7 @@ export function HeroSection({ intro }: HeroSectionProps) {
                     ? "w-8 bg-white"
                     : "w-2 bg-white/50 hover:bg-white/75",
                 )}
-                aria-label={`Ir a imagen ${index + 1} de ${HERO_SLIDES.length}`}
+                aria-label={`Ir a imagen ${index + 1} de ${SLIDE_COUNT}`}
                 aria-current={index === activeIndex ? "true" : undefined}
               />
             ))}

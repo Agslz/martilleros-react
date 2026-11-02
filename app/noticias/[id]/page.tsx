@@ -65,6 +65,7 @@ export default async function NoticiaDetailPage({ params }: NoticiaDetailProps) 
         subtitulo={noticia.subtitulo}
         descripcion={noticia.descripcion}
         media={media}
+        youtubeUrl={noticia.youtubeUrl}
         fechaPublicacion={noticia.fechaPublicacion}
       />
     </PublicLayout>

@@ -1,13 +1,16 @@
+import type { ReactNode } from "react"
 import { NoticiaMediaViewer, type NoticiaMediaItem } from "@/components/noticias/noticia-media-viewer"
+import { youtubeEmbedUrl } from "@/lib/youtube"
 
 type NoticiaArticleLayoutProps = {
   titulo: string
   subtitulo: string
   descripcion: string
   media: NoticiaMediaItem[]
+  youtubeUrl?: string | null
   fechaPublicacion?: string | null
-  topSlot?: React.ReactNode
-  bottomSlot?: React.ReactNode
+  topSlot?: ReactNode
+  bottomSlot?: ReactNode
 }
 
 function formatFechaPublicacion(iso?: string | null) {
@@ -27,11 +30,13 @@ export function NoticiaArticleLayout({
   subtitulo,
   descripcion,
   media,
+  youtubeUrl,
   fechaPublicacion,
   topSlot,
   bottomSlot,
 }: NoticiaArticleLayoutProps) {
   const tieneMedia = media.length > 0
+  const embed = youtubeEmbedUrl(youtubeUrl)
   const fecha = formatFechaPublicacion(fechaPublicacion)
 
   return (
@@ -79,6 +84,25 @@ export function NoticiaArticleLayout({
           </div>
         </div>
       </div>
+
+      {embed && (
+        <div className="space-y-3">
+          <h2 className="font-serif text-xl font-semibold text-foreground">
+            Video
+          </h2>
+          <div className="relative w-full overflow-hidden rounded-xl border border-border bg-black aspect-video">
+            <iframe
+              src={embed}
+              title={`Video — ${titulo}`}
+              className="absolute inset-0 h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+        </div>
+      )}
 
       {bottomSlot}
     </article>

@@ -28,6 +28,7 @@ export default function NuevaNoticiaPage() {
   const [titulo, setTitulo] = useState("")
   const [subtitulo, setSubtitulo] = useState("")
   const [descripcion, setDescripcion] = useState("")
+  const [youtubeUrl, setYoutubeUrl] = useState("")
   const [files, setFiles] = useState<File[]>([])
 
   const validate = () => {
@@ -46,10 +47,18 @@ export default function NuevaNoticiaPage() {
       titulo: titulo.trim(),
       subtitulo: subtitulo.trim(),
       descripcion: descripcion.trim(),
+      youtubeUrl: youtubeUrl.trim() || null,
       media,
     })
     window.open("/noticias/vista-previa", "_blank", "noopener,noreferrer")
   }
+
+  const payloadNoticia = () => ({
+    titulo: titulo.trim(),
+    subtitulo: subtitulo.trim(),
+    descripcion: descripcion.trim(),
+    youtubeUrl: youtubeUrl.trim() || null,
+  })
 
   const handlePublicar = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,11 +66,7 @@ export default function NuevaNoticiaPage() {
     if (!validate()) return
     setLoading(true)
     try {
-      const creada = await crearNoticia({
-        titulo: titulo.trim(),
-        subtitulo: subtitulo.trim(),
-        descripcion: descripcion.trim(),
-      })
+      const creada = await crearNoticia(payloadNoticia())
       if (!creada) throw new Error("No se pudo crear la noticia")
       for (let i = 0; i < files.length; i++) {
         await subirImagenNoticia(creada.id, files[i], i)
@@ -85,11 +90,7 @@ export default function NuevaNoticiaPage() {
     if (!validate()) return
     setLoading(true)
     try {
-      const creada = await crearNoticia({
-        titulo: titulo.trim(),
-        subtitulo: subtitulo.trim(),
-        descripcion: descripcion.trim(),
-      })
+      const creada = await crearNoticia(payloadNoticia())
       if (!creada) throw new Error("No se pudo crear")
       for (let i = 0; i < files.length; i++) {
         await subirImagenNoticia(creada.id, files[i], i)
@@ -148,6 +149,19 @@ export default function NuevaNoticiaPage() {
             onChange={(e) => setDescripcion(e.target.value)}
             required
           />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="youtubeUrl">Link de YouTube (opcional)</Label>
+          <Input
+            id="youtubeUrl"
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            Si lo cargás, el video se muestra en la noticia publicada.
+          </p>
         </div>
 
         <NoticiaImagenesPicker files={files} onChange={setFiles} />

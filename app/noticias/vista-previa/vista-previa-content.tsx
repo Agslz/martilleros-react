@@ -44,6 +44,7 @@ export default function NoticiaVistaPreviaContent() {
       subtitulo={draft.subtitulo || "Sin subtítulo"}
       descripcion={draft.descripcion || "Sin descripción"}
       media={media}
+      youtubeUrl={draft.youtubeUrl}
       topSlot={<Badge variant="secondary">Vista previa — aún no publicada</Badge>}
       bottomSlot={
         <p className="text-sm text-muted-foreground border-t border-border pt-4">

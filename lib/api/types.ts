@@ -203,6 +203,7 @@ export interface NoticiaResponse {
   titulo: string
   subtitulo: string
   descripcion: string
+  youtubeUrl?: string | null
   publicado: boolean
   fechaPublicacion?: string | null
   createdAt: string
@@ -214,6 +215,7 @@ export interface CrearNoticiaRequest {
   titulo: string
   subtitulo: string
   descripcion: string
+  youtubeUrl?: string | null
 }
 
 export type ActualizarNoticiaRequest = CrearNoticiaRequest

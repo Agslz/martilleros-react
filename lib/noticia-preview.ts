@@ -10,6 +10,7 @@ export type NoticiaPreviewDraft = {
   titulo: string
   subtitulo: string
   descripcion: string
+  youtubeUrl?: string | null
   /** @deprecated usar media */
   imagenUrls?: string[]
   media?: NoticiaPreviewMedia[]

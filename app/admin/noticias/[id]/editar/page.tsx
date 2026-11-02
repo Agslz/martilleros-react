@@ -35,6 +35,7 @@ export default function EditarNoticiaPage() {
   const [titulo, setTitulo] = useState("")
   const [subtitulo, setSubtitulo] = useState("")
   const [descripcion, setDescripcion] = useState("")
+  const [youtubeUrl, setYoutubeUrl] = useState("")
   const [files, setFiles] = useState<File[]>([])
 
   const load = () => {
@@ -52,6 +53,7 @@ export default function EditarNoticiaPage() {
         setTitulo(n.titulo)
         setSubtitulo(n.subtitulo)
         setDescripcion(n.descripcion)
+        setYoutubeUrl(n.youtubeUrl ?? "")
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoadingData(false))
@@ -85,6 +87,7 @@ export default function EditarNoticiaPage() {
       titulo: titulo.trim(),
       subtitulo: subtitulo.trim(),
       descripcion: descripcion.trim(),
+      youtubeUrl: youtubeUrl.trim() || null,
       media: [...existentes, ...nuevas],
     })
     window.open("/noticias/vista-previa", "_blank", "noopener,noreferrer")
@@ -99,6 +102,7 @@ export default function EditarNoticiaPage() {
         titulo: titulo.trim(),
         subtitulo: subtitulo.trim(),
         descripcion: descripcion.trim(),
+        youtubeUrl: youtubeUrl.trim() || null,
       })
       const ordenBase = noticia?.imagenes?.length ?? 0
       for (let i = 0; i < files.length; i++) {
@@ -198,6 +202,19 @@ export default function EditarNoticiaPage() {
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
           />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="youtubeUrl">Link de YouTube (opcional)</Label>
+          <Input
+            id="youtubeUrl"
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            Si lo cargás, el video se muestra en la noticia publicada.
+          </p>
         </div>
 
         {(noticia.imagenes?.length ?? 0) > 0 && (
