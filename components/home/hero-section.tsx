@@ -22,7 +22,16 @@ import {
 import { cn } from "@/lib/utils"
 import type { HomeBloque } from "@/lib/contenidos"
 
-const HERO_SLIDES = [
+type HeroSlide = {
+  src: string
+  alt: string
+  caption: string
+  /** cover recorta; contain muestra la foto completa (mejor para grupales). */
+  fit?: "cover" | "contain"
+  objectPosition?: string
+}
+
+const HERO_SLIDES: HeroSlide[] = [
   {
     src: "/images/carousel/comision-directiva-2024-2026.png",
     alt: "Comisión directiva 2024-2026 del Colegio de Martilleros Públicos de Mendoza",
@@ -68,13 +77,15 @@ const HERO_SLIDES = [
     src: "/images/carousel/cena-martilleros-2026-1.jpg",
     alt: "Cena de Martilleros 2026 — Colegio de Martilleros de Mendoza",
     caption: "Cena de Martilleros 2026",
+    fit: "contain",
   },
   {
     src: "/images/carousel/cena-martilleros-2026-2.jpg",
     alt: "Cena de Martilleros 2026 — Colegio de Martilleros de Mendoza",
     caption: "Cena de Martilleros 2026",
+    fit: "contain",
   },
-] as const
+]
 
 const SLIDE_COUNT = HERO_SLIDES.length
 /** Track con clones: [última, ...slides, primera] → índice real empieza en 1 */
@@ -289,7 +300,16 @@ export function HeroSection({ intro }: HeroSectionProps) {
                   fill
                   priority={index === TRACK_FIRST}
                   sizes="100vw"
-                  className="object-cover object-center"
+                  className={cn(
+                    slide.fit === "contain"
+                      ? "object-contain object-center"
+                      : "object-cover object-center"
+                  )}
+                  style={
+                    slide.objectPosition
+                      ? { objectPosition: slide.objectPosition }
+                      : undefined
+                  }
                 />
               </div>
             ))}
