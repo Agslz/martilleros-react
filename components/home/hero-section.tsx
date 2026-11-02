@@ -26,12 +26,20 @@ type HeroSlide = {
   src: string
   alt: string
   caption: string
-  /** cover recorta; contain muestra la foto completa (mejor para grupales). */
-  fit?: "cover" | "contain"
   objectPosition?: string
 }
 
 const HERO_SLIDES: HeroSlide[] = [
+  {
+    src: "/images/carousel/cena-martilleros-2026-1.jpg",
+    alt: "Cena de Martilleros 2026 — Colegio de Martilleros de Mendoza",
+    caption: "Cena de Martilleros 2026",
+  },
+  {
+    src: "/images/carousel/cena-martilleros-2026-2.jpg",
+    alt: "Cena de Martilleros 2026 — Colegio de Martilleros de Mendoza",
+    caption: "Cena de Martilleros 2026",
+  },
   {
     src: "/images/carousel/comision-directiva-2024-2026.png",
     alt: "Comisión directiva 2024-2026 del Colegio de Martilleros Públicos de Mendoza",
@@ -72,18 +80,6 @@ const HERO_SLIDES: HeroSlide[] = [
     alt: "Presidente y Vicepresidente con la Jefa de la oficina de medidas judiciales",
     caption:
       "Presidente y Vicepresidente con la Jefa de la oficina de medidas judiciales",
-  },
-  {
-    src: "/images/carousel/cena-martilleros-2026-1.jpg",
-    alt: "Cena de Martilleros 2026 — Colegio de Martilleros de Mendoza",
-    caption: "Cena de Martilleros 2026",
-    fit: "contain",
-  },
-  {
-    src: "/images/carousel/cena-martilleros-2026-2.jpg",
-    alt: "Cena de Martilleros 2026 — Colegio de Martilleros de Mendoza",
-    caption: "Cena de Martilleros 2026",
-    fit: "contain",
   },
 ]
 
@@ -300,11 +296,7 @@ export function HeroSection({ intro }: HeroSectionProps) {
                   fill
                   priority={index === TRACK_FIRST}
                   sizes="100vw"
-                  className={cn(
-                    slide.fit === "contain"
-                      ? "object-contain object-center"
-                      : "object-cover object-center"
-                  )}
+                  className="object-cover object-center"
                   style={
                     slide.objectPosition
                       ? { objectPosition: slide.objectPosition }
