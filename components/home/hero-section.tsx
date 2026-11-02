@@ -112,9 +112,13 @@ export function HeroSection({ intro }: HeroSectionProps) {
   // Índice en el track clonado (1 = primera slide real)
   const [trackIndex, setTrackIndex] = useState(TRACK_FIRST)
   const [reduceMotion, setReduceMotion] = useState(false)
-  const [slideTransitionEnabled, setSlideTransitionEnabled] = useState(false)
+  /** Fade de entrada: solo una vez al montar (no reutilizar en el loop). */
+  const [initialRevealDone, setInitialRevealDone] = useState(false)
+  /** CSS transition del track; se apaga solo al saltar del clon al slide real. */
+  const [allowSlideTransition, setAllowSlideTransition] = useState(false)
   const animatingRef = useRef(false)
   const trackIndexRef = useRef(TRACK_FIRST)
+  const trackRef = useRef<HTMLDivElement>(null)
 
   const trackSlides = useMemo(
     () => [
@@ -137,31 +141,28 @@ export function HeroSection({ intro }: HeroSectionProps) {
     )
   }, [])
 
-  const enableSlideTransition = useCallback(() => {
-    setSlideTransitionEnabled(true)
-  }, [])
-
   useEffect(() => {
     if (reduceMotion) {
-      setSlideTransitionEnabled(true)
+      setInitialRevealDone(true)
+      setAllowSlideTransition(true)
       return
     }
 
-    const id = window.setTimeout(
-      () => setSlideTransitionEnabled(true),
-      INITIAL_FADE_MS
-    )
+    const id = window.setTimeout(() => {
+      setInitialRevealDone(true)
+      setAllowSlideTransition(true)
+    }, INITIAL_FADE_MS)
     return () => window.clearTimeout(id)
   }, [reduceMotion])
 
   const moveTo = useCallback(
     (nextTrackIndex: number) => {
       if (animatingRef.current && !reduceMotion) return
-      enableSlideTransition()
+      setAllowSlideTransition(true)
       animatingRef.current = true
       setTrackIndex(nextTrackIndex)
     },
-    [enableSlideTransition, reduceMotion]
+    [reduceMotion]
   )
 
   const goToSlide = useCallback(
@@ -188,20 +189,26 @@ export function HeroSection({ intro }: HeroSectionProps) {
     return () => window.clearInterval(id)
   }, [reduceMotion, moveTo])
 
-  const jumpWithoutAnimation = useCallback(
-    (to: number) => {
-      setSlideTransitionEnabled(false)
-      setTrackIndex(to)
-      trackIndexRef.current = to
-      animatingRef.current = false
+  const jumpWithoutAnimation = useCallback((to: number) => {
+    const el = trackRef.current
+    // Salto instantáneo en DOM (misma imagen visible: clon ↔ slide real)
+    if (el) {
+      el.style.transition = "none"
+      el.style.transform = `translateX(-${to * 100}%)`
+      void el.offsetHeight
+    }
+    setAllowSlideTransition(false)
+    setTrackIndex(to)
+    trackIndexRef.current = to
+    animatingRef.current = false
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (!reduceMotion) setSlideTransitionEnabled(true)
-        })
+        // No borrar transform: React ya lo sincroniza con trackIndex
+        if (el) el.style.transition = ""
+        setAllowSlideTransition(true)
       })
-    },
-    [reduceMotion]
-  )
+    })
+  }, [])
 
   const handleTransitionEnd = useCallback(
     (e: TransitionEvent<HTMLDivElement>) => {
@@ -262,23 +269,24 @@ export function HeroSection({ intro }: HeroSectionProps) {
           className={cn(
             "relative w-full overflow-hidden bg-stone-900",
             "min-h-[min(48vh,480px)] h-[min(48vh,480px)] sm:min-h-[min(65vh,720px)] sm:h-[min(65vh,720px)] lg:min-h-[min(70vh,880px)] lg:h-[min(70vh,880px)]",
-            !slideTransitionEnabled && !reduceMotion && "hero-initial-fade",
+            !initialRevealDone && !reduceMotion && "hero-initial-fade",
           )}
           role="region"
           aria-roledescription="carousel"
           aria-label="Imágenes institucionales"
         >
           <div
+            ref={trackRef}
             className={cn(
               "flex h-full will-change-transform",
-              slideTransitionEnabled &&
+              allowSlideTransition &&
                 !reduceMotion &&
                 "transition-transform ease-in-out",
             )}
             style={{
               transform: `translateX(-${trackIndex * 100}%)`,
               transitionDuration:
-                slideTransitionEnabled && !reduceMotion
+                allowSlideTransition && !reduceMotion
                   ? `${SLIDE_TRANSITION_MS}ms`
                   : undefined,
             }}
