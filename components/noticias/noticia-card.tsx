@@ -1,6 +1,7 @@
 import Link from "next/link"
-import { FileText } from "lucide-react"
+import { FileText, Play } from "lucide-react"
 import type { NoticiaResponse } from "@/lib/api"
+import { youtubeThumbnailUrl } from "@/lib/youtube"
 
 type NoticiaCardProps = {
   noticia: NoticiaResponse
@@ -28,7 +29,12 @@ function tienePdf(noticia: NoticiaResponse) {
 
 export function NoticiaCard({ noticia }: NoticiaCardProps) {
   const fecha = formatFechaPublicacion(noticia.fechaPublicacion)
-  const soloPdf = !noticia.imagenPortadaUrl && tienePdf(noticia)
+  const youtubeThumb =
+    !noticia.imagenPortadaUrl
+      ? youtubeThumbnailUrl(noticia.youtubeUrl)
+      : null
+  const soloPdf =
+    !noticia.imagenPortadaUrl && !youtubeThumb && tienePdf(noticia)
 
   return (
     <Link
@@ -43,6 +49,23 @@ export function NoticiaCard({ noticia }: NoticiaCardProps) {
             alt={noticia.titulo}
             className="h-full w-full object-contain transition-transform group-hover:scale-[1.02]"
           />
+        ) : youtubeThumb ? (
+          <div className="relative h-full w-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={youtubeThumb}
+              alt={noticia.titulo}
+              className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
+            />
+            <span
+              className="pointer-events-none absolute inset-0 flex items-center justify-center"
+              aria-hidden
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/65 text-white shadow-md">
+                <Play className="h-6 w-6 fill-current pl-0.5" />
+              </span>
+            </span>
+          </div>
         ) : soloPdf ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-primary">
             <FileText

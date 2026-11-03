@@ -1,5 +1,5 @@
-/** Extrae ID de video y arma URL de embed a partir de links YouTube comunes. */
-export function youtubeEmbedUrl(raw?: string | null): string | null {
+/** Extrae el ID de video de links YouTube comunes (watch, youtu.be, shorts, embed). */
+export function youtubeVideoId(raw?: string | null): string | null {
   if (!raw?.trim()) return null
   const url = raw.trim()
 
@@ -9,28 +9,34 @@ export function youtubeEmbedUrl(raw?: string | null): string | null {
 
     if (host === "youtu.be") {
       const id = u.pathname.split("/").filter(Boolean)[0]
-      return id ? `https://www.youtube.com/embed/${id}` : null
+      return id || null
     }
 
     if (host.endsWith("youtube.com") || host.endsWith("youtube-nocookie.com")) {
       if (u.pathname.startsWith("/embed/")) {
-        const id = u.pathname.split("/")[2]
-        return id ? `https://www.youtube.com/embed/${id}` : null
+        return u.pathname.split("/")[2] || null
       }
       if (u.pathname.startsWith("/shorts/")) {
-        const id = u.pathname.split("/")[2]
-        return id ? `https://www.youtube.com/embed/${id}` : null
+        return u.pathname.split("/")[2] || null
       }
-      const v = u.searchParams.get("v")
-      if (v) return `https://www.youtube.com/embed/${v}`
+      return u.searchParams.get("v")
     }
   } catch {
     // no es URL válida
   }
 
-  // Fallback: ID crudo de 11 caracteres
-  if (/^[\w-]{11}$/.test(url)) {
-    return `https://www.youtube.com/embed/${url}`
-  }
+  if (/^[\w-]{11}$/.test(url)) return url
   return null
+}
+
+/** URL de embed para iframe. */
+export function youtubeEmbedUrl(raw?: string | null): string | null {
+  const id = youtubeVideoId(raw)
+  return id ? `https://www.youtube.com/embed/${id}` : null
+}
+
+/** Miniatura pública de YouTube (hqdefault). */
+export function youtubeThumbnailUrl(raw?: string | null): string | null {
+  const id = youtubeVideoId(raw)
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null
 }
