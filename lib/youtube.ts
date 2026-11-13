@@ -1,3 +1,4 @@
+/** Helpers de YouTube para noticias (embed + miniatura). */
 /** Extrae el ID de video de links YouTube comunes (watch, youtu.be, shorts, embed). */
 export function youtubeVideoId(raw?: string | null): string | null {
   if (!raw?.trim()) return null
