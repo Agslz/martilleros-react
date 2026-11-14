@@ -1,5 +1,8 @@
 import { apiRequest } from "./client"
-import type { MatriculadoPublicResponse } from "./types"
+import type {
+  MatriculadoPublicResponse,
+  VerificacionCuotaPublicResponse,
+} from "./types"
 
 /**
  * Buscar matriculados (público). Si apellido está vacío, devuelve todos los habilitados.
@@ -21,4 +24,18 @@ export async function getMatriculadosPublicos(
     console.error("Error al buscar matriculados:", e)
     return []
   }
+}
+
+/** GET /public/matriculados/{id}/verificar-cuota — cartel al escanear el QR. */
+export async function getVerificacionCuotaPublica(
+  id: number
+): Promise<VerificacionCuotaPublicResponse> {
+  const res = await apiRequest<VerificacionCuotaPublicResponse>(
+    `/public/matriculados/${id}/verificar-cuota`,
+    { auth: false }
+  )
+  if (!res.success || !res.data) {
+    throw new Error(res.message ?? "No se pudo verificar el socio")
+  }
+  return res.data
 }

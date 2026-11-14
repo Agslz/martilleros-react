@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   UserPlus,
   Newspaper,
+  QrCode,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AdminInactivityMonitor } from "@/components/auth/admin-inactivity-monitor"
@@ -49,6 +50,12 @@ const adminNav: DashboardNavItem[] = [
   },
   { name: "Contenidos", href: "/admin/contenidos", icon: FileText },
   { name: "Cuotas", href: "/admin/cuotas", icon: CreditCard },
+  {
+    name: "Gestión de cuotas",
+    shortName: "Gestión",
+    href: "/admin/gestion-cuotas",
+    icon: QrCode,
+  },
 ]
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

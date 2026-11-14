@@ -142,6 +142,12 @@ export type EstadoFianza =
   | "RECHAZADA"
   | "NO_REQUERIDA"
 
+/** Estado de cuota/afiliación del socio (gestión de cuotas + QR). */
+export type EstadoSocio =
+  | "SOCIO_AL_DIA"
+  | "SOCIO_CON_DEUDA"
+  | "SOCIO_DADO_DE_BAJA"
+
 export interface MatriculadoPublicResponse {
   id: number
   nombre: string
@@ -153,6 +159,16 @@ export interface MatriculadoPublicResponse {
   fotoCarnetUrl?: string
   habilitado: boolean
   estadoFianza: EstadoFianza
+  estadoSocio?: EstadoSocio
+}
+
+/** GET /public/matriculados/{id}/verificar-cuota */
+export interface VerificacionCuotaPublicResponse {
+  id: number
+  nombre: string
+  apellido: string
+  matricula: string
+  estadoSocio: EstadoSocio
 }
 
 // --- Subastas: publicación externa (admin, terceros no matriculados) ---

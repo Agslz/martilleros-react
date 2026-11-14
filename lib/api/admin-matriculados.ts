@@ -1,6 +1,10 @@
 import { apiRequest, apiRequestFormData } from "./client"
-import type { CrearMatriculadoRequest, EstadoFianza } from "./types"
-import type { MatriculadoPublicResponse } from "./types"
+import type {
+  CrearMatriculadoRequest,
+  EstadoFianza,
+  EstadoSocio,
+  MatriculadoPublicResponse,
+} from "./types"
 
 /** Respuesta exclusiva del POST de alta; incluye contrasenaTemporal en texto plano. */
 export interface CrearMatriculadoResponse {
@@ -94,6 +98,27 @@ export async function updateMatriculadoHabilitado(
   })
 }
 
+/**
+ * Asigna el estado de cuota del socio (al día / con deuda / dado de baja).
+ * PUT /api/admin/matriculados/{id}/estado-socio
+ */
+export async function updateMatriculadoEstadoSocio(
+  id: number,
+  estadoSocio: EstadoSocio
+): Promise<MatriculadoPublicResponse> {
+  const res = await apiRequest<MatriculadoPublicResponse>(
+    `/admin/matriculados/${id}/estado-socio`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ estadoSocio }),
+    }
+  )
+  if (!res.success || !res.data) {
+    throw new Error(res.message ?? "No se pudo actualizar el estado de cuota")
+  }
+  return res.data
+}
+
 /** Detalle admin (incluye DNI/CUIT) para edición. */
 export interface MatriculadoAdminResponse {
   id: number
@@ -108,6 +133,7 @@ export interface MatriculadoAdminResponse {
   habilitado: boolean
   primeraVezLogin: boolean
   estadoFianza: EstadoFianza
+  estadoSocio?: EstadoSocio
 }
 
 export type ActualizarMatriculadoRequest = CrearMatriculadoRequest

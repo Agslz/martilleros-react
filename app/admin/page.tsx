@@ -1,5 +1,13 @@
 import Link from "next/link"
-import { Gavel, BookOpen, Users, FileText, CreditCard, Newspaper } from "lucide-react"
+import {
+  Gavel,
+  BookOpen,
+  Users,
+  FileText,
+  CreditCard,
+  Newspaper,
+  QrCode,
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const links = [
@@ -9,6 +17,7 @@ const links = [
   { href: "/admin/matriculados/nuevo", name: "Nuevo matriculado", icon: Users },
   { href: "/admin/contenidos", name: "Contenidos", icon: FileText },
   { href: "/admin/cuotas", name: "Cuotas", icon: CreditCard },
+  { href: "/admin/gestion-cuotas", name: "Gestión de cuotas", icon: QrCode },
 ]
 
 export default function AdminDashboardPage() {

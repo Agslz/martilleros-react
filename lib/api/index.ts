@@ -89,13 +89,17 @@ export {
 } from "./noticias"
 export { getContenido } from "./contenidos"
 export { actualizarContenido } from "./admin-contenidos"
-export { getMatriculadosPublicos } from "./matriculados"
+export {
+  getMatriculadosPublicos,
+  getVerificacionCuotaPublica,
+} from "./matriculados"
 export {
   crearMatriculado,
   getMatriculadosAdmin,
   getMatriculadoAdmin,
   actualizarMatriculado,
   updateMatriculadoHabilitado,
+  updateMatriculadoEstadoSocio,
   eliminarMatriculado,
 } from "./admin-matriculados"
 export type {
